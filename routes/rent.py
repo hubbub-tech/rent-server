@@ -42,7 +42,7 @@ def inventory(search):
 @bp.get("/inventory/i/id=<int:item_id>")
 def view_item(item_id):
     photo_url = AWS.get_url("items")
-    item = Items.get(item_id)server
+    item = Items.get(item_id)
     lister = Users.get(item.lister_id)
     item_to_dict = item.to_dict()
     item_to_dict["lister_name"] = lister.name
