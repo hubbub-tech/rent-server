@@ -97,17 +97,13 @@ class MailConfig:
 #FLASK CONFIGS------------------------------------
 
 class Config:
-    #ReCaptcha
-    RECAPTCHA_SITE_KEY = os.environ['RECAPTCHA_PUBLIC_KEY']
-    RECAPTCHA_SECRET_KEY = os.environ['RECAPTCHA_PRIVATE_KEY']
+
+    SECRET_KEY = os.environ['SECRET_KEY']
 
     #Celery
     CELERY_BROKER_URL = os.environ['CLOUDAMQP_URL']
     BROKER_POOL_LIMIT = 1
     #CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
-
-    DEBUG = False
-    TESTING  =  False
 
     #Upload management
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -123,14 +119,3 @@ class Config:
     MAIL_DEFAULT_SENDER = MAIL.DEFAULT_SENDER
     MAIL_MAX_EMAILS = MAIL.MAX_EMAILS
     MAIL_ASCII_ATTACHMENTS = MAIL.ASCII_ATTACHMENTS
-
-class DevelopmentConfig(Config):
-    DEBUG = True
-    SECRET_KEY = 'dev'
-
-class ProductionConfig(Config):
-    SECRET_KEY = os.environ['SECRET_KEY']
-
-class TestingConfig(Config):
-    TESTING = True
-    SECRET_KEY = 'dev'

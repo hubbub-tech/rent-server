@@ -1,4 +1,4 @@
-from flask_recaptcha import ReCaptcha
+from celery import Celery
 
 from .transact import exp_decay, set_async_timeout
 from .transact import get_orders_for_dropoff, get_orders_for_pickup, get_delivery_schedule
@@ -10,9 +10,9 @@ from .utils import login_required, transaction_auth, login_user
 from .utils import generate_proposed_period
 from .utils import search_items
 
-from .config import AWSConfig
+from .config import AWSConfig, Config
 
 from .const import *
 
 AWS = AWSConfig.get_instance()
-recaptcha = ReCaptcha()
+celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)

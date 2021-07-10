@@ -6,7 +6,7 @@ from blubber_orm import Users
 
 from server.tools.settings import login_required, AWS
 from server.tools.build import validate_listing, upload_image, create_item
-from server.tools.build import get_new_listing_email, send_email
+from server.tools.build import get_new_listing_email, send_async_email
 from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('list', __name__)
@@ -77,7 +77,7 @@ def list_submit():
                 upload_response = upload_image(image_data)
                 if upload_response["is_valid"]:
                     email_data = get_new_listing_email(item)
-                    send_email(subject=email_data["subject"], to=email_data["to"], body=email_data["body"])
+                    send_async_email.apply_async(kwargs=email_data)
                     flashes.append(form_check["message"])
                     return {"flashes": flashes}, 201
                 else:

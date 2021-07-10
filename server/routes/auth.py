@@ -4,9 +4,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from blubber_orm import Users
 
-from server.tools.settings import login_required, login_user, recaptcha
+from server.tools.settings import login_required, login_user
 from server.tools.build import validate_registration, validate_login
-from server.tools.build import create_user, get_welcome_email, send_email
+from server.tools.build import create_user, get_welcome_email, send_async_email
 
 bp = Blueprint('auth', __name__)
 
@@ -97,12 +97,11 @@ def register():
                 "zip": data["address"]["zip"]
             }
         }
-        #if recaptcha.verify():
         form_check = validate_registration(form_data["user"])
         if form_check["is_valid"]:
             new_user = create_user(form_data)
             email_data = get_welcome_email(new_user)
-            send_email(subject=email_data["subject"], to=email_data["to"], body=email_data["body"])
+            send_async_email.apply_async(kwargs=email_data)
             flashes.append(form_check["message"])
             return {"flashes": flashes}, 201
         else:

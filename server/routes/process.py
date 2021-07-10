@@ -10,7 +10,7 @@ from server.tools.settings import login_required, transaction_auth, AWS
 from server.tools.build import create_order, create_logistics, create_reservation, create_extension
 from server.tools.build import get_renter_receipt_email, get_lister_receipt_email
 from server.tools.build import get_dropoff_email, get_pickup_email
-from server.tools.build import send_email
+from server.tools.build import send_async_email
 from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('process', __name__)
@@ -81,13 +81,13 @@ def order_confirmation(token):
             }
             #TODO: send email receipt to lister
             email_data = get_lister_receipt_email(transaction)
-            send_email(subject=email_data["subject"], to=email_data["to"], body=email_data["body"])
+            send_async_email.apply_async(kwargs=email_data)
             transactions.append(transaction) # important for renters receipt
             user.cart.remove(reservation)
             item.unlock()
         #TODO: send email receipt to renter
         email_data = get_renter_receipt_email(transactions)
-        send_email(subject=email_data["subject"], to=email_data["to"], body=email_data["body"])
+        send_async_email.apply_async(kwargs=email_data)
         session["cart_size"] = 0
         flashes.append("Successfully rented all items! Now, just let us know when we can drop them off.")
         return {"flashes": flashes}, 201
@@ -222,7 +222,7 @@ def schedule_dropoffs_submit():
 
             #TODO: async send availability details to user
             email_data = get_dropoff_email(dropoff_logistics)
-            send_email(subject=email_data["subject"], to=email_data["to"], body=email_data["body"])
+            send_async_email.apply_async(kwargs=email_data)
             #TODO: send return procedure email
 
             flashes.append("You have successfully scheduled your rental dropoffs!")
@@ -293,7 +293,7 @@ def schedule_pickups_submit():
 
             #TODO: async send availability details to user
             email_data = get_pickup_email(pickup_logistics)
-            send_email(subject=email_data["subject"], to=email_data["to"], body=email_data["body"])
+            send_async_email.apply_async(kwargs=email_data)
             #TODO: send return procedure email
 
             flashes.append("You have successfully scheduled your rental pickup!")

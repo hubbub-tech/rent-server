@@ -1,18 +1,17 @@
 import os
 from flask import Flask
-from celery import Celery
+from flask_cors import CORS
 
-from .tools.settings.config import DevelopmentConfig
+from .tools.settings.config import Config
 
-def make_celery():
-    my_celery = Celery(__name__, broker=os.environ["CELERY_BROKER_URL"])
-    return my_celery
-
-def create_app(config_object=DevelopmentConfig()):
+def create_app(config_object=Config()):
     template_dir = os.path.abspath('../public') # or might be another level up, not sure
     app = Flask(__name__, template_folder=template_dir)
+    CORS(app)
 
     app.config.from_object(config_object)
+
+    from .tools.settings import celery
     celery.conf.update(app.config)
 
     from .tools.build import mail
@@ -24,7 +23,5 @@ def create_app(config_object=DevelopmentConfig()):
     app.register_blueprint(list)
     app.register_blueprint(rent)
     app.register_blueprint(process)
-    
-    return app
 
-celery = make_celery()
+    return app

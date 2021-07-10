@@ -14,6 +14,7 @@ click-plugins==1.1.1
 click-repl==0.2.0
 DateTime==4.3
 Flask==2.0.1
+Flask-Cors==3.0.10
 Flask-Mail==0.9.1
 Flask-ReCaptcha==0.4.2
 idna==2.10
