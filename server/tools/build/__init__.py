@@ -13,4 +13,5 @@ from .emails import get_welcome_email
 
 from .files import generate_receipt
 
-from .tasks import mail, send_async_email
+from .tasks import send_async_email
+from .tasks import set_async_timeout
