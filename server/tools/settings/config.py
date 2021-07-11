@@ -54,38 +54,16 @@ class AWSConfig:
 
 class MailConfig:
     _instance = None
-    SERVER = None
-    PORT = None
-    USE_TLS = None
-    USE_SSL = None
-    USERNAME = None
-    PASSWORD = None
     DEFAULT_SENDER = None
-    MAX_EMAILS = None
-    ASCII_ATTACHMENTS = None
+    SENDGRID_API_KEY = None
 
     def __init__(self):
         if MailConfig._instance:
             #TODO: log that this problem happened
             raise Exception("MAIL CLIENT Connection should only be created once in the app.")
         else:
-            SERVER  = os.environ['MAIL_SERVER']
-            PORT  = int(os.environ['MAIL_PORT']) #587?
-            USERNAME  = os.environ['MAIL_USERNAME']
-            PASSWORD  = os.environ['MAIL_PASSWORD']
-            DEFAULT_SENDER  = ('Hubbub', os.environ['MAIL_DEFAULT_SENDER'])
-            MAX_EMAILS  = None
-            ASCII_ATTACHMENTS  = False
-
-            if os.environ.get('MAIL_USE_TLS') == '1':
-                USE_TLS = True
-                USE_SSL = False #gmail: true
-            elif os.environ.get('MAIL_USE_SSL') == '1':
-                USE_TLS = False #gmail: false
-                USE_SSL = True
-            else:
-                raise Exception("You must select either TLS or SSL connection. Check client.")
-
+            MailConfig.DEFAULT_SENDER = os.environ["MAIL_DEFAULT_SENDER"]
+            MailConfig.SENDGRID_API_KEY = os.environ["SENDGRID_API_KEY"]
             MailConfig._instance = self
 
     @staticmethod
@@ -99,23 +77,13 @@ class MailConfig:
 class Config:
 
     SECRET_KEY = os.environ['SECRET_KEY']
+    TESTING = False
 
     #Celery
     CELERY_BROKER_URL = os.environ['CLOUDAMQP_URL']
+    CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
     BROKER_POOL_LIMIT = 1
     #CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
 
     #Upload management
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
-    #email quick config
-    MAIL = MailConfig.get_instance()
-    MAIL_SERVER = MAIL.SERVER
-    MAIL_PORT = MAIL.PORT
-    MAIL_USE_TLS = MAIL.USE_TLS
-    MAIL_USE_SSL = MAIL.USE_SSL
-    MAIL_USERNAME = MAIL.USERNAME
-    MAIL_PASSWORD = MAIL.PASSWORD
-    MAIL_DEFAULT_SENDER = MAIL.DEFAULT_SENDER
-    MAIL_MAX_EMAILS = MAIL.MAX_EMAILS
-    MAIL_ASCII_ATTACHMENTS = MAIL.ASCII_ATTACHMENTS
