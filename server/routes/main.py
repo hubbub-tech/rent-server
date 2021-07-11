@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash
 from flask import Blueprint, redirect, session, g, request, url_for, send_file
 
 from blubber_orm import Users, Profiles, Orders, Addresses
-from blubber_orm import Items, Details, Testimonials
+from blubber_orm import Items, Details, Testimonials, Issues
 
 from server.tools.build import validate_edit_account, validate_edit_password, upload_image
 from server.tools.build import generate_receipt
@@ -289,13 +289,20 @@ def review_item(item_id):
 
 @bp.post('/feedback/submit')
 def feedback_submit():
-    flashes = ["We got your feedback! Thanks for your patience :)!"]
-    data = request.form
+    flashes = []
+    data = request.json
     if data:
-        feedback_text = data["feedback"]
-        feedback_origin = data["origin"]
-        # TODO: Save to a feedback table or email it idk
-    return {"flashes": flashes}, 201
+        feedback = {
+            "complaint": data["feedback"],
+            "link": data["href"],
+            "user_id": session.get("user_id", None),
+        }
+        issue = Issues.insert(feedback)
+        flashes.append("We got your feedback! Thanks for your patience :)!")
+        return {"flashes": flashes}, 201
+    else:
+        flashes.append("There was a problem receiving your feedback :(... Try again or email at hubbubcu@gmail.com.")
+    return {"flashes": flashes}, 406
 
 @bp.get('/accounts/o/receipt/id=<int:order_id>')
 @login_required
