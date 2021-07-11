@@ -404,8 +404,9 @@ def cancel_order():
         if g.user_id == order.renter_id:
             if not order.is_dropoff_scheduled:
                 reservation_to_delete = order.reservation
+                print(reservation_to_delete.to_dict())
                 res_keys = {
-                    "date_started": reservation_to_delete.date_ended,
+                    "date_started": reservation_to_delete.date_started,
                     "date_ended": reservation_to_delete.date_ended,
                     "renter_id": reservation_to_delete.renter_id,
                     "item_id": reservation_to_delete.item_id
@@ -419,4 +420,4 @@ def cancel_order():
             flashes.append("This isn't your order, so you can't cancel it...")
     else:
         flashes.append("Nothing was sent... try again.")
-    return {"flashes", flashes}, code
+    return {"flashes": flashes}, code
