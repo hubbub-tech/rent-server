@@ -1,3 +1,4 @@
+import pytz
 from datetime import datetime, date, timedelta
 from flask import Blueprint, flash, g, redirect, request, session, Markup
 
@@ -10,7 +11,7 @@ from server.tools.settings import login_required, transaction_auth, AWS
 from server.tools.build import create_order, create_logistics, create_reservation, create_extension
 from server.tools.build import get_renter_receipt_email, get_lister_receipt_email
 from server.tools.build import get_dropoff_email, get_pickup_email
-from server.tools.build import send_async_email
+from server.tools.build import send_async_email, set_async_timeout
 from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('process', __name__)
@@ -53,6 +54,9 @@ def order_confirmation(token):
     user = Users.get(g.user_id)
     cart_response = lock_checkout(user)
     if cart_response["is_valid"]:
+        timeout_clock = datetime.now(tz=pytz.UTC) + timedelta(minutes=30)
+        set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": user.id})
+
         transactions = []
         _cart_contents = user.cart.contents # need this because cart size changes
         for item in _cart_contents:

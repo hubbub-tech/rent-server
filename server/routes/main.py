@@ -33,21 +33,25 @@ def account(id):
     searched_user = Users.get(id)
     user_url = AWS.get_url("users")
     item_url = AWS.get_url("items")
-    user_to_dict = searched_user.to_dict()
-    user_to_dict["name"] = searched_user.name
-    user_to_dict["cart"] = searched_user.cart.to_dict()
-    user_to_dict["profile"] = searched_user.profile.to_dict()
-    listings_obj = Items.filter({"lister_id": searched_user.id})
-    listings = []
-    for item in listings_obj:
-        item_to_dict = item.to_dict()
-        next_start, next_end  = item.calendar.next_availability()
-        item_to_dict["calendar"] = item.calendar.to_dict()
-        item_to_dict["lister"] = user_to_dict
-        item_to_dict["next_available_start"] = next_start.strftime("%Y-%m-%d")
-        item_to_dict["next_available_end"] = next_end.strftime("%Y-%m-%d")
-        item_to_dict["details"] = item.details.to_dict()
-        listings.append(item_to_dict)
+    if searched_user:
+        user_to_dict = searched_user.to_dict()
+        user_to_dict["name"] = searched_user.name
+        user_to_dict["cart"] = searched_user.cart.to_dict()
+        user_to_dict["profile"] = searched_user.profile.to_dict()
+        listings_obj = Items.filter({"lister_id": searched_user.id})
+        listings = []
+        for item in listings_obj:
+            item_to_dict = item.to_dict()
+            next_start, next_end  = item.calendar.next_availability()
+            item_to_dict["calendar"] = item.calendar.to_dict()
+            item_to_dict["lister"] = user_to_dict
+            item_to_dict["next_available_start"] = next_start.strftime("%Y-%m-%d")
+            item_to_dict["next_available_end"] = next_end.strftime("%Y-%m-%d")
+            item_to_dict["details"] = item.details.to_dict()
+            listings.append(item_to_dict)
+    else:
+        user_to_dict = None
+        listings = None
     return {
         #is the current user the owner of the account?
         "photo_url": {"user": user_url, "item": item_url},
