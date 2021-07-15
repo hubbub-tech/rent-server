@@ -107,14 +107,6 @@ def manage_order(order_id):
     order = Orders.get(order_id)
     item = Items.get(order.item_id)
     is_extended = order.ext_date_end != order.res_date_end
-    if is_extended:
-        final_extension = Extensions.get({
-            "order_id": order.id,
-            "res_date_end": order.ext_date_end
-        })
-        ext_date_start = final_extension.res_date_start
-    else:
-        ext_date_start = order.res_date_start
     if g.user_id == order.renter_id:
         item_to_dict = item.to_dict()
         item_to_dict["calendar"] = item.calendar.to_dict()
@@ -122,7 +114,7 @@ def manage_order(order_id):
 
         order_to_dict = order.to_dict()
         order_to_dict["is_extended"] = is_extended
-        order_to_dict["ext_date_start"] = ext_date_start.strftime("%Y-%m-%d")
+        order_to_dict["ext_date_start"] = order.ext_date_start.strftime("%Y-%m-%d")
         order_to_dict["ext_date_end"] = order.ext_date_end.strftime("%Y-%m-%d")
         order_to_dict["reservation"] = order.reservation.to_dict()
         order_to_dict["lister"] = order.lister.to_dict()
@@ -364,12 +356,9 @@ def cancel_order():
     if data:
         order_id = data["orderId"]
         order = Orders.get(order_id)
-        print("type id", type(g.user_id), g.user_id)
-        print("type renter_id", type(order.renter_id), order.renter_id)
         if g.user_id == order.renter_id:
             if not order.is_dropoff_scheduled:
                 reservation_to_delete = order.reservation
-                print(reservation_to_delete.to_dict())
                 res_keys = {
                     "date_started": reservation_to_delete.date_started,
                     "date_ended": reservation_to_delete.date_ended,

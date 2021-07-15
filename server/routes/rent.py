@@ -80,7 +80,7 @@ def validate(item_id):
     reservation = None
     data = request.json
     if data:
-        if data["startDate"] and data["endDate"]:
+        if data.get("startDate") and data.get("endDate"):
             date_started = json_date_to_python_date(data["startDate"])
             date_ended = json_date_to_python_date(data["endDate"])
 
@@ -121,7 +121,7 @@ def add_to_cart(item_id):
     user = Users.get(g.user_id)
     item = Items.get(item_id)
     data = request.json
-    if data["startDate"] and data["endDate"]:
+    if data.get("startDate") and data.get("endDate"):
         date_started = json_date_to_python_date(data["startDate"])
         date_ended = json_date_to_python_date(data["endDate"])
         if user.cart.contains(item):
@@ -157,7 +157,7 @@ def update(item_id):
     user = Users.get(g.user_id)
     data = request.json
     if data:
-        if data["startDate"] and data["endDate"]:
+        if data.get("startDate") and data.get("endDate"):
             item = Items.get(item_id)
             #NOTE: filter always returns a list but should only have 1 item this time
             _reservation = Reservations.filter({

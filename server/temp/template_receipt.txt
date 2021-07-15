@@ -1,0 +1,31 @@
+Rental Invoice for [ITEM NAME]
+
+Hubbub Technologies, Inc
+[COMPANY ADDRESS]
+[COMPANY PHONE]
+[COMPANY EMAIL]
+
+Downloaded on [TODAY]
+Order Placed on [DATE PLACED]
+
+Details regarding your rental of [ITEM NAME]:
+* Rental start date: [START]
+* Rental end date: [END] //(extended)
+
+* Item name: [ITEM NAME]
+* Item lister: [ITEM LISTER]
+* Rental cost: [RENTAL COST]
+* Rental deposit: [RENTAL DEPOSIT]
+* Tax: [TAX]
+
+// if is_dropoff_sched
+* Dropoff date: [DATE DROPOFF]
+* Dropoff address: [DROPOFF ADDRESS]
+// else
+* Dropoff has not been scheduled.
+
+// if is_pickup_sched
+* Pickup date: [DATE PICKUP]
+* Pickup address: [PICKUP ADDRESS]
+// else
+* Pickup has not been scheduled.

@@ -16,8 +16,4 @@ from .config import AWSConfig, MailConfig, Config
 from .const import *
 
 AWS = AWSConfig.get_instance()
-celery = Celery(
-    __name__,
-    backend=Config.CELERY_RESULT_BACKEND,
-    broker=Config.CELERY_BROKER_URL
-)
+celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)

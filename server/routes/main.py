@@ -2,7 +2,7 @@ import time
 import json
 from datetime import datetime, date
 from werkzeug.security import generate_password_hash
-from flask import Blueprint, redirect, session, g, request, url_for, send_file
+from flask import Blueprint, redirect, session, g, request, url_for, send_from_directory
 
 from blubber_orm import Users, Profiles, Orders, Addresses
 from blubber_orm import Items, Details, Testimonials, Issues
@@ -264,7 +264,7 @@ def feedback_submit():
         feedback = {
             "complaint": data["feedback"],
             "link": data["href"],
-            "user_id": session.get("user_id", None),
+            "user_id": None,
         }
         issue = Issues.insert(feedback)
         flashes.append("We got your feedback! Thanks for your patience :)!")
@@ -273,15 +273,12 @@ def feedback_submit():
         flashes.append("There was a problem receiving your feedback :(... Try again or email at hubbubcu@gmail.com.")
     return {"flashes": flashes}, 406
 
-@bp.post('/accounts/o/receipt/id=<int:order_id>')
+@bp.post('/accounts/o/receipt/id=<int:order_id>/<path:filename>')
 @login_required
-def download_receipt(order_id):
-    g.user_id = session.get("user_id")
+def download_receipt(order_id, filename):
     user = Users.get(g.user_id)
     order = Orders.get(order_id)
-    date_downloaded = date.today().strftime("%Y%m%d")
-    generate_receipt(order)
-    return send_file('static/receipts/subscriptions.csv',
-        mimetype='text/csv',
-        attachment_filename='subscriptions'+today+'.csv',
-        as_attachment=True)
+    if user.id == order.renter_id:
+        generate_receipt(order, filename)
+        return send_from_directory('temp', filename, as_attachment=True)
+    return 406
