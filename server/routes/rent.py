@@ -78,7 +78,6 @@ def validate(item_id):
     flashes = []
     code = 406
     reservation = None
-    g.user_id = session.get('user_id')
     data = request.json
     if data:
         if data["startDate"] and data["endDate"]:
@@ -119,7 +118,6 @@ def validate(item_id):
 @bp.post("/add/i/id=<int:item_id>")
 @login_required
 def add_to_cart(item_id):
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     item = Items.get(item_id)
     data = request.json
@@ -156,7 +154,6 @@ def update(item_id):
     errors = []
     code = 406
     reservation = None
-    g.user_id = session.get('user_id')
     user = Users.get(g.user_id)
     data = request.json
     if data:
@@ -207,12 +204,11 @@ def update(item_id):
         flashes.append("You didn't send any data! Please, try again.")
     return {"flashes": flashes}, code
 
-@bp.get("/remove/i/id=<int:item_id>", defaults={"start": None, "end": None})
-@bp.get("/remove/i/id=<int:item_id>&start=<start>&end=<end>")
+@bp.post("/remove/i/id=<int:item_id>", defaults={"start": None, "end": None})
+@bp.post("/remove/i/id=<int:item_id>&start=<start>&end=<end>")
 @login_required
 def remove_from_cart(item_id, start, end):
     format = "%Y-%m-%d" # this format when taking dates thru url
-    g.user_id = session.get('user_id')
     user = Users.get(g.user_id)
     item = Items.get(item_id)
     flashes = []
@@ -231,11 +227,10 @@ def remove_from_cart(item_id, start, end):
     flashes.append(f"The {item.name} has been removed from your cart.")
     return {"flashes": flashes}, 201
 
-@bp.get("/checkout")
+@bp.post("/checkout")
 @login_required
 def checkout():
     photo_url = AWS.get_url("items")
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     items = [] #for json
     is_ready = user.cart.size() > 0
@@ -275,18 +270,3 @@ def checkout():
         "cart": user.cart.to_dict(),
         "items": items
     }
-
-@bp.post("/checkout/submit")
-@login_required
-def checkout_submit():
-    g.user_id = session.get("user_id")
-    user = Users.get(g.user_id)
-    flashes = []
-    data = request.json
-    if data:
-        payment_method = data["paymentMethod"]
-        token = create_rental_token(g.user_id, user.cart._total)
-        return {"token": token}, 201
-    else:
-        flashes.append("Please select a payment method.")
-        return {"flashes": flashes}, 406

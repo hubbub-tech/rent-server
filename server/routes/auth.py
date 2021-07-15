@@ -4,30 +4,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from blubber_orm import Users
 
-from server.tools.settings import login_required, login_user
+from server.tools.settings import login_user, create_auth_token
 from server.tools.build import validate_registration, validate_login
 from server.tools.build import create_user, get_welcome_email, send_async_email
 
 bp = Blueprint('auth', __name__)
-
-@bp.before_app_request
-def load_logged_in_user():
-    g.user_id = session.get('user_id', None)
-
-@bp.get('/login/status')
-def login_status():
-    g.user_id = session.get('user_id', None)
-    return {
-        "flashes": get_flashed_messages(),
-        "user_id": g.user_id,
-
-    }
-
-@bp.get('/login/cart')
-def login_cart():
-    cart_size = session.get('cart_size', None)
-    return {"cart_size": cart_size}
-
 
 @bp.post('/login')
 def login():
@@ -44,8 +25,15 @@ def login():
             user, = Users.filter({"email": form_data["email"]})
             login_response = login_user(user)
             if login_response["is_valid"]:
+                auth = create_auth_token(user)
                 flashes.append(login_response["message"])
-                return {"errors": errors, "flashes": flashes}, 201
+                return {
+                    "errors": errors,
+                    "flashes": flashes,
+                    "user_id": user.id,
+                    "cart_size": user.cart.size(),
+                    "auth": auth,
+                }, 201
             else:
                 errors.append(login_response["message"])
                 flashes.append("Houston, we have a problem...")
@@ -113,7 +101,6 @@ def register():
     return {"flashes": flashes, "errors": errors}, 406
 
 @bp.get("/logout")
-@login_required
 def logout():
     session.clear()
     return {"is_logged_in": False}

@@ -11,14 +11,11 @@ from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('list', __name__)
 
-@bp.get('/list')
+@bp.post('/list')
 @login_required
 def list():
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
-    return {
-        "address": user.address.to_dict()
-    }
+    return {"address": user.address.to_dict()}
 
 
 @bp.post('/list/submit')

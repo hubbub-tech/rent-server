@@ -5,52 +5,24 @@ from flask import Blueprint, flash, g, redirect, request, session, Markup
 from blubber_orm import Users, Orders, Reservations, Extensions
 from blubber_orm import Items, Tags
 
-from server.tools.settings import get_orders_for_dropoff, get_orders_for_pickup, get_delivery_schedule, process_early_return
+from server.tools.settings import get_orders_for_dropoff, get_orders_for_pickup
+from server.tools.settings import get_delivery_schedule, process_early_return
 from server.tools.settings import lock_checkout, check_if_routed, exp_decay
-from server.tools.settings import login_required, transaction_auth, AWS
+from server.tools.settings import login_required, AWS
+
 from server.tools.build import create_order, create_logistics, create_reservation, create_extension
 from server.tools.build import get_renter_receipt_email, get_lister_receipt_email
 from server.tools.build import get_dropoff_email, get_pickup_email
 from server.tools.build import send_async_email, set_async_timeout
+
 from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('process', __name__)
 
-#Accepts payment choice from the checkout form
-@bp.route("/checkout/router/token=<token>")
-@transaction_auth
+@bp.post("/checkout/submit")
 @login_required
-def order_router(token):
-    g.user_id = session.get("user_id")
-    user = Users.get(g.user_id)
-    cart_response = lock_checkout(user)
-    if cart_response["is_valid"]:
-        #Redirect depending on payment method
-        if method == "online":
-            return redirect(f"/checkout/payment/token={token}")
-        else:
-            # default to in-person payment, skip to confirmation
-            for item in user.cart.contents:
-                item.is_routed = True
-            return redirect(f"/checkout/confirmation/token={token}")
-    else:
-        flash(cart_response["message"])
-        return redirect("/checkout")
-
-
-#Accepts payment choice from the checkout form
-@bp.route("/checkout/payment/token=<token>")
-@transaction_auth
-@login_required
-def order_payment(token):
-    pass #TODO: payment method API in here and route items in cart
-
-@bp.route("/checkout/confirmation/token=<token>")
-@transaction_auth
-@login_required
-def order_confirmation(token):
+def checkout_submit():
     flashes = []
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     cart_response = lock_checkout(user)
     if cart_response["is_valid"]:
@@ -99,11 +71,10 @@ def order_confirmation(token):
         flashes.append(cart_response["message"])
         return {"flashes": flashes}, 406
 
-@bp.route("/accounts/u/orders")
+@bp.post("/accounts/u/orders")
 @login_required
 def order_history():
     photo_url = AWS.get_url("items")
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     order_history = Orders.filter({"renter_id": g.user_id})
     orders = []
@@ -127,12 +98,11 @@ def order_history():
         "orders": orders
     }
 
-@bp.get("/accounts/o/id=<int:order_id>")
+@bp.post("/accounts/o/id=<int:order_id>")
 @login_required
 def manage_order(order_id):
     photo_url = AWS.get_url("items")
     flashes = []
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     order = Orders.get(order_id)
     item = Items.get(order.item_id)
@@ -165,11 +135,10 @@ def manage_order(order_id):
         flashes.append("You can only manage orders that you placed.")
         return {"flashes": flashes}, 406
 
-@bp.get("/schedule/dropoffs/<date_str>")
+@bp.post("/schedule/dropoffs/<date_str>")
 @login_required
 def schedule_dropoffs(date_str):
     format = "%Y-%m-%d"
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     res_date_start = datetime.strptime(date_str, format).date()
     orders = Orders.filter({
@@ -193,7 +162,6 @@ def schedule_dropoffs(date_str):
 @login_required
 def schedule_dropoffs_submit():
     format = "%Y-%m-%d"
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     flashes = []
     data = request.json
@@ -238,11 +206,10 @@ def schedule_dropoffs_submit():
         flashes.append("Please, provide availabilities for dropoff.")
         return {"flashes": flashes}, 406
 
-@bp.get("/schedule/pickups/<date_str>")
+@bp.post("/schedule/pickups/<date_str>")
 @login_required
 def schedule_pickups(date_str):
     format = "%Y-%m-%d"
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     res_date_end = datetime.strptime(date_str, format).date()
     orders = Orders.filter({"renter_id": g.user_id, "is_pickup_sched": False})
@@ -263,7 +230,6 @@ def schedule_pickups(date_str):
 @login_required
 def schedule_pickups_submit():
     format = "%Y-%m-%d"
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     flashes = []
     data = request.json
@@ -314,7 +280,6 @@ def schedule_pickups_submit():
 def early_return_submit():
     code = 406
     flashes = []
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     data = request.json
     if data:
@@ -351,7 +316,6 @@ def early_return_submit():
 def extend_submit():
     code = 406
     flashes = []
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     data = request.json
     if data:
@@ -395,12 +359,13 @@ def extend_submit():
 def cancel_order():
     code = 406
     flashes = []
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     data = request.json
     if data:
         order_id = data["orderId"]
         order = Orders.get(order_id)
+        print("type id", type(g.user_id), g.user_id)
+        print("type renter_id", type(order.renter_id), order.renter_id)
         if g.user_id == order.renter_id:
             if not order.is_dropoff_scheduled:
                 reservation_to_delete = order.reservation

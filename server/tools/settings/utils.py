@@ -1,31 +1,36 @@
+import json
 import pytz
 import functools
 from datetime import datetime
-from flask import session, redirect, flash, g
+from flask import session, request, flash, g
 from blubber_orm import Users, Items, Details, Tags
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from .transact import verify_rental_token
 
+# NOTE: ONLY COMPATIBLE WITH POST METHOD ROUTES****
 def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user_id is None:
-            flash('Login to view this page.')
-            return redirect("/login")
+        flashes = []
+        if request.json:
+            data = request.json
+        elif request.form:
+            data = request.form
         else:
-            return view(**kwargs)
-    return wrapped_view
-
-def transaction_auth(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        user = Users.get(g.user_id)
-        token_response = verify_rental_token(kwargs["token"], g.user_id, user.cart._total)
-        if token_response:
-            return view(**kwargs)
+            return {"flashes": flashes}, 405
+        id = data["userId"]
+        token = data["auth"]
+        print("id", id)
+        print("token", token)
+        is_authenticated = verify_auth_token(token, id)
+        print("is_authenticated", is_authenticated)
+        if not is_authenticated:
+            flashes.append('Login first to join the fun!')
+            return {"flashes": flashes}, 405
         else:
-            flash("You are not authorized to complete this transaction.")
-            return redirect("/checkout")
+            g.user_id = int(id)
+            return view(**kwargs)
     return wrapped_view
 
 def login_user(user):
@@ -43,6 +48,14 @@ def login_user(user):
         "is_valid" : is_valid,
         "message" : message
         }
+
+def create_auth_token(user):
+    hashed_token = generate_password_hash(str(user.id))
+    return hashed_token
+
+def verify_auth_token(hashed_token, user_id):
+    is_valid = check_password_hash(hashed_token, user_id)
+    return is_valid
 
 def search_items(search_key):
     searchable = f"%{search_key}%"

@@ -6,7 +6,7 @@ from .tools.settings.config import Config
 
 def create_app(config_object=Config()):
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, origins=["http://localhost:3000"])
 
     app.config.from_object(config_object)
 

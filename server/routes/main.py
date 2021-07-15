@@ -27,7 +27,7 @@ def index():
     return {"testimonials": testimonials}
 
 #keep track of items being rented, items owned, item reviews and item edits
-@bp.route("/accounts/u/id=<int:id>")
+@bp.post("/accounts/u/id=<int:id>")
 @login_required
 def account(id):
     searched_user = Users.get(id)
@@ -60,11 +60,10 @@ def account(id):
     }
 
 #edit personal account
-@bp.get("/accounts/u/edit")
+@bp.post("/accounts/u/edit")
 @login_required
 def edit_account():
     photo_url = AWS.get_url("users")
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
 
     user_to_dict = user.to_dict()
@@ -80,7 +79,6 @@ def edit_account():
 @login_required
 def edit_account_submit():
     flashes = []
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     data = request.form
     if data:
@@ -131,7 +129,6 @@ def edit_account_submit():
 def edit_password_submit():
     flashes = []
     errors = []
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     data = request.json
     if data:
@@ -156,7 +153,6 @@ def edit_password_submit():
 @login_required
 def edit_address_submit():
     flashes = []
-    g.user_id = session.get("user_id")
     data = request.json
     if data:
         form_data = {
@@ -183,7 +179,7 @@ def edit_address_submit():
     return {"flashes": flashes}, 201
 
 #remove user profile picture
-@bp.route("/accounts/u/remove-picture")
+@bp.post("/accounts/u/remove-picture")
 @login_required
 def remove_pic():
     Profiles.set(g.user.id, {"has_pic": False})
@@ -196,7 +192,6 @@ def hide_item(item_id):
     code = 406
     flashes = []
     item = Items.get(item_id)
-    g.user_id = session.get("user_id")
     user = Users.get(g.user_id)
     if item.lister_id == g.user_id:
         data = request.json
@@ -213,11 +208,10 @@ def hide_item(item_id):
         flashes.append("You are not authorized to manage the visibility of this item.")
     return {"flashes": flashes}, code
 
-@bp.route("/accounts/i/edit/id=<int:item_id>")
+@bp.post("/accounts/i/edit/id=<int:item_id>")
 @login_required
 def edit_item(item_id):
     flashes = []
-    g.user_id = session.get("user_id")
     item = Items.get(item_id)
     if item.lister_id == g.user_id:
         item_to_dict = item.to_dict()
@@ -262,31 +256,6 @@ def edit_item_submit():
         code = 406
     return {"flashes": flashes}, code
 
-#review an item
-@bp.route("/accounts/i/review/id=<int:item_id>", methods=["POST", "GET"])
-@login_required
-def review_item(item_id):
-    photo_url = AWS.get_url("items")
-    item = Items.get(item_id)
-    if item.lister_id != g.user.id:
-        if request.method == "POST":
-            form_data = {
-                "item_id": item.id,
-                "author_id": g.user.id,
-                "body": request.form.get("body"),
-                "rating": request.form.get("rating")
-            }
-            new_review = create_review(form_data)
-            flash(f"The {item.name} that you rented has been reviewed.")
-            return redirect(f"/accounts/u/id={g.user.id}")
-        return {
-            "item": item.to_dict(),
-            "photo_url": photo_url
-            }
-    else:
-        flash("You cannot review your own item.")
-        return redirect(f"/accounts/u/id={g.user.id}")
-
 @bp.post('/feedback/submit')
 def feedback_submit():
     flashes = []
@@ -304,7 +273,7 @@ def feedback_submit():
         flashes.append("There was a problem receiving your feedback :(... Try again or email at hubbubcu@gmail.com.")
     return {"flashes": flashes}, 406
 
-@bp.get('/accounts/o/receipt/id=<int:order_id>')
+@bp.post('/accounts/o/receipt/id=<int:order_id>')
 @login_required
 def download_receipt(order_id):
     g.user_id = session.get("user_id")
@@ -313,6 +282,6 @@ def download_receipt(order_id):
     date_downloaded = date.today().strftime("%Y%m%d")
     generate_receipt(order)
     return send_file('static/receipts/subscriptions.csv',
-                     mimetype='text/csv',
-                     attachment_filename='subscriptions'+today+'.csv',
-                     as_attachment=True)
+        mimetype='text/csv',
+        attachment_filename='subscriptions'+today+'.csv',
+        as_attachment=True)
