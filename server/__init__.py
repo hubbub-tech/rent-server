@@ -4,9 +4,10 @@ from flask_cors import CORS
 
 from .tools.settings.config import Config
 
-def create_app(config_object=Config()):
+def create_app():
+    config_object = Config()
     app = Flask(__name__)
-    CORS(app, origins=["http://localhost:3000"])
+    CORS(app, origins=[config_object.CORS_ALLOW_ORIGIN])
 
     app.config.from_object(config_object)
 
