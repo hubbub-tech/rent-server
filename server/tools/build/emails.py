@@ -168,7 +168,7 @@ def get_new_listing_email(item):
     lister = Users.get(item.lister_id)
     frame_data = {}
     frame_data["preview"] = f"This is to confirm that your item was listed on {date.today().strftime('%B %-d, %Y')} - "
-    frame_data["user"] = user.name
+    frame_data["user"] = lister.name
     frame_data["introduction"] = f"""
         Thank you for listing with Hubbub. Your item, the {item.name}, has been published to
         Hubbub. The rental is available starting {item.calendar.date_started.strftime('%B %-d, %Y')}
