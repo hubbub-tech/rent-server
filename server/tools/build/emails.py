@@ -86,10 +86,10 @@ def get_renter_receipt_email(transactions):
         You can go to your account page to see a record of your upcoming and
         current rentals. Hubbub will handle all payments and delivery logistics
         between users and charge in-person at drop-off via Venmo at @{renter.payment},
-        cash, or card. Finally, if you have completed the Drop-off Logistics Form,
-        you should have received another email titled, "[Hubbub] Drop-off Logistics".
+        cash, or card. Finally, if you have completed the Dropoff Form,
+        you should have received another email titled, "[Hubbub] Scheduling your Dropoff".
         If you haven't completed it, please do so ASAP
-        (<a href="https://www.hubbub.shop/checkout/logistics">here</a>)!
+        (<a href="https://hubbub-shop.herokuapp.com/accounts/u/orders">here</a>)!
         If you have any questions, please contact us at hubbubcu@gmail.com. Thanks!
         """
     email_data = {}
@@ -185,6 +185,57 @@ def get_new_listing_email(item):
     email_data["to"] = (lister.email, "hubbubcu@gmail.com")
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "LIST-CONFIRMATION"
+    return email_data
+
+def get_extension_email(order, ext_reservation):
+    item = Items.get(order.item_id)
+    user = Users.get(order.renter_id)
+    frame_data = {}
+    frame_data["preview"] = f"This is to confirm that your rental has been extended - "
+    frame_data["user"] = user.name
+    frame_data["introduction"] = f"""
+        This email is to confirm that your rental on {item.name}, has been extended.
+        This rental will now end on {ext_reservation.date_ended.strftime('%B %-d, %Y')}.
+        """
+    frame_data["content"] = f"""
+        <p>
+            Extension Cost: {ext_reservation.print_charge()}. Extension Deposit:
+            {ext_reservation.print_deposit()}. Extension tax: {ext_reservation.print_tax()}.
+        </p>
+        """
+    frame_data["conclusion"] = """
+        If you had any previous plans for pickup, they have been cancelled. You can
+        schedule a new end of rental pickup (<a href="https://hubbub-shop.herokuapp.com/accounts/u/orders">here</a>)!
+        If you have any questions, please contact us at hubbubcu@gmail.com.
+        """
+    email_data = {}
+    email_data["subject"] = f"[Hubbub] Your Rental on {item.name} has been Extended!"
+    email_data["to"] = (user.email, "hubbubcu@gmail.com")
+    email_data["body"] = email_builder(frame_data)
+    email_data["error"] = "EXTENSION-CONFIRMATION"
+    return email_data
+
+def get_early_return_email(order, early_reservation):
+    item = Items.get(order.item_id)
+    user = Users.get(order.renter_id)
+    frame_data = {}
+    frame_data["preview"] = f"This is to confirm that your early return request has been received - "
+    frame_data["user"] = user.name
+    frame_data["introduction"] = f"""
+        This email is to confirm that your request for an early return on {item.name}, has been received.
+        This rental will now end on {early_reservation.date_ended.strftime('%B %-d, %Y')}.
+        """
+    frame_data["content"] = ""
+    frame_data["conclusion"] = """
+        You can schedule a new end of rental pickup
+        (<a href="https://hubbub-shop.herokuapp.com/accounts/u/orders">here</a>)!
+        If you have any questions, please contact us at hubbubcu@gmail.com.
+        """
+    email_data = {}
+    email_data["subject"] = f"[Hubbub] Your Early Return Request on {item.name}"
+    email_data["to"] = (user.email, "hubbubcu@gmail.com")
+    email_data["body"] = email_builder(frame_data)
+    email_data["error"] = "EARLY-CONFIRMATION"
     return email_data
 
 #EMAIL HELPERS---------------------------------------
