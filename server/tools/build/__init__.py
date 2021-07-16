@@ -9,6 +9,7 @@ from .forms import validate_login, validate_registration
 from .emails import get_renter_receipt_email, get_lister_receipt_email
 from .emails import get_extension_email, get_early_return_email
 from .emails import get_dropoff_email, get_pickup_email
+from .emails import get_cancellation_email
 from .emails import get_new_listing_email
 from .emails import get_welcome_email
 

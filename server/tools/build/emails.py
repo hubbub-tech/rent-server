@@ -238,6 +238,27 @@ def get_early_return_email(order, early_reservation):
     email_data["error"] = "EARLY-CONFIRMATION"
     return email_data
 
+def get_cancellation_email(order):
+    item = Items.get(order.item_id)
+    user = Users.get(order.renter_id)
+    frame_data = {}
+    frame_data["preview"] = f"This is to confirm that your order for {item.name} has been cancelled - "
+    frame_data["user"] = user.name
+    frame_data["introduction"] = f"""
+        This email is to confirm that your request to cancel your recent rental of {item.name}, has been received.
+        This rental is now cancelled and you don't need to do anything else.
+        """
+    frame_data["content"] = ""
+    frame_data["conclusion"] = """
+        If you have any questions, please contact us at hubbubcu@gmail.com.
+        """
+    email_data = {}
+    email_data["subject"] = f"[Hubbub] Your Order Cancellation on {item.name}"
+    email_data["to"] = (user.email, "hubbubcu@gmail.com")
+    email_data["body"] = email_builder(frame_data)
+    email_data["error"] = "CANCEL-CONFIRMATION"
+    return email_data
+
 #EMAIL HELPERS---------------------------------------
 
 def email_builder(frame_data):

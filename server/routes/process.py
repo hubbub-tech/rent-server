@@ -11,8 +11,8 @@ from server.tools.settings import lock_checkout, check_if_routed, exp_decay
 from server.tools.settings import login_required, AWS
 
 from server.tools.build import create_order, create_logistics, create_reservation, create_extension
+from server.tools.build import get_extension_email, get_early_return_email, get_cancellation_email
 from server.tools.build import get_renter_receipt_email, get_lister_receipt_email
-from server.tools.build import get_extension_email, get_early_return_email
 from server.tools.build import get_dropoff_email, get_pickup_email
 from server.tools.build import send_async_email, set_async_timeout
 
@@ -372,9 +372,14 @@ def cancel_order():
                     "renter_id": reservation_to_delete.renter_id,
                     "item_id": reservation_to_delete.item_id
                 }
+                #Need to generate email before deletion
+                email_data = get_cancellation_email(order)
+
                 Reservations.delete(res_keys)
                 flashes.append("Your order was successfully cancelled. Hopefully we'll see you again!")
                 code = 201
+
+                send_async_email.apply_async(kwargs=email_data)
             else:
                 flashes.append("We could not cancel your order, as it has been/is being delivered. Consider an early return instead.")
         else:

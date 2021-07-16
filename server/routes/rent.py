@@ -235,7 +235,8 @@ def checkout():
     items = [] #for json
     is_ready = user.cart.size() > 0
     ready_to_order_items = user.cart.get_reserved_contents()
-    for item in user.cart.contents:
+    _cart_contents = user.cart.contents
+    for item in _cart_contents:
         if is_item_in_itemlist(item, ready_to_order_items):
             reservation, = Reservations.filter({
                 "renter_id": g.user_id,
