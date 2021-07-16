@@ -1,5 +1,7 @@
 import json
 import pytz
+import string
+import random
 import functools
 from datetime import datetime
 from flask import session, request, flash, g
@@ -21,10 +23,7 @@ def login_required(view):
             return {"flashes": flashes}, 405
         id = data["userId"]
         token = data["auth"]
-        print("id", id)
-        print("token", token)
         is_authenticated = verify_auth_token(token, id)
-        print("is_authenticated", is_authenticated)
         if not is_authenticated:
             flashes.append('Login first to join the fun!')
             return {"flashes": flashes}, 405
@@ -50,11 +49,15 @@ def login_user(user):
         }
 
 def create_auth_token(user):
-    hashed_token = generate_password_hash(str(user.id))
+    letters = string.ascii_letters
+    new_session = ''.join(random.choice(letters) for i in range(10))
+    user.session = new_session
+    hashed_token = generate_password_hash(new_session)
     return hashed_token
 
 def verify_auth_token(hashed_token, user_id):
-    is_valid = check_password_hash(hashed_token, user_id)
+    user = Users.get(user_id)
+    is_valid = check_password_hash(hashed_token, user.session)
     return is_valid
 
 def search_items(search_key):
