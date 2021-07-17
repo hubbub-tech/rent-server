@@ -6,7 +6,7 @@ from flask import Blueprint, flash, g, redirect, request, session
 from blubber_orm import Users, Orders, Reservations
 from blubber_orm import Items, Tags, Details, Calendars
 
-from server.tools.settings import create_rental_token
+from server.tools.settings import create_rental_token, json_sort
 from server.tools.settings import login_required, search_items, AWS
 from server.tools.build import create_reservation, validate_rental_bounds
 from server.tools import blubber_instances_to_dict, json_date_to_python_date, is_item_in_itemlist
@@ -22,6 +22,7 @@ def inventory(search):
     else:
         listings = Items.filter({"is_available": True})
     listings_to_dict = []
+    featured_to_dict = []
     for item in listings:
         lister = Users.get(item.lister_id)
         tags = Tags.by_item(item)
@@ -33,7 +34,12 @@ def inventory(search):
         item_to_dict["lister"] = lister.to_dict()
         item_to_dict["lister"]["name"] = lister.name
         item_to_dict["tags"] = [tag.name for tag in tags]
-        listings_to_dict.append(item_to_dict)
+        if item.is_featured:
+            featured_to_dict.append(item_to_dict)
+        else:
+            listings_to_dict.append(item_to_dict)
+    json_sort(listings_to_dict, "next_available_start")
+    listings_to_dict = featured_to_dict + listings_to_dict
     return {
         "items": listings_to_dict,
         "photo_url": photo_url
@@ -231,6 +237,7 @@ def remove_from_cart(item_id, start, end):
 @login_required
 def checkout():
     photo_url = AWS.get_url("items")
+    print(g.user_id)
     user = Users.get(g.user_id)
     items = [] #for json
     is_ready = user.cart.size() > 0

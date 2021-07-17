@@ -104,3 +104,22 @@ def generate_proposed_period(item, input_message):
         Items.set(item.id, {"is_available": False})
         status_message = "Sorry, the item is no longer available."
     return status_message, waitlist_message
+
+def append_sort(arr, element, key):
+    """element should be type dictionary containing the passed key"""
+    if len(arr) == 0:
+        arr.append(element)
+    else:
+        i = 0
+        while i < len(arr):
+            if arr[i][key] >= element[key]:
+                arr.insert(i, element)
+                break
+            elif i == len(arr) - 1:
+                arr.append(element)
+                break
+            i += 1
+
+def json_sort(arr, key, reverse=False):
+    """Takes an array of dictionaries with the same structure and sorts"""
+    arr.sort(key = lambda element: element[key], reverse=reverse)

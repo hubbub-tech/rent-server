@@ -8,7 +8,7 @@ from blubber_orm import Items, Tags
 from server.tools.settings import get_orders_for_dropoff, get_orders_for_pickup
 from server.tools.settings import get_delivery_schedule, process_early_return
 from server.tools.settings import lock_checkout, check_if_routed, exp_decay
-from server.tools.settings import login_required, AWS
+from server.tools.settings import login_required, AWS, json_sort
 
 from server.tools.build import create_order, create_logistics, create_reservation, create_extension
 from server.tools.build import get_extension_email, get_early_return_email, get_cancellation_email
@@ -94,6 +94,7 @@ def order_history():
             order_to_dict["item"] = item_to_dict
 
             orders.append(order_to_dict)
+    json_sort(orders, "date_placed", reverse=True)
     return {
         "photo_url": photo_url,
         "orders": orders
