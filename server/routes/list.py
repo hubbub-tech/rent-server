@@ -58,7 +58,7 @@ def list_submit():
                     "state": data["state"],
                     "zip": data["zip"]
                 },
-                "tags": ['all'],
+                "tags": ['all'] + data['tags'].split(","),
                 "is_listed_from_user_address": strtobool(data["isDefaultAddress"])
             }
             image = request.files["image"]

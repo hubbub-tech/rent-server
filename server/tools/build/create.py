@@ -44,6 +44,8 @@ def create_item(insert_data):
 
     for tag_name in insert_data["tags"]:
         tag = Tags.get(tag_name)
+        if tag is None:
+            tag = Tags.insert({"tag_name": tag_name})
         new_item.add_tag(tag)
     return new_item
 

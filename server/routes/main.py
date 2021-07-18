@@ -2,7 +2,7 @@ import time
 import json
 from datetime import datetime, date
 from werkzeug.security import generate_password_hash
-from flask import Blueprint, redirect, session, g, request, url_for, send_from_directory
+from flask import Blueprint, redirect, session, g, request, url_for, send_from_directory, current_app
 
 from blubber_orm import Users, Profiles, Orders, Addresses
 from blubber_orm import Items, Details, Testimonials, Issues
