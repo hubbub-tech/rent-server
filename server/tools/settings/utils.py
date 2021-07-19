@@ -89,7 +89,7 @@ def search_items(search_key):
 
 def generate_proposed_period(item, input_message):
     status_message = None
-    waitlist_message = "You can also join the waitlist for this item <a href='https://docs.google.com/forms/d/e/1FAIpQLSflErYv4mNyPlAlPmSEO_q1xmOIYOMmafoI1-te_fx44VvKhw/viewform' target='_blank' class='alert-link'>here</a> and we will get back to you ASAP!"
+    waitlist_message = "You can also join the waitlist for this item in the form at the bottom of the page, and we will get back to you ASAP!"
 
     proposed_start, proposed_end = item.calendar.next_availability()
     proposed_start_str = proposed_start.strftime("%B %-d, %Y")
