@@ -237,7 +237,6 @@ def remove_from_cart(item_id, start, end):
 @login_required
 def checkout():
     photo_url = AWS.get_url("items")
-    print(g.user_id)
     user = Users.get(g.user_id)
     items = [] #for json
     is_ready = user.cart.size() > 0
