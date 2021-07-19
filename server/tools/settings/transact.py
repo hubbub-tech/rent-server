@@ -116,7 +116,7 @@ def get_orders_for_dropoff(renter_id):
     return group_orders
 
 def get_orders_for_pickup(renter_id):
-    orders = Orders.filter({"is_dropoff_sched": True, "is_pickup_sched": True, "renter_id": renter_id})
+    orders = Orders.filter({"is_dropoff_sched": True, "is_pickup_sched": False, "renter_id": renter_id})
     if orders:
         group_orders = {}
         group_by_date = []

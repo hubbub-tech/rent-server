@@ -27,21 +27,23 @@ def generate_receipt(order, filename):
 
     if order.is_dropoff_scheduled:
         dropoff = Dropoffs.by_order(order)
-        dropoff_text = f"""
-            \n
-            * Dropoff date: {dropoff.dropoff_date.strftime('%Y-%m-%d')}\n
-            * Dropoff address: {dropoff.logistics.address.display()}\n
-            """
+        if dropoff:
+            dropoff_text = f"""
+                \n
+                * Dropoff date: {dropoff.dropoff_date.strftime('%Y-%m-%d')}\n
+                * Dropoff address: {dropoff.logistics.address.display()}\n
+                """
     else:
         dropoff_text = "* Dropoff has not been scheduled.\n"
 
     if order.is_pickup_scheduled:
         pickup = Pickups.by_order(order)
-        pickup_text = f"""
-            \n
-            * Pickup date: {pickup.pickup_date.strftime('%Y-%m-%d')}\n
-            * Pickup address: {pickup.logistics.address.display()}\n
-            """
+        if pickup:
+            pickup_text = f"""
+                \n
+                * Pickup date: {pickup.pickup_date.strftime('%Y-%m-%d')}\n
+                * Pickup address: {pickup.logistics.address.display()}\n
+                """
     else:
         pickup_text = "* Pickup has not been scheduled.\n"
 
