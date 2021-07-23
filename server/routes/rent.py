@@ -124,13 +124,12 @@ def validate(item_id):
 @bp.post("/add/i/id=<int:item_id>")
 @login_required
 def add_to_cart(item_id):
-    user = Users.get(g.user_id)
     item = Items.get(item_id)
     data = request.json
     if data.get("startDate") and data.get("endDate"):
         date_started = json_date_to_python_date(data["startDate"])
         date_ended = json_date_to_python_date(data["endDate"])
-        if user.cart.contains(item):
+        if g.user.cart.contains(item):
             message = "The item is already in your cart."
         else:
             reservation_keys = {
@@ -140,15 +139,14 @@ def add_to_cart(item_id):
                 "date_ended": date_ended
             }
             reservation = Reservations.get(reservation_keys) #NOTE: assumes res exists
-            user.cart.add(reservation)
+            g.user.cart.add(reservation)
             message = "The item has been added to your cart!"
     else:
-        if user.cart.contains(item):
+        if g.user.cart.contains(item):
             message = "The item is already in your cart."
         else:
-            user.cart.add_without_reservation(item)
+            g.user.cart.add_without_reservation(item)
             message = "The item has been added to your cart!"
-    session["cart_size"] = user.cart.size()
     return {"flashes": [message]}, 201
 
 #TODO: in the new version of the backend, user must propose new dates to reset
@@ -160,7 +158,6 @@ def update(item_id):
     errors = []
     code = 406
     reservation = None
-    user = Users.get(g.user_id)
     data = request.json
     if data:
         if data.get("startDate") and data.get("endDate"):
@@ -173,9 +170,9 @@ def update(item_id):
             })
             if _reservation:
                 old_reservation, = _reservation
-                user.cart.remove(old_reservation)
+                g.user.cart.remove(old_reservation)
             else:
-                user.cart.remove_without_reservation(item)
+                g.user.cart.remove_without_reservation(item)
 
             new_date_started = json_date_to_python_date(data["startDate"])
             new_date_ended = json_date_to_python_date(data["endDate"])
@@ -193,16 +190,16 @@ def update(item_id):
                 }
                 reservation, action, waitlist_ad = create_reservation(rental_data)
                 if reservation:
-                    user.cart.add(reservation)
+                    g.user.cart.add(reservation)
                     reservation = reservation.to_dict()
                     action = "Your reservation has been updated successfully!"
                     code = 201
                 else:
-                    user.cart.add_without_reservation(item)
+                    g.user.cart.add_without_reservation(item)
                     flashes.append(waitlist_ad)
                 flashes.append(action)
             else:
-                user.cart.add_without_reservation(item)
+                g.user.cart.add_without_reservation(item)
                 flashes.append(form_check["message"])
         else:
             flashes.append("There was an error getting the dates you set, make sure they're in 'MM/DD/YYYY'.")
@@ -215,7 +212,6 @@ def update(item_id):
 @login_required
 def remove_from_cart(item_id, start, end):
     format = "%Y-%m-%d" # this format when taking dates thru url
-    user = Users.get(g.user_id)
     item = Items.get(item_id)
     flashes = []
     if start and end:
@@ -226,10 +222,10 @@ def remove_from_cart(item_id, start, end):
             "date_ended": datetime.strptime(end, format).date(),
         }
         reservation = Reservations.get(reservation_keys)
-        user.cart.remove(reservation)
+        g.user.cart.remove(reservation)
     elif start is None and end is None:
-        user.cart.remove_without_reservation(item)
-    session["cart_size"] = user.cart.size()
+        g.user.cart.remove_without_reservation(item)
+    session["cart_size"] = g.user.cart.size()
     flashes.append(f"The {item.name} has been removed from your cart.")
     return {"flashes": flashes}, 201
 
@@ -237,11 +233,10 @@ def remove_from_cart(item_id, start, end):
 @login_required
 def checkout():
     photo_url = AWS.get_url("items")
-    user = Users.get(g.user_id)
     items = [] #for json
-    is_ready = user.cart.size() > 0
-    ready_to_order_items = user.cart.get_reserved_contents()
-    _cart_contents = user.cart.contents
+    is_ready = g.user.cart.size() > 0
+    ready_to_order_items = g.user.cart.get_reserved_contents()
+    _cart_contents = g.user.cart.contents
     for item in _cart_contents:
         if is_item_in_itemlist(item, ready_to_order_items):
             reservation, = Reservations.filter({
@@ -251,12 +246,12 @@ def checkout():
             })
             #FUNC: has someone ordered the item since you've added it to cart?
             if item.calendar.scheduler(reservation) == False:
-                user.cart.remove(reservation)
-                user.cart.add_without_reservation(item)
+                g.user.cart.remove(reservation)
+                g.user.cart.add_without_reservation(item)
             elif not reservation.is_calendared:
                 if item.calendar.scheduler(reservation) is None:
                     Items.set(item.id, {"is_available": False})
-                    user.cart.remove(reservation)
+                    g.user.cart.remove(reservation)
                 elif item.calendar.scheduler(reservation):
                     item_to_dict = item.to_dict()
                     item_to_dict["reservation"] = reservation.to_dict()
@@ -273,7 +268,7 @@ def checkout():
     return {
         "is_ready": is_ready,
         "photo_url": photo_url,
-        "user": user.to_dict(),
-        "cart": user.cart.to_dict(),
+        "user": g.user.to_dict(),
+        "cart": g.user.cart.to_dict(),
         "items": items
     }

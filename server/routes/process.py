@@ -24,14 +24,13 @@ bp = Blueprint('process', __name__)
 @login_required
 def checkout_submit():
     flashes = []
-    user = Users.get(g.user_id)
-    cart_response = lock_checkout(user)
+    cart_response = lock_checkout(g.user)
     if cart_response["is_valid"]:
         timeout_clock = datetime.now(tz=pytz.UTC) + timedelta(minutes=30)
-        set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": user.id})
+        set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": g.user_id})
 
         transactions = []
-        _cart_contents = user.cart.contents # need this because cart size changes
+        _cart_contents = g.user.cart.contents # need this because cart size changes
         for item in _cart_contents:
             _reservation = Reservations.filter({
                 "renter_id": g.user_id,
@@ -53,14 +52,14 @@ def checkout_submit():
             transaction = {
                 "item": item,
                 "order": order,
-                "renter": user,
+                "renter": g.user,
                 "reservation": reservation
             }
             #TODO: send email receipt to lister
             email_data = get_lister_receipt_email(transaction)
             send_async_email.apply_async(kwargs=email_data)
             transactions.append(transaction) # important for renters receipt
-            user.cart.remove(reservation)
+            g.user.cart.remove(reservation)
             item.unlock()
         #TODO: send email receipt to renter
         email_data = get_renter_receipt_email(transactions)
@@ -76,7 +75,6 @@ def checkout_submit():
 @login_required
 def order_history():
     photo_url = AWS.get_url("items")
-    user = Users.get(g.user_id)
     order_history = Orders.filter({"renter_id": g.user_id})
     orders = []
     if order_history:
@@ -105,7 +103,6 @@ def order_history():
 def manage_order(order_id):
     photo_url = AWS.get_url("items")
     flashes = []
-    user = Users.get(g.user_id)
     order = Orders.get(order_id)
     item = Items.get(order.item_id)
     is_extended = order.ext_date_end != order.res_date_end
@@ -133,7 +130,6 @@ def manage_order(order_id):
 @login_required
 def schedule_dropoffs(date_str):
     format = "%Y-%m-%d"
-    user = Users.get(g.user_id)
     res_date_start = datetime.strptime(date_str, format).date()
     orders = Orders.filter({
         "renter_id": g.user_id,
@@ -148,7 +144,7 @@ def schedule_dropoffs(date_str):
         order_to_dict["reservation"] = order.reservation.to_dict()
         orders_to_dropoff.append(order_to_dict)
     return {
-        "address": user.address.to_dict(),
+        "address": g.user.address.to_dict(),
         "orders_to_dropoff": orders_to_dropoff
     }
 
@@ -156,7 +152,6 @@ def schedule_dropoffs(date_str):
 @login_required
 def schedule_dropoffs_submit():
     format = "%Y-%m-%d"
-    user = Users.get(g.user_id)
     flashes = []
     data = request.json
     if data:
@@ -204,7 +199,6 @@ def schedule_dropoffs_submit():
 @login_required
 def schedule_pickups(date_str):
     format = "%Y-%m-%d"
-    user = Users.get(g.user_id)
     res_date_end = datetime.strptime(date_str, format).date()
     orders = Orders.filter({"renter_id": g.user_id, "is_pickup_sched": False})
     orders_to_pickup = []
@@ -216,7 +210,7 @@ def schedule_pickups(date_str):
             order_to_dict["reservation"] = order.reservation.to_dict()
             orders_to_pickup.append(order_to_dict)
     return {
-        "address": user.address.to_dict(),
+        "address": g.user.address.to_dict(),
         "orders_to_pickup": orders_to_pickup
     }
 
@@ -224,7 +218,6 @@ def schedule_pickups(date_str):
 @login_required
 def schedule_pickups_submit():
     format = "%Y-%m-%d"
-    user = Users.get(g.user_id)
     flashes = []
     data = request.json
     if data:
@@ -249,7 +242,6 @@ def schedule_pickups_submit():
                 "zip": data["address"]["zip_code"]
             }
         }
-        print(type(data["timesChecked"]))
         orders = [Orders.get(order["id"]) for order in data["orders"]]
         pickup_date = datetime.strptime(data["pickupDate"], format).date()
         if date.today() < pickup_date:
@@ -274,7 +266,6 @@ def schedule_pickups_submit():
 def early_return_submit():
     code = 406
     flashes = []
-    user = Users.get(g.user_id)
     data = request.json
     if data:
         order_id = data["orderId"]
@@ -313,13 +304,12 @@ def early_return_submit():
 def extend_submit():
     code = 406
     flashes = []
-    user = Users.get(g.user_id)
     data = request.json
     if data:
         item_id = data["itemId"]
         item = Items.get(item_id)
         if item.is_locked == False:
-            item.lock(user)
+            item.lock(g.user)
             order_id = data["orderId"]
             order = Orders.get(order_id)
             ext_date_end = json_date_to_python_date(data["extendDate"])
@@ -359,7 +349,6 @@ def extend_submit():
 def cancel_order():
     code = 406
     flashes = []
-    user = Users.get(g.user_id)
     data = request.json
     if data:
         order_id = data["orderId"]

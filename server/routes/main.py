@@ -64,11 +64,9 @@ def account(id):
 @login_required
 def edit_account():
     photo_url = AWS.get_url("users")
-    user = Users.get(g.user_id)
-
-    user_to_dict = user.to_dict()
-    user_to_dict["address"] = user.address.to_dict()
-    user_to_dict["profile"] = user.profile.to_dict()
+    user_to_dict = g.user.to_dict()
+    user_to_dict["address"] = g.user.address.to_dict()
+    user_to_dict["profile"] = g.user.profile.to_dict()
     return {
         "user": user_to_dict,
         "photo_url": photo_url
@@ -79,11 +77,10 @@ def edit_account():
 @login_required
 def edit_account_submit():
     flashes = []
-    user = Users.get(g.user_id)
     data = request.form
     if data:
         form_data = {
-            "self": user,
+            "self": g.user,
             "payment": data["payment"],
             "email": data["email"],
             "phone": data["phone"],
@@ -102,7 +99,7 @@ def edit_account_submit():
             image = request.files.get("image")
             if image:
                 image_data = {
-                    "self": user,
+                    "self": g.user,
                     "image" : image,
                     "directory" : "users",
                     "bucket" : AWS.S3_BUCKET
@@ -129,17 +126,16 @@ def edit_account_submit():
 def edit_password_submit():
     flashes = []
     errors = []
-    user = Users.get(g.user_id)
     data = request.json
     if data:
         form_data = {
-            "self" : user,
+            "self" : g.user,
             "current_password" : data["password"]["old"],
             "new_password" : data["password"]["new"]
         }
         form_check = validate_edit_password(form_data)
         if form_check["is_valid"]:
-            user.password = generate_password_hash(form_data["new_password"])
+            g.user.password = generate_password_hash(form_data["new_password"])
             flashes.append(form_check["message"])
             return {"flashes": flashes}, 201
         else:
@@ -178,13 +174,6 @@ def edit_address_submit():
         flashes.append("No data was sent! Try again.")
     return {"flashes": flashes}, 201
 
-#remove user profile picture
-@bp.post("/accounts/u/remove-picture")
-@login_required
-def remove_pic():
-    Profiles.set(g.user.id, {"has_pic": False})
-    return redirect(f"/accounts/u/id={g.user.id}")
-
 #users hide items
 @bp.post("/accounts/i/hide/id=<int:item_id>")
 @login_required
@@ -192,7 +181,6 @@ def hide_item(item_id):
     code = 406
     flashes = []
     item = Items.get(item_id)
-    user = Users.get(g.user_id)
     if item.lister_id == g.user_id:
         data = request.json
         if data:
@@ -276,9 +264,8 @@ def feedback_submit():
 @bp.post('/accounts/o/receipt/id=<int:order_id>/<path:filename>')
 @login_required
 def download_receipt(order_id, filename):
-    user = Users.get(g.user_id)
     order = Orders.get(order_id)
-    if user.id == order.renter_id:
+    if g.user_id == order.renter_id:
         generate_receipt(order, filename)
         return send_from_directory('temp', filename, as_attachment=True)
     return 406

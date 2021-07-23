@@ -25,10 +25,13 @@ def login_required(view):
         token = data["auth"]
         is_authenticated = verify_auth_token(token, id)
         if not is_authenticated:
+            g.user_id = None
+            g.user = None
             flashes.append('Login first to join the fun!')
             return {"flashes": flashes}, 405
         else:
             g.user_id = int(id)
+            g.user = Users.get(g.user_id)
             return view(**kwargs)
     return wrapped_view
 

@@ -14,8 +14,7 @@ bp = Blueprint('list', __name__)
 @bp.post('/list')
 @login_required
 def list():
-    user = Users.get(g.user_id)
-    return {"address": user.address.to_dict()}
+    return {"address": g.user.address.to_dict()}
 
 
 @bp.post('/list/submit')
