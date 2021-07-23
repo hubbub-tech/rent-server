@@ -8,8 +8,6 @@ from flask import session, request, flash, g
 from blubber_orm import Users, Items, Details, Tags
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from .transact import verify_rental_token
-
 # NOTE: ONLY COMPATIBLE WITH POST METHOD ROUTES****
 def login_required(view):
     @functools.wraps(view)
