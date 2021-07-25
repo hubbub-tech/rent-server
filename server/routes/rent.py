@@ -1,5 +1,5 @@
 import random
-
+from distutils.util import strtobool
 from datetime import datetime, date, timedelta
 from flask import Blueprint, flash, g, redirect, request, session
 
@@ -103,7 +103,8 @@ def validate(item_id):
                     "date_started": date_started,
                     "date_ended": date_ended
                 }
-                reservation, action, waitlist_ad = create_reservation(rental_data)
+                discount = data.get("isDiscounted", False)
+                reservation, action, waitlist_ad = create_reservation(rental_data, discount)
                 if reservation:
                     reservation = reservation.to_dict()
                     code = 201

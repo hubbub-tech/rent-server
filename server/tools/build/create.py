@@ -8,7 +8,7 @@ from blubber_orm import Logistics, Dropoffs, Pickups
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from server.tools.settings import exp_decay, generate_proposed_period
-from server.tools.settings import DEPOSIT, TAX
+from server.tools.settings import DEPOSIT, TAX, DISCOUNT
 #done
 def create_user(insert_data):
     user_address = Addresses.filter(insert_data["address"])
@@ -53,7 +53,7 @@ def create_review(review_data):
     new_review = Reviews.insert(review_data)
     return new_review
 
-def create_reservation(insert_data):
+def create_reservation(insert_data, discount=False):
     item = Items.get(insert_data["item_id"])
     _reservation = Reservations.filter(insert_data)
     if _reservation:
@@ -63,7 +63,9 @@ def create_reservation(insert_data):
         insert_data["charge"] = exp_decay(item.price, rental_duration)
         insert_data["deposit"] = insert_data["charge"] * DEPOSIT
         insert_data["tax"] = insert_data["charge"] * TAX
-
+        if discount:
+            insert_data["charge"] *= (1 - DISCOUNT)
+            insert_data["tax"] *= (1 - DISCOUNT)
         reservation = Reservations.insert(insert_data)
 
     #scheduler() checks if the res conflicts with other reservations
