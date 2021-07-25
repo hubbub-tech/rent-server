@@ -252,7 +252,7 @@ def feedback_submit():
         feedback = {
             "complaint": data["feedback"],
             "link": data["href"],
-            "user_id": None,
+            "user_id": data.get('userId')
         }
         issue = Issues.insert(feedback)
         flashes.append("We got your feedback! Thanks for your patience :)!")
