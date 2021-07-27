@@ -58,8 +58,9 @@ def create_auth_token(user):
 
 def verify_auth_token(hashed_token, user_id):
     user = Users.get(user_id)
-    is_valid = check_password_hash(hashed_token, user.session)
-    return is_valid
+    if user.session:
+        return check_password_hash(hashed_token, user.session)
+    return False
 
 def search_items(search_key):
     searchable = f"%{search_key}%"

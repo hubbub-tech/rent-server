@@ -259,6 +259,25 @@ def get_cancellation_email(order):
     email_data["error"] = "CANCEL-CONFIRMATION"
     return email_data
 
+def get_password_reset_email(user, link):
+    frame_data = {}
+    frame_data["preview"] = f"Someone requested a password recovery on {date.today().strftime('%B %-d, %Y')} - "
+    frame_data["user"] = user.name
+    frame_data["introduction"] = f"""
+        Recently, you placed a request to recover your password. If you requested
+        this, follow the link <a href="{link}">here</a> to recover your password.
+        """
+    frame_data["content"] = ""
+    frame_data["conclusion"] = """
+        If you did not request this service, please report to admins at hubbubcu@gmail.com. Thank you!
+        """
+    email_data = {}
+    email_data["subject"] = "[Hubbub] Recover Your Password"
+    email_data["to"] = (user.email, "hubbubcu@gmail.com")
+    email_data["body"] = email_builder(frame_data)
+    email_data["error"] = "PASS-RECOVERY"
+    return email_data
+
 #EMAIL HELPERS---------------------------------------
 
 def email_builder(frame_data):

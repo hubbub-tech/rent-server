@@ -4,9 +4,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from blubber_orm import Users
 
-from server.tools.settings import login_user, create_auth_token
+from server.tools.settings import login_user, create_auth_token, verify_auth_token, Config
+
+from server.tools.build import create_user
 from server.tools.build import validate_registration, validate_login
-from server.tools.build import create_user, get_welcome_email, send_async_email
+from server.tools.build import get_welcome_email, get_password_reset_email, send_async_email
 
 bp = Blueprint('auth', __name__)
 
@@ -106,3 +108,47 @@ def logout():
     return {"is_logged_in": False}
 
 #TODO: rebuild account recovery
+@bp.post('/password/recovery')
+def password_recovery():
+    flashes = []
+    data = request.json
+    if data:
+        _user = Users.filter({"email": data["email"]})
+        if _user:
+            user, = _user
+            if user.session is None:
+                token = create_auth_token(user)
+            else:
+                token = generate_password_hash(user.session)
+            reset_link = f"{Config.CORS_ALLOW_ORIGIN}/password/reset/token={token}"
+            email_data = get_password_reset_email(user, reset_link)
+            send_async_email.apply_async(kwargs=email_data)
+        flashes.append("If this email has an account, we have sent the recovery link there.")
+        return {"flashes": flashes}, 201
+    else:
+        flashes.append("Sorry, you didn't send anything in the form, try again.")
+        return {"flashes": flashes}, 406
+
+@bp.post('/password/reset/token=<token>')
+def password_reset(token):
+    flashes = []
+    data = request.json
+    if data:
+        _user = Users.filter({"email": data["email"]})
+        if _user:
+            user, = _user
+            is_authenticated = verify_auth_token(token, user.id)
+            if is_authenticated:
+                hashed_password = generate_password_hash(data["newPassword"])
+                Users.set(user.id, {"password": hashed_password})
+                flashes.append("You've successfully reset your password!")
+                return {"flashes": flashes}, 201
+            else:
+                flashes.append("Reset attempt failed. Try again.")
+                return {"flashes": flashes}, 406
+        else:
+            flashes.append("Reset attempt failed. Try again.")
+            return {"flashes": flashes}, 406
+    else:
+        flashes.append("Sorry, you didn't send anything in the form, try again.")
+        return {"flashes": flashes}, 406
