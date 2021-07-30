@@ -62,7 +62,7 @@ def create_auth_token(user):
     return hashed_token
 
 def verify_auth_token(hashed_token, user_id):
-    if user_id:
+    if user_id and hashed_token:
         user = Users.get(user_id)
         if user.session:
             return check_password_hash(hashed_token, user.session)
