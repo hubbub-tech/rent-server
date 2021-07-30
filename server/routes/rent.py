@@ -121,28 +121,31 @@ def validate(item_id):
 def add_to_cart(item_id):
     item = Items.get(item_id)
     data = request.json
-    if data.get("startDate") and data.get("endDate"):
-        date_started = json_date_to_python_date(data["startDate"])
-        date_ended = json_date_to_python_date(data["endDate"])
-        if g.user.cart.contains(item):
-            message = "The item is already in your cart."
+    if g.user.id != item.lister_id:
+        if data.get("startDate") and data.get("endDate"):
+            date_started = json_date_to_python_date(data["startDate"])
+            date_ended = json_date_to_python_date(data["endDate"])
+            if g.user.cart.contains(item):
+                message = "The item is already in your cart."
+            else:
+                reservation_keys = {
+                    "renter_id": g.user_id,
+                    "item_id": item_id,
+                    "date_started": date_started,
+                    "date_ended": date_ended
+                }
+                reservation = Reservations.get(reservation_keys) #NOTE: assumes res exists
+                g.user.cart.add(reservation)
+                message = "The item has been added to your cart!"
         else:
-            reservation_keys = {
-                "renter_id": g.user_id,
-                "item_id": item_id,
-                "date_started": date_started,
-                "date_ended": date_ended
-            }
-            reservation = Reservations.get(reservation_keys) #NOTE: assumes res exists
-            g.user.cart.add(reservation)
-            message = "The item has been added to your cart!"
+            if g.user.cart.contains(item):
+                message = "The item is already in your cart."
+            else:
+                g.user.cart.add_without_reservation(item)
+                message = "The item has been added to your cart!"
+        return {"flashes": [message]}, 200
     else:
-        if g.user.cart.contains(item):
-            message = "The item is already in your cart."
-        else:
-            g.user.cart.add_without_reservation(item)
-            message = "The item has been added to your cart!"
-    return {"flashes": [message]}, 200
+        return {"flashes": ["Sorry, you cannot rent an item from yourself."]}, 406
 
 #TODO: in the new version of the backend, user must propose new dates to reset
 #takes data from changed reservation by deleting the temporary res created previously
