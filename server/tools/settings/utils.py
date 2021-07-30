@@ -33,8 +33,6 @@ def login_required(view):
         else:
             data = {"flashes": ["Your login session has ended. Login again."]}
             response = make_response(data, 403)
-            response.delete_cookie(COOKIE_KEY_SESSION)
-            response.delete_cookie(COOKIE_KEY_USER)
             return response
     return wrapped_view
 
