@@ -29,7 +29,7 @@ def index():
     return {"testimonials": testimonials}
 
 #keep track of items being rented, items owned, item reviews and item edits
-@bp.get("/accounts/u/id=<int:id>")
+@bp.post("/accounts/u/id=<int:id>")
 @login_required
 def account(id):
     searched_user = Users.get(id)
@@ -61,7 +61,7 @@ def account(id):
     }
 
 #edit personal account
-@bp.get("/accounts/u/edit")
+@bp.post("/accounts/u/edit")
 @login_required
 def edit_account():
     photo_url = AWS.get_url("users")
@@ -187,7 +187,7 @@ def hide_item(item_id):
         flashes.append("You are not authorized to manage the visibility of this item.")
     return {"flashes": flashes}, code
 
-@bp.get("/accounts/i/edit/id=<int:item_id>")
+@bp.post("/accounts/i/edit/id=<int:item_id>")
 @login_required
 def edit_item(item_id):
     flashes = []
@@ -252,7 +252,7 @@ def feedback_submit():
         flashes.append("There was a problem receiving your feedback :(... Try again or email at hubbubcu@gmail.com.")
     return {"flashes": flashes}, 406
 
-@bp.get('/accounts/o/receipt/id=<int:order_id>/<path:filename>')
+@bp.post('/accounts/o/receipt/id=<int:order_id>/<path:filename>')
 @login_required
 def download_receipt(order_id, filename):
     order = Orders.get(order_id)

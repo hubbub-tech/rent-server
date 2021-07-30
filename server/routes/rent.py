@@ -225,7 +225,7 @@ def remove_from_cart(item_id):
     response = make_response(data, 200)
     return response
 
-@bp.get("/checkout")
+@bp.post("/checkout")
 @login_required
 def checkout():
     photo_url = AWS.get_url("items")
