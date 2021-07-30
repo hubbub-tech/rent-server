@@ -17,17 +17,19 @@ bp = Blueprint('main', __name__)
 @bp.get("/index")
 def index():
     _testimonials = Testimonials.get_all()
-    testimonials = blubber_instances_to_dict(_testimonials)
-    for testimonial in testimonials:
-        user = Users.get(testimonial["user_id"])
-        testimonial["user"] = user.to_dict()
-        testimonial["user"]["name"] = user.name
-        testimonial["user"]["city"] = user.address.city
-        testimonial["user"]["state"] = user.address.state
+    testimonials = []
+    for testimonial in _testimonials:
+        user = Users.get(testimonial.user_id)
+        testimonial_to_dict = testimonial.to_dict()
+        testimonial_to_dict["user"] = user.to_dict()
+        testimonial_to_dict["user"]["name"] = user.name
+        testimonial_to_dict["user"]["city"] = user.address.city
+        testimonial_to_dict["user"]["state"] = user.address.state
+        testimonials.append(testimonial_to_dict)
     return {"testimonials": testimonials}
 
 #keep track of items being rented, items owned, item reviews and item edits
-@bp.post("/accounts/u/id=<int:id>")
+@bp.get("/accounts/u/id=<int:id>")
 @login_required
 def account(id):
     searched_user = Users.get(id)
@@ -53,14 +55,13 @@ def account(id):
         user_to_dict = None
         listings = None
     return {
-        #is the current user the owner of the account?
         "photo_url": {"user": user_url, "item": item_url},
         "user": user_to_dict,
         "listings": listings
     }
 
 #edit personal account
-@bp.post("/accounts/u/edit")
+@bp.get("/accounts/u/edit")
 @login_required
 def edit_account():
     photo_url = AWS.get_url("users")
@@ -78,45 +79,42 @@ def edit_account():
 def edit_account_submit():
     flashes = []
     data = request.form
-    if data:
-        form_data = {
-            "self": g.user,
-            "payment": data["payment"],
-            "email": data["email"],
-            "phone": data["phone"],
-            "bio": data["bio"]
-        }
-        form_check = validate_edit_account(form_data)
-        if form_check["is_valid"]:
-            Users.set(g.user_id, {
-                "email": form_data["email"],
-                "payment": form_data["payment"]
-            })
-            Profiles.set(g.user_id, {
-                "bio": form_data["bio"],
-                "phone": form_data["phone"]
-            })
-            image = request.files.get("image")
-            if image:
-                image_data = {
-                    "self": g.user,
-                    "image" : image,
-                    "directory" : "users",
-                    "bucket" : AWS.S3_BUCKET
-                }
-                upload_response = upload_image(image_data)
-                if upload_response["is_valid"]:
-                    Profiles.set(g.user_id, {"has_pic": True})
-                    flashes.append(upload_response["message"])
-                else:
-                    flashes.append(upload_response["message"])
-                    return {"flashes": flashes}, 406
-            flashes.append("Successfully edited your account!")
-            return {"flashes": flashes}, 201
-        else:
-            flashes.append(form_check["message"])
+    form_data = {
+        "self": g.user,
+        "payment": data["payment"],
+        "email": data["email"],
+        "phone": data["phone"],
+        "bio": data["bio"]
+    }
+    form_check = validate_edit_account(form_data)
+    if form_check["is_valid"]:
+        Users.set(g.user_id, {
+            "email": form_data["email"],
+            "payment": form_data["payment"]
+        })
+        Profiles.set(g.user_id, {
+            "bio": form_data["bio"],
+            "phone": form_data["phone"]
+        })
+        image = request.files.get("image")
+        if image:
+            image_data = {
+                "self": g.user,
+                "image" : image,
+                "directory" : "users",
+                "bucket" : AWS.S3_BUCKET
+            }
+            upload_response = upload_image(image_data)
+            if upload_response["is_valid"]:
+                Profiles.set(g.user_id, {"has_pic": True})
+                flashes.append(upload_response["message"])
+            else:
+                flashes.append(upload_response["message"])
+                return {"flashes": flashes}, 406
+        flashes.append("Successfully edited your account!")
+        return {"flashes": flashes}, 200
     else:
-        flashes.append("No updates were submitted! Try again.")
+        flashes.append(form_check["message"])
     return {"flashes": flashes}, 406
 
 #edit personal password
@@ -137,7 +135,7 @@ def edit_password_submit():
         if form_check["is_valid"]:
             g.user.password = generate_password_hash(form_data["new_password"])
             flashes.append(form_check["message"])
-            return {"flashes": flashes}, 201
+            return {"flashes": flashes}, 200
         else:
             errors.append(form_check["message"])
             return {"errors": errors}, 406
@@ -150,29 +148,25 @@ def edit_password_submit():
 def edit_address_submit():
     flashes = []
     data = request.json
-    if data:
-        form_data = {
-            "num": data["address"]["num"],
-            "street": data["address"]["street"],
-            "apt": data["address"].get("apt", ""),
-            "zip": data["address"]["zip"],
-            "city": data["address"]["city"],
-            "state": data["address"]["state"]
-        }
-        new_address = Addresses.filter(form_data)
-        if not new_address:
-            new_address = Addresses.insert(form_data)
-        Users.set(g.user_id, {
-            "address_num": form_data["num"],
-            "address_street": form_data["street"],
-            "address_apt": form_data["apt"],
-            "address_zip": form_data["zip"]
-        })
-        flashes.append("You successfully changed your address!")
-        return {"flashes": flashes}, 201
-    else:
-        flashes.append("No data was sent! Try again.")
-    return {"flashes": flashes}, 201
+    form_data = {
+        "num": data["address"]["num"],
+        "street": data["address"]["street"],
+        "apt": data["address"].get("apt", ""),
+        "zip": data["address"]["zip"],
+        "city": data["address"]["city"],
+        "state": data["address"]["state"]
+    }
+    new_address = Addresses.filter(form_data)
+    if not new_address:
+        new_address = Addresses.insert(form_data)
+    Users.set(g.user_id, {
+        "address_num": form_data["num"],
+        "address_street": form_data["street"],
+        "address_apt": form_data["apt"],
+        "address_zip": form_data["zip"]
+    })
+    flashes.append("You successfully changed your address!")
+    return {"flashes": flashes}, 200
 
 #users hide items
 @bp.post("/accounts/i/hide/id=<int:item_id>")
@@ -183,20 +177,17 @@ def hide_item(item_id):
     item = Items.get(item_id)
     if item.lister_id == g.user_id:
         data = request.json
-        if data:
-            item.is_available = data["toggle"]
-            if item.is_available:
-                flashes.append("Item has been revealed. Others can now see it in inventory.")
-            else:
-                flashes.append("Item has been hidden. Come back when you are ready to reveal it.")
-            code = 201
+        item.is_available = data["toggle"]
+        if item.is_available:
+            flashes.append("Item has been revealed. Others can now see it in inventory.")
         else:
-            flashes.append("No data was sent! Try again.")
+            flashes.append("Item has been hidden. Come back when you are ready to reveal it.")
+        code = 200
     else:
         flashes.append("You are not authorized to manage the visibility of this item.")
     return {"flashes": flashes}, code
 
-@bp.post("/accounts/i/edit/id=<int:item_id>")
+@bp.get("/accounts/i/edit/id=<int:item_id>")
 @login_required
 def edit_item(item_id):
     flashes = []
@@ -205,7 +196,7 @@ def edit_item(item_id):
         item_to_dict = item.to_dict()
         item_to_dict["details"] = item.details.to_dict()
         item_to_dict["calendar"] = item.calendar.to_dict()
-        return { "item": item_to_dict }, 201
+        return { "item": item_to_dict }, 200
     else:
         flashes.append("You are not authorized to manage the visibility of this item.")
     return {"flashes": flashes}, 406
@@ -238,7 +229,7 @@ def edit_item_submit():
             upload_response = upload_image(image_data)
             flashes.append(upload_response["message"])
         flashes.append(f"Your {item.name} has been updated!")
-        code = 201
+        code = 200
     else:
         flashes.append("No changes were received! Try again.")
         code = 406
@@ -256,12 +247,12 @@ def feedback_submit():
         }
         issue = Issues.insert(feedback)
         flashes.append("We got your feedback! Thanks for your patience :)!")
-        return {"flashes": flashes}, 201
+        return {"flashes": flashes}, 200
     else:
         flashes.append("There was a problem receiving your feedback :(... Try again or email at hubbubcu@gmail.com.")
     return {"flashes": flashes}, 406
 
-@bp.post('/accounts/o/receipt/id=<int:order_id>/<path:filename>')
+@bp.get('/accounts/o/receipt/id=<int:order_id>/<path:filename>')
 @login_required
 def download_receipt(order_id, filename):
     order = Orders.get(order_id)

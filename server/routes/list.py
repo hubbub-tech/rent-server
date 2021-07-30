@@ -11,7 +11,7 @@ from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('list', __name__)
 
-@bp.post('/list')
+@bp.get('/list')
 @login_required
 def list():
     return {"address": g.user.address.to_dict()}
@@ -24,7 +24,7 @@ def list_submit():
     flashes = []
     data = request.form
     if data:
-        if data["startDate"] and data["endDate"]:
+        if data.get("startDate") and data.get("endDate"):
             new_date_started = json_date_to_python_date(data["startDate"])
             new_date_ended = json_date_to_python_date(data["endDate"])
             form_data = {
@@ -75,7 +75,7 @@ def list_submit():
                     email_data = get_new_listing_email(item)
                     send_async_email.apply_async(kwargs=email_data)
                     flashes.append(form_check["message"])
-                    return {"flashes": flashes}, 201
+                    return {"flashes": flashes}, 200
                 else:
                     flashes.append(upload_response["message"])
             else:

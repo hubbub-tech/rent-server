@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
-from flask import Blueprint, flash, redirect, get_flashed_messages, session, g, request
+from flask import Blueprint, g, request, make_response
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from blubber_orm import Users
-
-from server.tools.settings import login_user, create_auth_token, verify_auth_token, Config
+from server.tools.settings import login_user, COOKIE_KEY_USER, COOKIE_KEY_SESSION, COOKIE_KEY_CART
+from server.tools.settings import create_auth_token, verify_auth_token
+from server.tools.settings import Config
 
 from server.tools.build import create_user
 from server.tools.build import validate_registration, validate_login
@@ -27,24 +28,26 @@ def login():
             user, = Users.filter({"email": form_data["email"]})
             login_response = login_user(user)
             if login_response["is_valid"]:
-                auth = create_auth_token(user)
+                session = create_auth_token(user)
                 flashes.append(login_response["message"])
-                return {
-                    "errors": errors,
+                data = {
                     "flashes": flashes,
-                    "user_id": user.id,
-                    "cart_size": user.cart.size(),
-                    "auth": auth,
-                }, 201
+                    COOKIE_KEY_USER: user.id,
+                    COOKIE_KEY_CART: user.cart.size(),
+                    COOKIE_KEY_SESSION: session
+                }
+                response = make_response(data, 200)
+                return response
             else:
                 errors.append(login_response["message"])
-                flashes.append("Houston, we have a problem...")
         else:
             errors.append(form_check["message"])
-            flashes.append("Houston, we have a problem...")
+        flashes.append("Houston, we have a problem...")
     else:
         flashes.append("Nothing was entered! We need input to log you in.")
-    return {"errors": errors, "flashes": flashes}, 406 #NOTE: no data
+    data = {"errors": errors, "flashes": flashes}
+    response = make_response(data, 401)
+    return response
 
 @bp.post('/register')
 def register():
@@ -93,19 +96,17 @@ def register():
             email_data = get_welcome_email(new_user)
             send_async_email.apply_async(kwargs=email_data)
             flashes.append(form_check["message"])
-            return {"flashes": flashes}, 201
+            data = {"flashes": flashes}
+            response = make_response(data, 200)
+            return response
         else:
             errors.append(form_check["message"])
-            flashes.append("Uh oh...")
     else:
         errors.append("No information to create an account! Try again.")
-        flashes.append("Uh oh...")
-    return {"flashes": flashes, "errors": errors}, 406
-
-@bp.get("/logout")
-def logout():
-    session.clear()
-    return {"is_logged_in": False}
+    flashes.append("Uh oh...")
+    data = {"flashes": flashes, "errors": errors}
+    response = make_response(data, 406)
+    return response
 
 #TODO: rebuild account recovery
 @bp.post('/password/recovery')
@@ -124,10 +125,14 @@ def password_recovery():
             email_data = get_password_reset_email(user, reset_link)
             send_async_email.apply_async(kwargs=email_data)
         flashes.append("If this email has an account, we have sent the recovery link there.")
-        return {"flashes": flashes}, 201
+        data = {"flashes": flashes}
+        response = make_response(data, 200)
+        return response
     else:
         flashes.append("Sorry, you didn't send anything in the form, try again.")
-        return {"flashes": flashes}, 406
+        data = {"flashes": flashes}
+        response = make_response(data, 406)
+        return response
 
 @bp.post('/password/reset/token=<token>')
 def password_reset(token):
@@ -142,13 +147,15 @@ def password_reset(token):
                 hashed_password = generate_password_hash(data["newPassword"])
                 Users.set(user.id, {"password": hashed_password})
                 flashes.append("You've successfully reset your password!")
-                return {"flashes": flashes}, 201
+                data = {"flashes": flashes}
+                response = make_response(data, 200)
+                return response
             else:
                 flashes.append("Reset attempt failed. Try again.")
-                return {"flashes": flashes}, 406
         else:
             flashes.append("Reset attempt failed. Try again.")
-            return {"flashes": flashes}, 406
     else:
         flashes.append("Sorry, you didn't send anything in the form, try again.")
-        return {"flashes": flashes}, 406
+    data = {"flashes": flashes}
+    response = make_response(data, 200)
+    return response

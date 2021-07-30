@@ -80,6 +80,7 @@ class Config:
     TESTING = False
 
     #Celery
+    CORS_SUPPORTS_CREDENTIALS = True
     CORS_ALLOW_ORIGIN = os.environ['CORS_ALLOW_ORIGIN']
     CELERY_BROKER_URL = os.environ['CLOUDAMQP_URL']
     CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']

@@ -202,6 +202,9 @@ def get_extension_email(order, ext_reservation):
             Extension Cost: {ext_reservation.print_charge()}. Extension Deposit:
             {ext_reservation.print_deposit()}. Extension tax: {ext_reservation.print_tax()}.
         </p>
+        <p>
+            <bold>Total</bold>: {ext_reservation.print_total()}
+        </p>
         """
     frame_data["conclusion"] = """
         If you had any previous plans for pickup, they have been cancelled. You can

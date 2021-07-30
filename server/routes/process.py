@@ -20,7 +20,7 @@ from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('process', __name__)
 
-@bp.post("/checkout/submit")
+@bp.get("/checkout/submit")
 @login_required
 def checkout_submit():
     flashes = []
@@ -66,12 +66,12 @@ def checkout_submit():
         send_async_email.apply_async(kwargs=email_data)
         session["cart_size"] = 0
         flashes.append("Successfully rented all items! Now, just let us know when we can drop them off.")
-        return {"flashes": flashes}, 201
+        return {"flashes": flashes}, 200
     else:
         flashes.append(cart_response["message"])
         return {"flashes": flashes}, 406
 
-@bp.post("/accounts/u/orders")
+@bp.get("/accounts/u/orders")
 @login_required
 def order_history():
     photo_url = AWS.get_url("items")
@@ -98,7 +98,7 @@ def order_history():
         "orders": orders
     }
 
-@bp.post("/accounts/o/id=<int:order_id>")
+@bp.get("/accounts/o/id=<int:order_id>")
 @login_required
 def manage_order(order_id):
     photo_url = AWS.get_url("items")
@@ -126,7 +126,7 @@ def manage_order(order_id):
         flashes.append("You can only manage orders that you placed.")
         return {"flashes": flashes}, 406
 
-@bp.post("/schedule/dropoffs/<date_str>")
+@bp.get("/schedule/dropoffs/<date_str>")
 @login_required
 def schedule_dropoffs(date_str):
     format = "%Y-%m-%d"
@@ -187,7 +187,7 @@ def schedule_dropoffs_submit():
             #TODO: send return procedure email
 
             flashes.append("You have successfully scheduled your rental dropoffs!")
-            return {"flashes": flashes}, 201
+            return {"flashes": flashes}, 200
         else:
             flashes.append("You can't schedule a dropoff because the rental has already started. Email us at hubbubcu@gmail.com to manually schedule one.")
             return {"flashes": flashes}, 406
@@ -195,7 +195,7 @@ def schedule_dropoffs_submit():
         flashes.append("Please, provide availabilities for dropoff.")
         return {"flashes": flashes}, 406
 
-@bp.post("/schedule/pickups/<date_str>")
+@bp.get("/schedule/pickups/<date_str>")
 @login_required
 def schedule_pickups(date_str):
     format = "%Y-%m-%d"
@@ -253,7 +253,7 @@ def schedule_pickups_submit():
             #TODO: send return procedure email
 
             flashes.append("You have successfully scheduled your rental pickup!")
-            return {"flashes": flashes}, 201
+            return {"flashes": flashes}, 200
         else:
             flashes.append("You can't schedule a pickup because the rental has already ended. Email us at hubbubcu@gmail.com to manually schedule one.")
             return {"flashes": flashes}, 406
@@ -290,7 +290,7 @@ def early_return_submit():
         early_reservation = Reservations.get(early_reservation_keys)
         response = process_early_return(order, early_reservation)
         if response["is_success"]:
-            code = 201
+            code = 200
 
             email_data = get_early_return_email(order, early_reservation)
             send_async_email.apply_async(kwargs=email_data)
@@ -329,13 +329,13 @@ def extend_submit():
                     "item_id": order.item_id,
                     "order_id": order_id
                 }
-                code = 201
+                code = 200
                 extension = create_extension(ext_data)
                 flashes.append(f"Your {item.name} was successfully extended!")
             else:
                 flashes.append(f"Sorry, you cannot extend this rental. It seems someone just got to the {item.name} before you.")
             item.unlock()
-            if code == 201:
+            if code == 200:
                 email_data = get_extension_email(order, ext_reservation)
                 send_async_email.apply_async(kwargs=email_data)
         else:
@@ -367,7 +367,7 @@ def cancel_order():
 
                 Reservations.delete(res_keys)
                 flashes.append("Your order was successfully cancelled. Hopefully we'll see you again!")
-                code = 201
+                code = 200
 
                 send_async_email.apply_async(kwargs=email_data)
             else:

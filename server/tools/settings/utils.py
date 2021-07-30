@@ -4,33 +4,38 @@ import string
 import random
 import functools
 from datetime import datetime
-from flask import session, request, flash, g
+from flask import session, request, flash, g, make_response
 from blubber_orm import Users, Items, Details, Tags
 from werkzeug.security import check_password_hash, generate_password_hash
+
+from .const import COOKIE_KEY_SESSION, COOKIE_KEY_USER
 
 # NOTE: ONLY COMPATIBLE WITH POST METHOD ROUTES****
 def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        flashes = []
-        if request.json:
-            data = request.json
-        elif request.form:
-            data = request.form
+        if request.method == 'POST':
+            if request.json: data = request.json
+            elif request.form: data = request.form
+            else: return {"flashes": "No data was sent, try again."}, 403
+
+            session = data.get(COOKIE_KEY_SESSION)
+            user_id = data.get(COOKIE_KEY_USER)
         else:
-            return {"flashes": flashes}, 405
-        id = data["userId"]
-        token = data["auth"]
-        is_authenticated = verify_auth_token(token, id)
-        if not is_authenticated:
-            g.user_id = None
-            g.user = None
-            flashes.append('Login first to join the fun!')
-            return {"flashes": flashes}, 405
-        else:
-            g.user_id = int(id)
-            g.user = Users.get(g.user_id)
+            session = request.cookies.get(COOKIE_KEY_SESSION)
+            user_id = request.cookies.get(COOKIE_KEY_USER)
+
+        is_authenticated = verify_auth_token(session, user_id)
+        if is_authenticated:
+            g.user_id = int(user_id)
+            g.user = Users.get(user_id)
             return view(**kwargs)
+        else:
+            data = {"flashes": ["Your login session has ended. Login again."]}
+            response = make_response(data, 403)
+            response.delete_cookie(COOKIE_KEY_SESSION)
+            response.delete_cookie(COOKIE_KEY_USER)
+            return response
     return wrapped_view
 
 def login_user(user):
@@ -57,9 +62,10 @@ def create_auth_token(user):
     return hashed_token
 
 def verify_auth_token(hashed_token, user_id):
-    user = Users.get(user_id)
-    if user.session:
-        return check_password_hash(hashed_token, user.session)
+    if user_id:
+        user = Users.get(user_id)
+        if user.session:
+            return check_password_hash(hashed_token, user.session)
     return False
 
 def search_items(search_key):

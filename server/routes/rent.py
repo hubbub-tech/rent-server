@@ -1,7 +1,7 @@
 import random
 from distutils.util import strtobool
 from datetime import datetime, date, timedelta
-from flask import Blueprint, flash, g, redirect, request, session
+from flask import Blueprint, g, request, session, make_response
 
 from blubber_orm import Users, Orders, Reservations
 from blubber_orm import Items, Tags, Details, Calendars
@@ -85,42 +85,36 @@ def validate(item_id):
     code = 406
     reservation = None
     data = request.json
-    if data:
-        if data.get("startDate") and data.get("endDate"):
-            date_started = json_date_to_python_date(data["startDate"])
-            date_ended = json_date_to_python_date(data["endDate"])
+    if data.get("startDate") and data.get("endDate"):
+        date_started = json_date_to_python_date(data["startDate"])
+        date_ended = json_date_to_python_date(data["endDate"])
 
-            item = Items.get(item_id)
-            rental_range = {
+        item = Items.get(item_id)
+        rental_range = {
+            "date_started": date_started,
+            "date_ended": date_ended
+        }
+        form_check = validate_rental_bounds(item, rental_range)
+        if form_check["is_valid"]:
+            rental_data = {
+                "renter_id": g.user_id,
+                "item_id": item.id,
                 "date_started": date_started,
                 "date_ended": date_ended
             }
-            form_check = validate_rental_bounds(item, rental_range)
-            if form_check["is_valid"]:
-                rental_data = {
-                    "renter_id": g.user_id,
-                    "item_id": item.id,
-                    "date_started": date_started,
-                    "date_ended": date_ended
-                }
-                discount = data.get("isDiscounted", False)
-                reservation, action, waitlist_ad = create_reservation(rental_data, discount)
-                if reservation:
-                    reservation = reservation.to_dict()
-                    code = 201
-                else:
-                    flashes.append(waitlist_ad)
-                flashes.append(action)
+            discount = data.get("isDiscounted", False)
+            reservation, action, waitlist_ad = create_reservation(rental_data, discount)
+            if reservation:
+                reservation = reservation.to_dict()
+                code = 200
             else:
-                flashes.append(form_check["message"])
+                flashes.append(waitlist_ad)
+            flashes.append(action)
         else:
-            flashes.append("There was an error getting the dates you set, make sure they're in 'MM/DD/YYYY'.")
+            flashes.append(form_check["message"])
     else:
-        flashes.append("You didn't send any data! Please, try again.")
-    return {
-        "reservation": reservation,
-        "flashes": flashes
-    }, code
+        flashes.append("There was an error getting the dates you set, make sure they're in 'MM/DD/YYYY'.")
+    return { "reservation": reservation, "flashes": flashes }, code
 
 @bp.post("/add/i/id=<int:item_id>")
 @login_required
@@ -148,7 +142,7 @@ def add_to_cart(item_id):
         else:
             g.user.cart.add_without_reservation(item)
             message = "The item has been added to your cart!"
-    return {"flashes": [message]}, 201
+    return {"flashes": [message]}, 200
 
 #TODO: in the new version of the backend, user must propose new dates to reset
 #takes data from changed reservation by deleting the temporary res created previously
@@ -160,77 +154,75 @@ def update(item_id):
     code = 406
     reservation = None
     data = request.json
-    if data:
-        if data.get("startDate") and data.get("endDate"):
-            item = Items.get(item_id)
-            #NOTE: filter always returns a list but should only have 1 item this time
-            _reservation = Reservations.filter({
-                "item_id": item_id,
-                "renter_id": g.user_id,
-                "is_in_cart": True
-            })
-            if _reservation:
-                old_reservation, = _reservation
-                g.user.cart.remove(old_reservation)
-            else:
-                g.user.cart.remove_without_reservation(item)
+    if data.get("startDate") and data.get("endDate"):
+        item = Items.get(item_id)
+        #NOTE: filter always returns a list but should only have 1 item this time
+        _reservation = Reservations.filter({
+            "item_id": item_id,
+            "renter_id": g.user_id,
+            "is_in_cart": True
+        })
+        if _reservation:
+            old_reservation, = _reservation
+            g.user.cart.remove(old_reservation)
+        else:
+            g.user.cart.remove_without_reservation(item)
 
-            new_date_started = json_date_to_python_date(data["startDate"])
-            new_date_ended = json_date_to_python_date(data["endDate"])
-            rental_range = {
+        new_date_started = json_date_to_python_date(data["startDate"])
+        new_date_ended = json_date_to_python_date(data["endDate"])
+        rental_range = {
+            "date_started": new_date_started,
+            "date_ended": new_date_ended
+        }
+        form_check = validate_rental_bounds(item, rental_range)
+        if form_check["is_valid"]:
+            rental_data = {
+                "renter_id": g.user_id,
+                "item_id": item.id,
                 "date_started": new_date_started,
                 "date_ended": new_date_ended
             }
-            form_check = validate_rental_bounds(item, rental_range)
-            if form_check["is_valid"]:
-                rental_data = {
-                    "renter_id": g.user_id,
-                    "item_id": item.id,
-                    "date_started": new_date_started,
-                    "date_ended": new_date_ended
-                }
-                reservation, action, waitlist_ad = create_reservation(rental_data)
-                if reservation:
-                    g.user.cart.add(reservation)
-                    reservation = reservation.to_dict()
-                    action = "Your reservation has been updated successfully!"
-                    code = 201
-                else:
-                    g.user.cart.add_without_reservation(item)
-                    flashes.append(waitlist_ad)
-                flashes.append(action)
+            reservation, action, waitlist_ad = create_reservation(rental_data)
+            if reservation:
+                g.user.cart.add(reservation)
+                reservation = reservation.to_dict()
+                action = "Your reservation has been updated successfully!"
+                code = 200
             else:
                 g.user.cart.add_without_reservation(item)
-                flashes.append(form_check["message"])
+                flashes.append(waitlist_ad)
+            flashes.append(action)
         else:
-            flashes.append("There was an error getting the dates you set, make sure they're in 'MM/DD/YYYY'.")
+            g.user.cart.add_without_reservation(item)
+            flashes.append(form_check["message"])
     else:
-        flashes.append("You didn't send any data! Please, try again.")
+        flashes.append("There was an error getting the dates you set, make sure they're in 'MM/DD/YYYY'.")
     return {"flashes": flashes}, code
 
-@bp.post("/remove/i/id=<int:item_id>", defaults={"start": None, "end": None})
-@bp.post("/remove/i/id=<int:item_id>&start=<start>&end=<end>")
+@bp.post("/remove/i/id=<int:item_id>")
 @login_required
-def remove_from_cart(item_id, start, end):
+def remove_from_cart(item_id):
+    flashes = []
     format = "%Y-%m-%d" # this format when taking dates thru url
     item = Items.get(item_id)
-    flashes = []
-    if start and end:
+    data = request.json
+    if data.get("startDate") and data.get("endDate"):
         reservation_keys = {
             "renter_id": g.user_id,
             "item_id": item_id,
-            "date_started": datetime.strptime(start, format).date(),
-            "date_ended": datetime.strptime(end, format).date(),
+            "date_started": datetime.strptime(data.get("startDate"), format).date(),
+            "date_ended": datetime.strptime(data.get("endDate"), format).date(),
         }
         reservation = Reservations.get(reservation_keys)
         g.user.cart.remove(reservation)
-    elif start is None and end is None:
+    else:
         g.user.cart.remove_without_reservation(item)
-    session["cart_size"] = g.user.cart.size()
     flashes.append(f"The {item.name} has been removed from your cart.")
-    return {"flashes": flashes}, 201
+    data = {"flashes": flashes}
+    response = make_response(data, 200)
+    return response
 
-@bp.post("/checkout")
+@bp.get("/checkout")
 @login_required
 def checkout():
     photo_url = AWS.get_url("items")
