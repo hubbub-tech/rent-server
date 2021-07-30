@@ -32,11 +32,15 @@ def login():
                 flashes.append(login_response["message"])
                 data = {
                     "flashes": flashes,
-                    COOKIE_KEY_USER: user.id,
-                    COOKIE_KEY_CART: user.cart.size(),
+                    COOKIE_KEY_USER: f'{user.id}',
+                    COOKIE_KEY_CART: f'{user.cart.size()}',
                     COOKIE_KEY_SESSION: session
                 }
                 response = make_response(data, 200)
+                cors_domain = Config.CORS_ALLOW_ORIGIN #.replace("http://", "dev.")
+                response.set_cookie(COOKIE_KEY_USER, value=f'{user.id}', domain="dev.localhost:3000")
+                response.set_cookie(COOKIE_KEY_CART, value=f'{user.cart.size()}', domain="dev.localhost:3000")
+                response.set_cookie(COOKIE_KEY_SESSION, value=session, domain="dev.localhost:3000")
                 return response
             else:
                 errors.append(login_response["message"])

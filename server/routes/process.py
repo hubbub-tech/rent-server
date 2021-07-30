@@ -71,7 +71,7 @@ def checkout_submit():
         flashes.append(cart_response["message"])
         return {"flashes": flashes}, 406
 
-@bp.get("/accounts/u/orders")
+@bp.post("/accounts/u/orders")
 @login_required
 def order_history():
     photo_url = AWS.get_url("items")
