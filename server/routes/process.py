@@ -20,7 +20,7 @@ from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('process', __name__)
 
-@bp.post("/checkout/submit")
+@bp.get("/checkout/submit")
 @login_required
 def checkout_submit():
     flashes = []
@@ -71,7 +71,7 @@ def checkout_submit():
         flashes.append(cart_response["message"])
         return {"flashes": flashes}, 406
 
-@bp.post("/accounts/u/orders")
+@bp.get("/accounts/u/orders")
 @login_required
 def order_history():
     photo_url = AWS.get_url("items")
@@ -98,7 +98,7 @@ def order_history():
         "orders": orders
     }
 
-@bp.post("/accounts/o/id=<int:order_id>")
+@bp.get("/accounts/o/id=<int:order_id>")
 @login_required
 def manage_order(order_id):
     photo_url = AWS.get_url("items")
@@ -126,7 +126,7 @@ def manage_order(order_id):
         flashes.append("You can only manage orders that you placed.")
         return {"flashes": flashes}, 406
 
-@bp.post("/schedule/dropoffs/<date_str>")
+@bp.get("/schedule/dropoffs/<date_str>")
 @login_required
 def schedule_dropoffs(date_str):
     format = "%Y-%m-%d"
@@ -195,7 +195,7 @@ def schedule_dropoffs_submit():
         flashes.append("Please, provide availabilities for dropoff.")
         return {"flashes": flashes}, 406
 
-@bp.post("/schedule/pickups/<date_str>")
+@bp.get("/schedule/pickups/<date_str>")
 @login_required
 def schedule_pickups(date_str):
     format = "%Y-%m-%d"

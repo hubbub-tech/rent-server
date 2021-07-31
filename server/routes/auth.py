@@ -37,10 +37,6 @@ def login():
                     COOKIE_KEY_SESSION: session
                 }
                 response = make_response(data, 200)
-                cors_domain = Config.CORS_ALLOW_ORIGIN #.replace("http://", "dev.")
-                response.set_cookie(COOKIE_KEY_USER, value=f'{user.id}', domain="dev.localhost:3000")
-                response.set_cookie(COOKIE_KEY_CART, value=f'{user.cart.size()}', domain="dev.localhost:3000")
-                response.set_cookie(COOKIE_KEY_SESSION, value=session, domain="dev.localhost:3000")
                 return response
             else:
                 errors.append(login_response["message"])
