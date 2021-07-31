@@ -13,3 +13,5 @@ __pycache__
 
 # development notes
 todo.txt
+server.crt
+server.key
