@@ -37,7 +37,7 @@ def checkout_submit():
                 "item_id": item.id,
                 "is_in_cart": True
             })
-            reservation, = _reservation
+            reservation, *_ = _reservation
             item.calendar.add(reservation)
             order_data = {
                 "res_date_start": reservation.date_started,

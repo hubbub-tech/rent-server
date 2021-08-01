@@ -116,7 +116,7 @@ def password_recovery():
     if data:
         _user = Users.filter({"email": data["email"]})
         if _user:
-            user, = _user
+            user, *_ = _user
             if user.session is None:
                 token = create_auth_token(user)
             else:
@@ -141,7 +141,7 @@ def password_reset(token):
     if data:
         _user = Users.filter({"email": data["email"]})
         if _user:
-            user, = _user
+            user, *_ = _user
             is_authenticated = verify_auth_token(token, user.id)
             if is_authenticated:
                 hashed_password = generate_password_hash(data["newPassword"])

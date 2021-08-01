@@ -166,7 +166,7 @@ def update(item_id):
             "is_in_cart": True
         })
         if _reservation:
-            old_reservation, = _reservation
+            old_reservation, *_ = _reservation
             g.user.cart.remove(old_reservation)
         else:
             g.user.cart.remove_without_reservation(item)
@@ -235,7 +235,7 @@ def checkout():
     _cart_contents = g.user.cart.contents
     for item in _cart_contents:
         if is_item_in_itemlist(item, ready_to_order_items):
-            reservation, = Reservations.filter({
+            reservation, *_ = Reservations.filter({
                 "renter_id": g.user_id,
                 "item_id": item.id,
                 "is_in_cart": True
