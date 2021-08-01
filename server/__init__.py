@@ -9,8 +9,8 @@ from .tools.settings.config import Config
 
 def internal_server_error(e):
     print("RUNNING EXCEPTION HANDLER")
-    database = get_db()
-    database.connection.rollback()
+    # database = get_db()
+    # database.connection.rollback()
     return "Internal Server Error", 500
 
 def create_app():
