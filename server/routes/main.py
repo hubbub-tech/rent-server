@@ -51,14 +51,13 @@ def account(id):
             item_to_dict["next_available_end"] = next_end.strftime("%Y-%m-%d")
             item_to_dict["details"] = item.details.to_dict()
             listings.append(item_to_dict)
+        return {
+            "photo_url": {"user": user_url, "item": item_url},
+            "user": user_to_dict,
+            "listings": listings
+        }
     else:
-        user_to_dict = None
-        listings = None
-    return {
-        "photo_url": {"user": user_url, "item": item_url},
-        "user": user_to_dict,
-        "listings": listings
-    }
+        return {"flashes": ["this user does not exist at the moment."]}, 404
 
 #edit personal account
 @bp.get("/accounts/u/edit")
@@ -175,31 +174,37 @@ def hide_item(item_id):
     code = 406
     flashes = []
     item = Items.get(item_id)
-    if item.lister_id == g.user_id:
-        data = request.json
-        item.is_available = data["toggle"]
-        if item.is_available:
-            flashes.append("Item has been revealed. Others can now see it in inventory.")
+    if item:
+        if item.lister_id == g.user_id:
+            data = request.json
+            item.is_available = data["toggle"]
+            if item.is_available:
+                flashes.append("Item has been revealed. Others can now see it in inventory.")
+            else:
+                flashes.append("Item has been hidden. Come back when you are ready to reveal it.")
+            code = 200
         else:
-            flashes.append("Item has been hidden. Come back when you are ready to reveal it.")
-        code = 200
+            flashes.append("You are not authorized to manage the visibility of this item.")
+        return {"flashes": flashes}, code
     else:
-        flashes.append("You are not authorized to manage the visibility of this item.")
-    return {"flashes": flashes}, code
+        return {"flashes": ["this item does not exist at the moment."]}, 404
 
 @bp.get("/accounts/i/edit/id=<int:item_id>")
 @login_required
 def edit_item(item_id):
     flashes = []
     item = Items.get(item_id)
-    if item.lister_id == g.user_id:
-        item_to_dict = item.to_dict()
-        item_to_dict["details"] = item.details.to_dict()
-        item_to_dict["calendar"] = item.calendar.to_dict()
-        return { "item": item_to_dict }, 200
+    if item:
+        if item.lister_id == g.user_id:
+            item_to_dict = item.to_dict()
+            item_to_dict["details"] = item.details.to_dict()
+            item_to_dict["calendar"] = item.calendar.to_dict()
+            return { "item": item_to_dict }, 200
+        else:
+            flashes.append("You are not authorized to manage the visibility of this item.")
+        return {"flashes": flashes}, 406
     else:
-        flashes.append("You are not authorized to manage the visibility of this item.")
-    return {"flashes": flashes}, 406
+        return {"flashes": ["this item does not exist at the moment."]}, 404
 
 
 @bp.post("/accounts/i/edit/submit")
@@ -256,7 +261,10 @@ def feedback_submit():
 @login_required
 def download_receipt(order_id, filename):
     order = Orders.get(order_id)
-    if g.user_id == order.renter_id:
-        generate_receipt(order, filename)
-        return send_from_directory('temp', filename, as_attachment=True)
-    return 406
+    if order:
+        if g.user_id == order.renter_id:
+            generate_receipt(order, filename)
+            return send_from_directory('temp', filename, as_attachment=True)
+        return 406
+    else:
+        return {"flashes": ["This order does not exist at the moment."]}, 404
