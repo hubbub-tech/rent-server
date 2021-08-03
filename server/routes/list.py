@@ -30,6 +30,7 @@ def list_submit():
             form_data = {
                 "item": {
                     "lister_id": g.user_id,
+                    "id": data.get("id"),
                     "name": data["name"],
                     "price": data["price"],
                     "address_num": data["num"],
