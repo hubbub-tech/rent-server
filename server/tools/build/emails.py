@@ -89,7 +89,7 @@ def get_renter_receipt_email(transactions):
         cash, or card. Finally, if you have completed the Dropoff Form,
         you should have received another email titled, "[Hubbub] Scheduling your Dropoff".
         If you haven't completed it, please do so ASAP
-        (<a href="https://hubbub-shop.herokuapp.com/accounts/u/orders">here</a>)!
+        (<a href="https://www.hubbub.shop/accounts/u/orders">here</a>)!
         If you have any questions, please contact us at hubbubcu@gmail.com. Thanks!
         """
     email_data = {}
@@ -208,7 +208,7 @@ def get_extension_email(order, ext_reservation):
         """
     frame_data["conclusion"] = """
         If you had any previous plans for pickup, they have been cancelled. You can
-        schedule a new end of rental pickup (<a href="https://hubbub-shop.herokuapp.com/accounts/u/orders">here</a>)!
+        schedule a new end of rental pickup (<a href="https://www.hubbub.shop/accounts/u/orders">here</a>)!
         If you have any questions, please contact us at hubbubcu@gmail.com.
         """
     email_data = {}
@@ -231,7 +231,7 @@ def get_early_return_email(order, early_reservation):
     frame_data["content"] = ""
     frame_data["conclusion"] = """
         You can schedule a new end of rental pickup
-        (<a href="https://hubbub-shop.herokuapp.com/accounts/u/orders">here</a>)!
+        (<a href="https://www.hubbub.shop/accounts/u/orders">here</a>)!
         If you have any questions, please contact us at hubbubcu@gmail.com.
         """
     email_data = {}
