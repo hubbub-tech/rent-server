@@ -20,7 +20,7 @@ def login():
     data = request.json
     if data:
         form_data = {
-            "email": data["user"]["email"],
+            "email": data["user"]["email"].lower(),
             "password": data["user"]["password"]
         }
         form_check = validate_login(form_data)
@@ -62,7 +62,7 @@ def register():
         form_data = {
             "user": {
                 "name": f"{first_name},{last_name}",
-                "email": data["user"]["email"],
+                "email": data["user"]["email"].lower(),
                 "payment": data["user"]["payment"],
                 "password": hashed_pass,
                 "address_num": data["address"]["num"],
@@ -114,7 +114,7 @@ def password_recovery():
     flashes = []
     data = request.json
     if data:
-        _user = Users.filter({"email": data["email"]})
+        _user = Users.filter({"email": data["email"].lower()})
         if _user:
             user, *_ = _user
             if user.session is None:
@@ -139,7 +139,7 @@ def password_reset(token):
     flashes = []
     data = request.json
     if data:
-        _user = Users.filter({"email": data["email"]})
+        _user = Users.filter({"email": data["email"].lower()})
         if _user:
             user, *_ = _user
             is_authenticated = verify_auth_token(token, user.id)
