@@ -151,7 +151,7 @@ def edit_address_submit():
         "num": data["address"]["num"],
         "street": data["address"]["street"],
         "apt": data["address"].get("apt", ""),
-        "zip": data["address"]["zip"],
+        "zip": data["address"]["zip_code"],
         "city": data["address"]["city"],
         "state": data["address"]["state"]
     }
