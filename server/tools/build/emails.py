@@ -200,7 +200,7 @@ def get_extension_email(order, ext_reservation):
     frame_data["content"] = f"""
         <p>
             Extension Cost: {ext_reservation.print_charge()}. Extension Deposit:
-            {ext_reservation.print_deposit()}. Extension tax: {ext_reservation.print_tax()}.
+            {ext_reservation.print_deposit()}. Sales tax: {ext_reservation.print_tax()}.
         </p>
         <p>
             <bold>Total</bold>: {ext_reservation.print_total()}
@@ -343,7 +343,7 @@ def email_builder(frame_data):
               <!-- START FOOTER-->
               <div class="footer">
                 <small>
-                  <span>Hubbub HQ, 1 Way to Your Heart, New York, NY 10027</span>
+                  <span>Hubbub HQ, 523 W. 160th St., Apt 5A, New York, NY 10032</span>
                   <br> Continue shopping at <a href="https://www.hubbub.shop/inventory">Hubbub Shop</a>.
                 <small>
               </div>
