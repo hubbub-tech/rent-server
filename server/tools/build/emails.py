@@ -81,16 +81,24 @@ def get_renter_receipt_email(transactions):
         """
     frame_data["content"] = get_receipt_table(transactions)
     frame_data["conclusion"] = f"""
-        The Safety Deposit for each rental will be returned to you at the end of
-        that rental assuming the item is not damaged beyond reasonable wear and tear.
-        You can go to your account page to see a record of your upcoming and
-        current rentals. Hubbub will handle all payments and delivery logistics
-        between users and charge in-person at drop-off via Venmo at @{renter.payment},
-        cash, or card. Finally, if you have completed the Dropoff Form,
-        you should have received another email titled, "[Hubbub] Scheduling your Dropoff".
-        If you haven't completed it, please do so ASAP
-        (<a href="https://www.hubbub.shop/accounts/u/orders">here</a>)!
-        If you have any questions, please contact us at hubbubcu@gmail.com. Thanks!
+            The Safety Deposit for each rental will be returned to you at the end of
+            that rental assuming the item is not damaged beyond reasonable wear and tear.
+            You can go to your account page to see a record of your upcoming and
+            current rentals.
+        </p>
+        <p>
+            Hubbub will handle all payments and delivery logistics
+            between users and charge in-person at drop-off via Venmo at @{renter.payment}
+            or card.
+        </p>
+        <p>
+            Finally, if you have completed the Dropoff Form,
+            you should have received another email titled, "[Hubbub] Scheduling your Dropoff".
+            If you haven't completed it, please do so ASAP
+            (<a href="https://www.hubbub.shop/accounts/u/orders">here</a>)!
+        </p>
+        <p>
+            If you have any questions, please contact us at hubbubcu@gmail.com. Thanks!
         """
     email_data = {}
     email_data["subject"] = "[Hubbub] Order Receipt"
@@ -137,18 +145,20 @@ def get_welcome_email(user):
     frame_data["preview"] = f"Welcome to Hubbub! We're excited to have you join on {date.today().strftime('%B %-d, %Y')} - "
     frame_data["user"] = user.name
     frame_data["introduction"] = """
-        Welcome to Hubbub! We are so excited to have you join our movement for
-        flexible ownership! Hubbub is passionate about getting the maximum use
-        out of our items and keeping the maximum number of items out of landfill.
-        Our other driving mission is to make any item accessible to anyone while
-        empowering communities. We are a brand that hopefully makes you feel
-        good about shopping!
+            Welcome to Hubbub! We are so excited to have you join our movement for
+            flexible ownership! Hubbub is passionate about getting the maximum use
+            out of our items and keeping the maximum number of items out of landfill.
+        </p>
+        <p>
+            Our other driving mission is to make any item accessible to anyone while
+            empowering communities. We are a brand that hopefully makes you feel
+            good about shopping!
         """
     frame_data["content"] = """
         <p>
-        As a member, you can rent items from other members. Get started renting
-        <a href="https://www.hubbub.shop/inventory">here</a>. We have more features
-        in the works, so stay tuned!
+            As a member, you can rent items from other members. Get started renting
+            <a href="https://www.hubbub.shop/inventory">here</a>. We have more features
+            in the works, so stay tuned!
         </p>
         """
         #and you can learn more about listing <a href="https://www.hubbub.shop/how-to-list">here</a>
