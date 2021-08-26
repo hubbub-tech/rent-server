@@ -89,3 +89,6 @@ class Config:
 
     #Upload management
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+    #ReCaptcha
+    ReCAPTCHA_SERVER_API_KEY= os.environ['ReCAPTCHA_SERVER_API_KEY']

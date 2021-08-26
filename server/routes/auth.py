@@ -1,9 +1,12 @@
+import requests
+
 from datetime import datetime, timedelta
 from flask import Blueprint, g, request, make_response
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from blubber_orm import Users
-from server.tools.settings import login_user, COOKIE_KEY_USER, COOKIE_KEY_SESSION, COOKIE_KEY_CART
+from server.tools.settings import login_user
+from server.tools.settings import ReCAPTCHA_VERIFY_URL, COOKIE_KEY_USER, COOKIE_KEY_SESSION, COOKIE_KEY_CART
 from server.tools.settings import create_auth_token, verify_auth_token
 from server.tools.settings import Config
 
@@ -54,7 +57,14 @@ def register():
     flashes = []
     errors = []
     data = request.json
-    if data:
+    recaptcha_data = {
+        "secret": Config.ReCAPTCHA_SERVER_API_KEY,
+        "response": data.get('token')
+    }
+    captcha_response = requests.post(ReCAPTCHA_VERIFY_URL, data=recaptcha_data)
+    captcha_response.raise_for_status()
+    captcha = captcha_response.json()
+    if data and captcha["success"]:
         first_name = data["user"]["firstName"]
         last_name = data["user"]["lastName"]
         unhashed_pass = data["user"]["password"]
@@ -102,7 +112,7 @@ def register():
         else:
             errors.append(form_check["message"])
     else:
-        errors.append("No information to create an account! Try again.")
+        errors.append("Sorry! Try again.")
     flashes.append("Uh oh...")
     data = {"flashes": flashes, "errors": errors}
     response = make_response(data, 406)
