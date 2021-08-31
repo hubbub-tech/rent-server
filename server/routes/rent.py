@@ -6,8 +6,10 @@ from flask import Blueprint, g, request, session, make_response
 from blubber_orm import Users, Orders, Reservations
 from blubber_orm import Items, Tags, Details, Calendars
 
+from server.tools.settings import login_required, AWS
 from server.tools.settings import create_rental_token, json_sort
-from server.tools.settings import login_required, search_items, AWS
+from server.tools.settings import get_recommendations, search_items
+
 from server.tools.build import create_reservation, validate_rental_bounds
 from server.tools import blubber_instances_to_dict, json_date_to_python_date, is_item_in_itemlist
 
@@ -39,9 +41,10 @@ def inventory(search):
         else:
             listings_to_dict.append(item_to_dict)
     json_sort(listings_to_dict, "next_available_start")
-    listings_to_dict = featured_to_dict + listings_to_dict
+    for item in listings_to_dict:
+        featured_to_dict.append(item)
     return {
-        "items": listings_to_dict,
+        "items": featured_to_dict,
         "photo_url": photo_url
         }
 
@@ -60,8 +63,7 @@ def view_item(item_id):
         item_to_dict["calendar"]["next_available_start"] = next_start.strftime("%Y-%m-%d")
         item_to_dict["calendar"]["next_available_end"] = next_end.strftime("%Y-%m-%d")
 
-        rec_list = Items.filter({"is_featured": True, "is_available": True})
-        recommendations = random.sample(rec_list, 3)
+        recommendations = get_recommendations(item.name)
         recs_to_dict = []
         for rec in recommendations:
             lister = Users.get(rec.lister_id)

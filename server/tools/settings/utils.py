@@ -10,7 +10,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .const import COOKIE_KEY_SESSION, COOKIE_KEY_USER
 
-# NOTE: ONLY COMPATIBLE WITH POST METHOD ROUTES****
 def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
@@ -65,6 +64,34 @@ def verify_auth_token(hashed_token, user_id):
         if user.session:
             return check_password_hash(hashed_token, user.session)
     return False
+
+def get_recommendations(item_name):
+    # Split the item name by spaces
+    item_name_components = item_name.split(" ")
+
+    # Take the last word in the name--this is likely to be an identifier as to what it is
+    searchable = f"%{item_name_components[-1]}%"
+
+    items = Items.like("name", searchable)
+    details = Details.like("description", searchable)
+    unfiltered_items = [detail.item for detail in details]
+
+    # remove duplicates
+    filtered_items = []
+    id_tracker = []
+    for item in unfiltered_items:
+        if item.is_available and item.id not in id_tracker:
+            id_tracker.append(item.id)
+            filtered_items.append(item)
+
+    # get recommendations
+    size = 3
+    recommendations = []
+    if len(filtered_items) > size:
+        recommendations = random.sample(filtered_items, size)
+    else:
+        recommendations = filtered_items
+    return recommendations
 
 def search_items(search_key):
     searchable = f"%{search_key}%"
