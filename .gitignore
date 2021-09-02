@@ -8,6 +8,7 @@
 
 # python
 env
+env-prod
 .DS_Store
 __pycache__
 

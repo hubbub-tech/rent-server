@@ -239,7 +239,7 @@ def get_welcome_email(user):
     frame_data["conclusion"] = f"""
         You can also go to your account portal on the website to view items you
         are renting with other features coming soon! If you have any questions, please
-        contact us at {SG.DEFAULT_RECEIVER}.
+        contact us at hello@hubbub.shop.
         """
     email_data = {}
     email_data["subject"] = f"[Hubbub] Welcome, {user.name}!"
