@@ -156,7 +156,7 @@ def get_welcome_email(user):
         """
     frame_data["content"] = """
         <p>
-            As a member, you can rent items from other members. Get started renting
+            As a member, you can rent any item on the platform. Get started renting
             <a href="https://www.hubbub.shop/inventory">here</a>. We have more features
             in the works, so stay tuned!
         </p>
@@ -164,7 +164,7 @@ def get_welcome_email(user):
         #and you can learn more about listing <a href="https://www.hubbub.shop/how-to-list">here</a>
     frame_data["conclusion"] = """
         You can also go to your account portal on the website to view items you
-        are renting and items you have listed. If you have any questions, please
+        are renting with other features coming soon! If you have any questions, please
         contact us at hubbubcu@gmail.com.
         """
     email_data = {}
