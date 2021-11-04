@@ -14,7 +14,7 @@ from .emails import get_cancellation_email
 from .emails import get_new_listing_email
 from .emails import get_welcome_email
 
-from .files import generate_receipt
+from .files import generate_receipt_json
 
 from .tasks import send_async_email
 from .tasks import set_async_timeout

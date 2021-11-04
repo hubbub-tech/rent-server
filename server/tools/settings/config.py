@@ -62,7 +62,9 @@ class MailConfig:
             #TODO: log that this problem happened
             raise Exception("MAIL CLIENT Connection should only be created once in the app.")
         else:
+            MailConfig.DEFAULT_RECEIVER = os.environ["MAIL_DEFAULT_RECEIVER"]
             MailConfig.DEFAULT_SENDER = os.environ["MAIL_DEFAULT_SENDER"]
+            MailConfig.DEFAULT_ADMIN = os.environ["MAIL_DEFAULT_ADMIN"]
             MailConfig.SENDGRID_API_KEY = os.environ["SENDGRID_API_KEY"]
             MailConfig._instance = self
 

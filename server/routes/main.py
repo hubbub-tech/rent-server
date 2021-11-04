@@ -8,7 +8,7 @@ from blubber_orm import Users, Profiles, Orders, Addresses
 from blubber_orm import Items, Details, Testimonials, Issues
 
 from server.tools.build import validate_edit_account, validate_edit_password, upload_image
-from server.tools.build import generate_receipt
+from server.tools.build import generate_receipt_json
 from server.tools.settings import login_required, AWS, json_sort
 from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
@@ -77,14 +77,15 @@ def edit_account():
 @login_required
 def edit_account_submit():
     flashes = []
-    data = request.form
+    data = request.json
     form_data = {
         "self": g.user,
-        "payment": data["payment"],
-        "email": data["email"],
-        "phone": data["phone"],
-        "bio": data["bio"]
+        "email": data.get("email", g.user.email),
+        "bio": data.get("bio", g.user.profile.bio),
+        "payment": data.get("payment", g.user.payment),
+        "phone": data.get("phone", g.user.profile.phone)
     }
+    print(form_data)
     form_check = validate_edit_account(form_data)
     if form_check["is_valid"]:
         Users.set(g.user_id, {
@@ -95,26 +96,33 @@ def edit_account_submit():
             "bio": form_data["bio"],
             "phone": form_data["phone"]
         })
-        image = request.files.get("image")
-        if image:
-            image_data = {
-                "self": g.user,
-                "image" : image,
-                "directory" : "users",
-                "bucket" : AWS.S3_BUCKET
-            }
-            upload_response = upload_image(image_data)
-            if upload_response["is_valid"]:
-                Profiles.set(g.user_id, {"has_pic": True})
-                flashes.append(upload_response["message"])
-            else:
-                flashes.append(upload_response["message"])
-                return {"flashes": flashes}, 406
         flashes.append("Successfully edited your account!")
         return {"flashes": flashes}, 200
     else:
         flashes.append(form_check["message"])
     return {"flashes": flashes}, 406
+
+@bp.post("/accounts/u/photo/submit")
+@login_required
+def edit_account_photo_submit():
+    flashes = []
+    image = request.files.get("image")
+    if image:
+        image_data = {
+            "self": g.user,
+            "image" : image,
+            "directory" : "users",
+            "bucket" : AWS.S3_BUCKET
+        }
+        upload_response = upload_image(image_data)
+        if upload_response["is_valid"]:
+            Profiles.set(g.user_id, {"has_pic": True})
+            flashes.append(upload_response["message"])
+            return {"flashes": flashes}, 200
+        else:
+            flashes.append(upload_response["message"])
+            return {"flashes": flashes}, 406
+    return {"flashes": ["Failed to receive your profile update."]}, 406
 
 #edit personal password
 #check that the confirmation pass and new pass match on frontend
@@ -240,6 +248,52 @@ def edit_item_submit():
         code = 406
     return {"flashes": flashes}, code
 
+@bp.get("/accounts/o/review/id=<int:order_id>")
+@login_required
+def review_item(order_id):
+    flashes = []
+    order = Orders.get(order_id)
+    if order:
+        item = Items.get(order.item_id)
+        if order.renter_id == g.user_id:
+            item_to_dict = item.to_dict()
+            item_to_dict["details"] = item.details.to_dict()
+            item_to_dict["calendar"] = item.calendar.to_dict()
+            order_to_dict = order.to_dict()
+            order_to_dict["ext_date_end"] = order.ext_date_end.strftime("%Y-%m-%d")
+            order_to_dict["reservation"] = order.reservation.to_dict()
+            return {
+                "item": item_to_dict,
+                "order": order_to_dict
+            }, 200
+        else:
+            flashes.append("You are not authorized to manage the visibility of this item.")
+        return {"flashes": flashes}, 406
+    else:
+        return {"flashes": ["this order does not exist at the moment."]}, 404
+
+
+@bp.post("/accounts/o/review/submit")
+@login_required
+def review_item_submit():
+    flashes = []
+    data = request.form
+    if data:
+        item = Items.get(data["itemId"])
+        review_data = {
+            "item_id": item.id,
+            "author_id": g.user_id,
+            "body": data["body"],
+            "rating": data["rating"]
+        }
+        review = create_review(review_data)
+        flashes.append(f"Your {item.name} has been updated!")
+        code = 200
+    else:
+        flashes.append("No changes were received! Try again.")
+        code = 406
+    return {"flashes": flashes}, code
+
 @bp.post('/feedback/submit')
 def feedback_submit():
     flashes = []
@@ -257,14 +311,14 @@ def feedback_submit():
         flashes.append("There was a problem receiving your feedback :(... Try again or email at hubbubcu@gmail.com.")
     return {"flashes": flashes}, 406
 
-@bp.get('/accounts/o/receipt/id=<int:order_id>/<path:filename>')
+@bp.get('/accounts/o/receipt/id=<int:order_id>')
 @login_required
-def download_receipt(order_id, filename):
+def download_receipt(order_id):
     order = Orders.get(order_id)
     if order:
         if g.user_id == order.renter_id:
-            generate_receipt(order, filename)
-            return send_from_directory('temp', filename, as_attachment=True)
+            receipt = generate_receipt_json(order)
+            return { "receipt": receipt }, 200
         return 406
     else:
         return {"flashes": ["This order does not exist at the moment."]}, 404

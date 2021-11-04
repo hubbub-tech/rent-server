@@ -4,7 +4,7 @@ from botocore.exceptions import NoCredentialsError
 from werkzeug.security import check_password_hash, generate_password_hash
 from blubber_orm import Users, Items
 
-from server.tools.settings import AWS
+from server.tools.settings import AWS, SG
 
 #done 5/21
 def validate_edit_account(form_data):
@@ -16,9 +16,15 @@ def validate_edit_account(form_data):
         if registered_email_owner.id != form_data["self"].id:
             is_valid = False
             message = "Sorry, the email you want to user is already in use."
+    elif not form_data["email"]:
+        form_data["email"] = form_data["self"].email
     if form_data["payment"]:
         if "@" in form_data["payment"] and "@" == form_data["payment"][0]:
             form_data["payment"] = form_data["payment"].replace("@", "", 1)
+
+    if not form_data["payment"]: form_data["payment"] = form_data["self"].payment
+    if not form_data["phone"]: form_data["phone"] = form_data["self"].profile.phone
+    if not form_data["bio"]: form_data["bio"] = form_data["self"].profile.bio
     return {
         "is_valid" : is_valid,
         "message" : message
@@ -130,10 +136,10 @@ def upload_image(image_data):
         s3_resource.Bucket(bucket).put_object(Key=path, Body=image, ACL='public-read')
     except FileNotFoundError:
         #logging here
-        message = "The file was not found by the cloud. Contact admins at hubbubcu@gmail.com for help."
+        message = f"The file was not found by the cloud. Contact admins at {SG.DEFAULT_RECEIVER} for help."
     except NoCredentialsError:
         #logging here
-        message = "Credentials not available. Contact admins at hubbubcu@gmail.com for help."
+        message = f"Credentials not available. Contact admins at {SG.DEFAULT_RECEIVER} for help."
     else:
         is_valid = True
         message = "Photo was successfully saved!"

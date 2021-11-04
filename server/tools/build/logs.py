@@ -4,13 +4,12 @@ from logging.handlers import SMTPHandler
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-from server.tools.settings import MailConfig
+from server.tools.settings import SG
 
 class SGSMTPHandler(SMTPHandler):
 
     def emit(self, record):
         """Custom email logging through SendGrid API."""
-        MAIL = MailConfig.get_instance()
         msg = Mail(
             from_email=self.fromaddr,
             to_emails=self.toaddrs,
@@ -18,7 +17,7 @@ class SGSMTPHandler(SMTPHandler):
             html_content=self.format(record)
         )
         try:
-            sg = SendGridAPIClient(MAIL.SENDGRID_API_KEY)
+            sg = SendGridAPIClient(SG.SENDGRID_API_KEY)
             response = sg.send(msg)
         except (KeyboardInterrupt, SystemExit):
             raise
@@ -26,12 +25,10 @@ class SGSMTPHandler(SMTPHandler):
             self.handleError(record)
 
 def build_mail_handler():
-    MAIL = MailConfig.get_instance()
-
     mail_handler = SGSMTPHandler(
         mailhost='smtp.sendgrid.net',
-        fromaddr=MAIL.DEFAULT_SENDER,
-        toaddrs=['hubbubcu@gmail.com', 'adb2189@columbia.edu'],
+        fromaddr=SG.DEFAULT_SENDER,
+        toaddrs=[SG.DEFAULT_RECEIVER, SG.DEFAULT_ADMIN],
         subject='Hubbub Server Error'
     )
     mail_handler.setLevel(logging.WARNING)
@@ -56,4 +53,3 @@ def build_mail_handler():
     ))
     print("built the damn thing...")
     return mail_handler
-    

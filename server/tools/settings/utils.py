@@ -1,3 +1,4 @@
+import os
 import json
 import pytz
 import string
@@ -39,7 +40,7 @@ def login_user(user):
     is_valid = True
     if user.is_blocked:
         is_valid = False
-        message = "The admin has decided to block your account. Contact hubbubcu@gmail.com for more info."
+        message = f"The admin has decided to block your account. Contact {os.environ['MAIL_DEFAULT_RECEIVER']} for more info."
     else:
         session.clear()
         session["user_id"] = user.id

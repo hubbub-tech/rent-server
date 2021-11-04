@@ -1,6 +1,8 @@
 from datetime import datetime, date, timedelta
 from blubber_orm import Items, Orders, Users, Pickups, Dropoffs
 
+from server.tools.settings import SG
+
 def get_dropoff_email(dropoff):
     dropoff_logistics = dropoff.logistics
     renter = Users.get(dropoff_logistics.renter_id)
@@ -24,14 +26,14 @@ def get_dropoff_email(dropoff):
         <p>Drop-off Address: {dropoff_logistics.address.display()}</p>
         <p>Your Delivery Notes: {dropoff_logistics.notes}</p>
         """
-    frame_data["conclusion"] = """
+    frame_data["conclusion"] = f"""
         We’ll respond confirming a precise drop off time that fits the dates/times
         you indicated within 48 hours. If you have any questions, please contact
-        us at hubbubcu@gmail.com.
+        us at {SG.DEFAULT_RECEIVER}.
         """
     email_data = {}
     email_data["subject"] = "[Hubbub] Scheduling your Dropoff"
-    email_data["to"] = (renter.email, "hubbubcu@gmail.com")
+    email_data["to"] = (renter.email, SG.DEFAULT_RECEIVER)
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "DROP-LOGISTICS"
     return email_data
@@ -58,14 +60,14 @@ def get_pickup_email(pickup):
         <p>Pick-up Address: {pickup_logistics.address.display()}</p>
         <p>Your Delivery Notes: {pickup_logistics.notes}</p>
         """
-    frame_data["conclusion"] = """
+    frame_data["conclusion"] = f"""
         We’ll respond confirming a precise pick up time that fits the dates/times
         you indicated within 48 hours. If you have any questions, please contact
-        us at hubbubcu@gmail.com.
+        us at {SG.DEFAULT_RECEIVER}.
         """
     email_data = {}
     email_data["subject"] = "[Hubbub] Scheduling your Pickup"
-    email_data["to"] = (renter.email, "hubbubcu@gmail.com")
+    email_data["to"] = (renter.email, SG.DEFAULT_RECEIVER)
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "PICK-LOGISTICS"
     return email_data
@@ -98,11 +100,11 @@ def get_renter_receipt_email(transactions):
             (<a href="https://www.hubbub.shop/accounts/u/orders">here</a>)!
         </p>
         <p>
-            If you have any questions, please contact us at hubbubcu@gmail.com. Thanks!
+            If you have any questions, please contact us at {SG.DEFAULT_RECEIVER}. Thanks!
         """
     email_data = {}
     email_data["subject"] = "[Hubbub] Order Receipt"
-    email_data["to"] = (renter.email, "hubbubcu@gmail.com")
+    email_data["to"] = (renter.email, SG.DEFAULT_RECEIVER)
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "RENTER-RECEIPT"
     return email_data
@@ -129,13 +131,13 @@ def get_lister_receipt_email(transaction):
         present for our pick-up team to get the item, you can CC a proxy on this email.
         </p>
         """
-    frame_data["conclusion"] = """
+    frame_data["conclusion"] = f"""
         Hubbub will handle all payments and delivery logistics between users.
-        If you have any questions, please contact us at hubbubcu@gmail.com. Thanks!
+        If you have any questions, please contact us at {SG.DEFAULT_RECEIVER}. Thanks!
         """
     email_data = {}
     email_data["subject"] = f"[Hubbub Lister][Action Required] Receipt for {item.name}"
-    email_data["to"] = (lister.email, "hubbubcu@gmail.com")
+    email_data["to"] = (lister.email, SG.DEFAULT_RECEIVER)
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "RENT-LISTER-RECEIPT"
     return email_data
@@ -162,14 +164,14 @@ def get_welcome_email(user):
         </p>
         """
         #and you can learn more about listing <a href="https://www.hubbub.shop/how-to-list">here</a>
-    frame_data["conclusion"] = """
+    frame_data["conclusion"] = f"""
         You can also go to your account portal on the website to view items you
         are renting with other features coming soon! If you have any questions, please
-        contact us at hubbubcu@gmail.com.
+        contact us at {SG.DEFAULT_RECEIVER}.
         """
     email_data = {}
     email_data["subject"] = f"[Hubbub] Welcome, {user.name}!"
-    email_data["to"] = (user.email, "hubbubcu@gmail.com")
+    email_data["to"] = (user.email, SG.DEFAULT_RECEIVER)
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "AUTH-WELCOME"
     return email_data
@@ -185,14 +187,14 @@ def get_new_listing_email(item):
         and ending {item.calendar.date_ended.strftime('%B %-d, %Y')}.
         """
     frame_data["content"] = ""
-    frame_data["conclusion"] = """
+    frame_data["conclusion"] = f"""
         No need to list your item on other platforms! If it is listed somewhere
         else, take it down and leave the magic to us B-). If you have any
-        questions, please contact us at hubbubcu@gmail.com.
+        questions, please contact us at {SG.DEFAULT_RECEIVER}.
         """
     email_data = {}
     email_data["subject"] = f"[Hubbub] Listing Confirmation for your {item.name}"
-    email_data["to"] = (lister.email, "hubbubcu@gmail.com")
+    email_data["to"] = (lister.email, SG.DEFAULT_RECEIVER)
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "LIST-CONFIRMATION"
     return email_data
@@ -216,14 +218,14 @@ def get_extension_email(order, ext_reservation):
             <bold>Total</bold>: {ext_reservation.print_total()}
         </p>
         """
-    frame_data["conclusion"] = """
+    frame_data["conclusion"] = f"""
         If you had any previous plans for pickup, they have been cancelled. You can
         schedule a new end of rental pickup (<a href="https://www.hubbub.shop/accounts/u/orders">here</a>)!
-        If you have any questions, please contact us at hubbubcu@gmail.com.
+        If you have any questions, please contact us at {SG.DEFAULT_RECEIVER}.
         """
     email_data = {}
     email_data["subject"] = f"[Hubbub] Your Rental on {item.name} has been Extended!"
-    email_data["to"] = (user.email, "hubbubcu@gmail.com")
+    email_data["to"] = (user.email, SG.DEFAULT_RECEIVER)
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "EXTENSION-CONFIRMATION"
     return email_data
@@ -239,14 +241,14 @@ def get_early_return_email(order, early_reservation):
         This rental will now end on {early_reservation.date_ended.strftime('%B %-d, %Y')}.
         """
     frame_data["content"] = ""
-    frame_data["conclusion"] = """
+    frame_data["conclusion"] = f"""
         You can schedule a new end of rental pickup
         (<a href="https://www.hubbub.shop/accounts/u/orders">here</a>)!
-        If you have any questions, please contact us at hubbubcu@gmail.com.
+        If you have any questions, please contact us at {SG.DEFAULT_RECEIVER}.
         """
     email_data = {}
     email_data["subject"] = f"[Hubbub] Your Early Return Request on {item.name}"
-    email_data["to"] = (user.email, "hubbubcu@gmail.com")
+    email_data["to"] = (user.email, SG.DEFAULT_RECEIVER)
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "EARLY-CONFIRMATION"
     return email_data
@@ -262,12 +264,12 @@ def get_cancellation_email(order):
         This rental is now cancelled and you don't need to do anything else.
         """
     frame_data["content"] = ""
-    frame_data["conclusion"] = """
-        If you have any questions, please contact us at hubbubcu@gmail.com.
+    frame_data["conclusion"] = f"""
+        If you have any questions, please contact us at {SG.DEFAULT_RECEIVER}.
         """
     email_data = {}
     email_data["subject"] = f"[Hubbub] Your Order Cancellation on {item.name}"
-    email_data["to"] = (user.email, "hubbubcu@gmail.com")
+    email_data["to"] = (user.email, SG.DEFAULT_RECEIVER)
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "CANCEL-CONFIRMATION"
     return email_data
@@ -278,15 +280,15 @@ def get_password_reset_email(user, link):
     frame_data["user"] = user.name
     frame_data["introduction"] = f"""
         Recently, you placed a request to recover your password. If you requested
-        this, follow the link <a href="{link}">here</a> to recover your password.
+        this, follow the link <a href='{link}'>here</a> to recover your password.
         """
     frame_data["content"] = ""
-    frame_data["conclusion"] = """
-        If you did not request this service, please report to admins at hubbubcu@gmail.com. Thank you!
+    frame_data["conclusion"] = f"""
+        If you did not request this service, please report to admins at {SG.DEFAULT_RECEIVER}. Thank you!
         """
     email_data = {}
     email_data["subject"] = "[Hubbub] Recover Your Password"
-    email_data["to"] = (user.email, "hubbubcu@gmail.com")
+    email_data["to"] = (user.email, SG.DEFAULT_RECEIVER)
     email_data["body"] = email_builder(frame_data)
     email_data["error"] = "PASS-RECOVERY"
     return email_data
