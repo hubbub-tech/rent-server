@@ -1,9 +1,10 @@
 from datetime import datetime, date
 from blubber_orm import Users, Profiles, Carts
-from blubber_orm import Items, Details, Calendars, Tags
+from blubber_orm import Items, Details, Calendars
 from blubber_orm import Addresses, Reservations
 from blubber_orm import Orders, Extensions
 from blubber_orm import Logistics, Dropoffs, Pickups
+from blubber_orm import Reviews, Tags
 
 from werkzeug.security import check_password_hash, generate_password_hash
 

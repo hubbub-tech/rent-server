@@ -7,6 +7,7 @@ from flask import Blueprint, redirect, session, g, request, url_for, send_from_d
 from blubber_orm import Users, Profiles, Orders, Addresses
 from blubber_orm import Items, Details, Testimonials, Issues
 
+from server.tools.build import create_review
 from server.tools.build import validate_edit_account, validate_edit_password, upload_image
 from server.tools.build import generate_receipt_json
 from server.tools.settings import login_required, AWS, json_sort
@@ -277,14 +278,14 @@ def review_item(order_id):
 @login_required
 def review_item_submit():
     flashes = []
-    data = request.form
+    data = request.json
     if data:
         item = Items.get(data["itemId"])
         review_data = {
             "item_id": item.id,
             "author_id": g.user_id,
-            "body": data["body"],
-            "rating": data["rating"]
+            "body": data.get("body", "No review provided."),
+            "rating": data.get("rating")
         }
         review = create_review(review_data)
         flashes.append(f"Your {item.name} has been updated!")
