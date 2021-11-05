@@ -17,6 +17,7 @@ bp = Blueprint('main', __name__)
 
 @bp.get("/index")
 def index():
+    user_url = AWS.get_url("users")
     _testimonials = Testimonials.get_all()
     testimonials = []
     for testimonial in _testimonials:
@@ -26,8 +27,12 @@ def index():
         testimonial_to_dict["user"]["name"] = user.name
         testimonial_to_dict["user"]["city"] = user.address.city
         testimonial_to_dict["user"]["state"] = user.address.state
+        testimonial_to_dict["user"]["profile"] = user.profile.to_dict()
         testimonials.append(testimonial_to_dict)
-    return {"testimonials": testimonials}
+    return {
+        "testimonials": testimonials,
+        "photo_url": user_url
+    }
 
 #keep track of items being rented, items owned, item reviews and item edits
 @bp.get("/accounts/u/id=<int:id>")
