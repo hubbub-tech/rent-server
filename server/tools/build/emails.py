@@ -3,6 +3,23 @@ from blubber_orm import Items, Orders, Users, Pickups, Dropoffs
 
 from server.tools.settings import SG
 
+def get_newsletter_welcome(newsletter_data):
+    frame_data = {}
+    frame_data["preview"] = f"New newsletter signup '{newsletter_data['email']}' {date.today().strftime('%B %-d, %Y')} - "
+    frame_data["user"] = "Hubbub Team"
+    frame_data["introduction"] = f"New signup in town! Check it below."
+    frame_data["content"] = f"""
+        <p>New Name: <bold>{newsletter_data['name']}</bold></p>
+        <p>New Email: <bold>{newsletter_data['email']}</bold></p>
+        """
+    frame_data["conclusion"] = "Thanks!"
+    email_data = {}
+    email_data["subject"] = f"[Internal] New Newsletter Signup"
+    email_data["to"] = (SG.DEFAULT_RECEIVER,)
+    email_data["body"] = email_builder(frame_data)
+    email_data["error"] = "WELCOME-TO-NEWSLETTER"
+    return email_data
+
 def get_dropoff_email(dropoff):
     dropoff_logistics = dropoff.logistics
     renter = Users.get(dropoff_logistics.renter_id)

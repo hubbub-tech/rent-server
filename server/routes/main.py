@@ -1,5 +1,6 @@
 import time
 import json
+import requests
 from datetime import datetime, date
 from werkzeug.security import generate_password_hash
 from flask import Blueprint, redirect, session, g, request, url_for, send_from_directory, current_app
@@ -8,9 +9,13 @@ from blubber_orm import Users, Profiles, Orders, Addresses
 from blubber_orm import Items, Details, Testimonials, Issues
 
 from server.tools.build import create_review
+from server.tools.build import send_async_email, get_newsletter_welcome
 from server.tools.build import validate_edit_account, validate_edit_password, upload_image
 from server.tools.build import generate_receipt_json
+
 from server.tools.settings import login_required, AWS, json_sort
+from server.tools.settings import Config, ReCAPTCHA_VERIFY_URL
+
 from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('main', __name__)
@@ -33,6 +38,27 @@ def index():
         "testimonials": testimonials,
         "photo_url": user_url
     }
+
+@bp.post("/newsletter/join")
+def newsletter_form_submit():
+    flashes = []
+    data = request.json
+    recaptcha_data = {
+        "secret": Config.ReCAPTCHA_SERVER_API_KEY,
+        "response": data.get('token')
+    }
+    captcha_response = requests.post(ReCAPTCHA_VERIFY_URL, data=recaptcha_data)
+    captcha_response.raise_for_status()
+    captcha = captcha_response.json()
+    if data and captcha["success"]:
+        name = data.get("name")
+        email = data.get("email")
+        if email:
+            email_data = get_newsletter_welcome({"name": name, "email": email})
+            send_async_email.apply_async(kwargs=email_data)
+            flashes.append("Woo, you've been added to our newsletter!")
+            return {"flashes": flashes}, 200
+    return {"flashes": ["There was a problem adding you to our email list. try again."]}, 406
 
 #keep track of items being rented, items owned, item reviews and item edits
 @bp.get("/accounts/u/id=<int:id>")
@@ -225,34 +251,47 @@ def edit_item(item_id):
 @login_required
 def edit_item_submit():
     flashes = []
-    data = request.form
+    data = request.json
     if data:
         item = Items.get(data["itemId"])
         # date_end_extended = json_date_to_python_date(data["extendEndDate"])
         form_data = {
-            "price": data["price"],
-            "description": data["description"],
+            "price": data.get("price", item.price),
+            "description": data.get("description", item.details.description),
             # "extend": date_end_extended
         }
         Items.set(item.id, {"price": form_data["price"]})
         Details.set(item.id, {"description": form_data["description"]})
         # Calendars.set(item.id, {"date_ended": date_end_extended})
-        image = request.files.get("image", None)
-        if image:
-            image_data = {
-                "self" : item,
-                "image" : image,
-                "directory" : "items",
-                "bucket" : AWS.S3_BUCKET
-            }
-            upload_response = upload_image(image_data)
-            flashes.append(upload_response["message"])
         flashes.append(f"Your {item.name} has been updated!")
         code = 200
     else:
         flashes.append("No changes were received! Try again.")
         code = 406
     return {"flashes": flashes}, code
+
+@bp.post("/accounts/i/photo/submit")
+@login_required
+def edit_item_photo_submit():
+    flashes = []
+    data = request.form
+    item = Items.get(data["itemId"])
+    image = request.files.get("image")
+    if image and item:
+        image_data = {
+            "self": item.id,
+            "image" : image,
+            "directory" : "items",
+            "bucket" : AWS.S3_BUCKET
+        }
+        upload_response = upload_image(image_data)
+        if upload_response["is_valid"]:
+            flashes.append(upload_response["message"])
+            return {"flashes": flashes}, 200
+        else:
+            flashes.append(upload_response["message"])
+            return {"flashes": flashes}, 406
+    return {"flashes": ["Failed to receive the photo update for your item."]}, 406
 
 @bp.get("/accounts/o/review/id=<int:order_id>")
 @login_required
