@@ -329,9 +329,17 @@ def review_item_submit():
         }
         review = create_review(review_data)
         flashes.append(f"Thanks for your feedback on your {item.name} rental!")
+<<<<<<< HEAD:server/routes/shop/main.py
         return {"flashes": flashes}, 200
     return {"flashes": ["No changes were received! Try again."]}, 406
 
+=======
+        code = 200
+    else:
+        flashes.append("No changes were received! Try again.")
+        code = 406
+    return {"flashes": flashes}, code
+>>>>>>> 28e805a (review update):server/routes/main.py
 
 @bp.post('/feedback/submit')
 def feedback_submit():
