@@ -13,6 +13,7 @@ from server.tools.build import send_async_email, get_newsletter_welcome
 from server.tools.build import validate_edit_account, validate_edit_password, upload_image
 from server.tools.build import generate_receipt_json
 
+from server.tools.settings import get_random_testimonials
 from server.tools.settings import login_required, AWS, json_sort
 from server.tools.settings import Config, ReCAPTCHA_VERIFY_URL
 
@@ -23,19 +24,23 @@ bp = Blueprint('main', __name__)
 @bp.get("/index")
 def index():
     user_url = AWS.get_url("users")
-    _testimonials = Testimonials.get_all()
-    testimonials = []
-    for testimonial in _testimonials:
-        user = Users.get(testimonial.user_id)
-        testimonial_to_dict = testimonial.to_dict()
-        testimonial_to_dict["user"] = user.to_dict()
-        testimonial_to_dict["user"]["name"] = user.name
-        testimonial_to_dict["user"]["city"] = user.address.city
-        testimonial_to_dict["user"]["state"] = user.address.state
-        testimonial_to_dict["user"]["profile"] = user.profile.to_dict()
-        testimonials.append(testimonial_to_dict)
+    testimonial, = get_random_testimonials(size=1)
+
+    testimonial_to_dict = testimonial.to_dict()
+
+    user = Users.get(testimonial.user_id)
+    user_to_dict = user.to_dict()
+
+    user_name = user.name.title().split(" ")
+    alias = f"{user_name[0]} {user_name[-1][0]}."
+
+    user_to_dict["name"] = alias
+    user_to_dict["city"] = user.address.city
+    user_to_dict["state"] = user.address.state
+    user_to_dict["profile"] = user.profile.to_dict()
     return {
-        "testimonials": testimonials,
+        "user": user_to_dict,
+        "testimonial": testimonial_to_dict,
         "photo_url": user_url
     }
 

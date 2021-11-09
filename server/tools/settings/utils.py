@@ -6,7 +6,7 @@ import random
 import functools
 from datetime import datetime
 from flask import session, request, flash, g, make_response
-from blubber_orm import Users, Items, Details, Tags
+from blubber_orm import Users, Items, Details, Tags, Testimonials
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .const import COOKIE_KEY_SESSION, COOKIE_KEY_USER
@@ -65,6 +65,11 @@ def verify_auth_token(hashed_token, user_id):
         if user.session:
             return check_password_hash(hashed_token, user.session)
     return False
+
+def get_random_testimonials(size=1):
+    testimonials = Testimonials.get_all()
+    random_testimonials = random.sample(testimonials, size)
+    return random_testimonials
 
 def get_recommendations(item_name):
     # Split the item name by spaces
