@@ -337,7 +337,7 @@ def review_item_submit():
             "rating": data.get("rating")
         }
         review = create_review(review_data)
-        flashes.append(f"Your {item.name} has been updated!")
+        flashes.append(f"Thanks for your feedback on your {item.name} rental!")
         code = 200
     else:
         flashes.append("No changes were received! Try again.")
