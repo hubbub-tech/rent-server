@@ -48,8 +48,8 @@ class AWSConfig:
             raise Exception("An instance of the AWSConfig must be created before accessing s3.")
 
     @staticmethod
-    def get_url(path):
-        url = "/".join([AWSConfig.S3_LINK, path])
+    def get_url(dir):
+        url = "/".join([AWSConfig.S3_LINK, dir])
         return url
 
 class MailConfig:

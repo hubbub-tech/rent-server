@@ -20,6 +20,7 @@ bp = Blueprint('auth', __name__)
 def login():
     flashes = []
     errors = []
+
     data = request.json
     if data:
         form_data = {
@@ -28,7 +29,7 @@ def login():
         }
         form_check = validate_login(form_data)
         if form_check["is_valid"]:
-            user, = Users.filter({"email": form_data["email"]})
+            user = Users.unique({"email": form_data["email"]})
             login_response = login_user(user)
             if login_response["is_valid"]:
                 session = create_auth_token(user)
@@ -118,19 +119,16 @@ def register():
     response = make_response(data, 406)
     return response
 
-#TODO: rebuild account recovery
 @bp.post('/password/recovery')
 def password_recovery():
     flashes = []
     data = request.json
     if data:
-        _user = Users.filter({"email": data["email"].lower()})
-        if _user:
-            user, *_ = _user
-            if user.session is None:
-                token = create_auth_token(user)
-            else:
-                token = generate_password_hash(user.session)
+        user = Users.unique({"email": data["email"].lower()})
+        if user:
+            if user.session is None: token = create_auth_token(user)
+            else: token = generate_password_hash(user.session)
+
             reset_link = f"{Config.CORS_ALLOW_ORIGIN}/password/reset/token={token}"
             email_data = get_password_reset_email(user, reset_link)
             send_async_email.apply_async(kwargs=email_data)
@@ -149,23 +147,18 @@ def password_reset(token):
     flashes = []
     data = request.json
     if data:
-        _user = Users.filter({"email": data["email"].lower()})
-        if _user:
-            user, *_ = _user
+        user = Users.unique({"email": data["email"].lower()})
+        if user:
             is_authenticated = verify_auth_token(token, user.id)
             if is_authenticated:
-                hashed_password = generate_password_hash(data["newPassword"])
-                Users.set(user.id, {"password": hashed_password})
+                hashed_pass = generate_password_hash(data["newPassword"])
+                Users.set({"id": user.id}, {"password": hashed_pass})
+
                 flashes.append("You've successfully reset your password!")
                 data = {"flashes": flashes}
                 response = make_response(data, 200)
                 return response
-            else:
-                flashes.append("Reset attempt failed. Try again.")
-        else:
-            flashes.append("Reset attempt failed. Try again.")
-    else:
-        flashes.append("Sorry, you didn't send anything in the form, try again.")
+    flashes.append("Reset attempt failed. Try again.")
     data = {"flashes": flashes}
     response = make_response(data, 200)
     return response

@@ -10,9 +10,8 @@ from server.tools.settings import AWS, SG
 def validate_edit_account(form_data):
     is_valid = True
     message = None
-    check_if_is_existing_user = Users.filter({"email": form_data["email"]})
-    if check_if_is_existing_user:
-        registered_email_owner, = check_if_is_existing_user
+    registered_email_owner = Users.unique({"email": form_data["email"]})
+    if registered_email_owner:
         if registered_email_owner.id != form_data["self"].id:
             is_valid = False
             message = "Sorry, the email you want to user is already in use."
@@ -45,7 +44,7 @@ def validate_edit_password(form_data):
 
 def validate_registration(form_data):
     is_valid = False
-    loaded_user = Users.filter({"email": form_data["email"]})
+    loaded_user = Users.unique({"email": form_data["email"]})
     if loaded_user:
         message = "You might already have an account. Try logging in!"
     else:
@@ -62,9 +61,8 @@ def validate_registration(form_data):
 
 def validate_login(form_data):
     is_valid = False
-    loaded_user = Users.filter({"email": form_data["email"]})
+    loaded_user = Users.unique({"email": form_data["email"]})
     if loaded_user:
-        loaded_user, = loaded_user
         if not check_password_hash(loaded_user.password, form_data["password"]):
             message = "Sorry, invalid password and email combination."
         else:
@@ -93,7 +91,7 @@ def validate_rental_bounds(item, rental_range):
     rental_start_date = rental_range["date_started"]
     rental_end_date = rental_range["date_ended"]
     if date.today() + timedelta(days=4) >= item.calendar.date_ended:
-        Items.set(item.id, {"is_available": False})
+        Items.set({"id": item.id}, {"is_available": False})
         message = "Sorry, the item is not currently available."
 
     elif rental_start_date < item.calendar.date_started:

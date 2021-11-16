@@ -16,7 +16,6 @@ bp = Blueprint('list', __name__)
 def list():
     return {"address": g.user.address.to_dict()}
 
-
 @bp.post('/list/submit')
 @login_required
 def list_submit():
@@ -61,7 +60,7 @@ def list_submit():
                 "is_listed_from_user_address": strtobool(data["isDefaultAddress"])
             }
             image = request.files["image"]
-            form_check = validate_listing(form_data) #validate `start` < `end` on frontend
+            form_check = validate_listing(form_data)
             if form_check["is_valid"]:
                 item = create_item(form_data)
                 image_data = {
@@ -85,6 +84,3 @@ def list_submit():
     else:
         flashes.append("No data was sent! Try again.")
     return {"flashes": flashes}, 406
-
-#TODO: create static page for list/info
-#TODO: create static page for list/complete or list/success

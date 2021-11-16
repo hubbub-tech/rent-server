@@ -30,14 +30,13 @@ def checkout_submit():
         set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": g.user_id})
 
         transactions = []
-        _cart_contents = g.user.cart.contents # need this because cart size changes
-        for item in _cart_contents:
-            _reservation = Reservations.filter({
+        cart_contents = g.user.cart.contents.copy()
+        for item in cart_contents:
+            reservation = Reservations.unique({
                 "renter_id": g.user_id,
                 "item_id": item.id,
                 "is_in_cart": True
             })
-            reservation, *_ = _reservation
             item.calendar.add(reservation)
             order_data = {
                 "res_date_start": reservation.date_started,
@@ -55,16 +54,16 @@ def checkout_submit():
                 "renter": g.user,
                 "reservation": reservation
             }
-            #TODO: send email receipt to lister
+
             email_data = get_lister_receipt_email(transaction)
             send_async_email.apply_async(kwargs=email_data)
-            transactions.append(transaction) # important for renters receipt
+            transactions.append(transaction)
             g.user.cart.remove(reservation)
             item.unlock()
-        #TODO: send email receipt to renter
+
         email_data = get_renter_receipt_email(transactions)
         send_async_email.apply_async(kwargs=email_data)
-        session["cart_size"] = 0
+
         flashes.append("Successfully rented all items! Now, just let us know when we can drop them off.")
         return {"flashes": flashes}, 200
     else:
@@ -74,12 +73,12 @@ def checkout_submit():
 @bp.get("/accounts/u/orders")
 @login_required
 def order_history():
-    photo_url = AWS.get_url("items")
+    photo_url = AWS.get_url(dir="items")
     order_history = Orders.filter({"renter_id": g.user_id})
     orders = []
     if order_history:
         for order in order_history:
-            item = Items.get(order.item_id)
+            item = Items.get({"id": order.item_id})
             item_to_dict = item.to_dict()
             item_to_dict["calendar"] = item.calendar.to_dict()
             item_to_dict["details"] = item.details.to_dict()
@@ -92,7 +91,7 @@ def order_history():
             order_to_dict["item"] = item_to_dict
 
             orders.append(order_to_dict)
-    json_sort(orders, "date_placed", reverse=True)
+        json_sort(orders, "date_placed", reverse=True)
     return {
         "photo_url": photo_url,
         "orders": orders
@@ -101,11 +100,11 @@ def order_history():
 @bp.get("/accounts/o/id=<int:order_id>")
 @login_required
 def manage_order(order_id):
-    photo_url = AWS.get_url("items")
+    photo_url = AWS.get_url(dir="items")
     flashes = []
-    order = Orders.get(order_id)
+    order = Orders.get({"id": order_id})
     if order:
-        item = Items.get(order.item_id)
+        item = Items.get({"id": order.item_id})
         is_extended = order.ext_date_end != order.res_date_end
         if g.user_id == order.renter_id:
             item_to_dict = item.to_dict()
@@ -143,7 +142,7 @@ def schedule_dropoffs(date_str):
         orders_to_dropoff = []
         for order in orders:
             order_to_dict = order.to_dict()
-            item = Items.get(order.item_id)
+            item = Items.get({"id": order.item_id})
             order_to_dict["item"] = item.to_dict()
             order_to_dict["reservation"] = order.reservation.to_dict()
             orders_to_dropoff.append(order_to_dict)
@@ -182,15 +181,13 @@ def schedule_dropoffs_submit():
                 "zip": data["address"]["zip_code"]
             }
         }
-        orders = [Orders.get(order["id"]) for order in data["orders"]]
+        orders = [Orders.get({"id": order["id"]}) for order in data["orders"]]
         dropoff_date = datetime.strptime(data["dropoffDate"], format).date()
         if date.today() < dropoff_date:
             dropoff_logistics = create_logistics(logistics_data, orders, dropoff=dropoff_date)
 
-            #TODO: async send availability details to user
             email_data = get_dropoff_email(dropoff_logistics)
             send_async_email.apply_async(kwargs=email_data)
-            #TODO: send return procedure email
 
             flashes.append("You have successfully scheduled your rental dropoffs!")
             return {"flashes": flashes}, 200
@@ -208,12 +205,11 @@ def schedule_pickups(date_str):
     res_date_end = datetime.strptime(date_str, format).date()
     orders = Orders.filter({"renter_id": g.user_id, "is_pickup_sched": False})
     if orders:
-        print(orders)
         orders_to_pickup = []
         for order in orders:
             if order.ext_date_end == res_date_end:
                 order_to_dict = order.to_dict()
-                item = Items.get(order.item_id)
+                item = Items.get({"id": order.item_id})
                 order_to_dict["item"] = item.to_dict()
                 order_to_dict["reservation"] = order.reservation.to_dict()
                 orders_to_pickup.append(order_to_dict)
@@ -252,7 +248,7 @@ def schedule_pickups_submit():
                 "zip": data["address"]["zip_code"]
             }
         }
-        orders = [Orders.get(order["id"]) for order in data["orders"]]
+        orders = [Orders.get({"id": order["id"]}) for order in data["orders"]]
         pickup_date = datetime.strptime(data["pickupDate"], format).date()
         if date.today() < pickup_date:
             pickup_logistics = create_logistics(logistics_data, orders, pickup=pickup_date)
@@ -279,7 +275,7 @@ def early_return_submit():
     data = request.json
     if data:
         order_id = data["orderId"]
-        order = Orders.get(order_id)
+        order = Orders.get({"id": order_id})
         if order.ext_date_end > order.res_date_end:
             extension_keys = {
                 "order_id": order.id,
@@ -317,7 +313,7 @@ def extend_submit():
     data = request.json
     if data:
         item_id = data["itemId"]
-        item = Items.get(item_id)
+        item = Items.get({"id": item_id})
         if item.is_locked == False:
             item.lock(g.user)
             order_id = data["orderId"]
@@ -362,7 +358,7 @@ def cancel_order():
     data = request.json
     if data:
         order_id = data["orderId"]
-        order = Orders.get(order_id)
+        order = Orders.get({"id": order_id})
         if g.user_id == order.renter_id:
             if not order.is_dropoff_scheduled:
                 reservation_to_delete = order.reservation

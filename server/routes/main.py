@@ -23,18 +23,15 @@ bp = Blueprint('main', __name__)
 
 @bp.get("/index")
 def index():
-    user_url = AWS.get_url("users")
+    user_url = AWS.get_url(dir="users")
     testimonial, = get_random_testimonials(size=1)
 
     testimonial_to_dict = testimonial.to_dict()
 
-    user = Users.get(testimonial.user_id)
+    user = Users.get({"id": testimonial.user_id})
     user_to_dict = user.to_dict()
 
-    user_name = user.name.title().split(" ")
-    alias = f"{user_name[0]} {user_name[-1][0]}."
-
-    user_to_dict["name"] = alias
+    user_to_dict["name"] = user.alias
     user_to_dict["city"] = user.address.city
     user_to_dict["state"] = user.address.state
     user_to_dict["profile"] = user.profile.to_dict()
@@ -65,21 +62,20 @@ def newsletter_form_submit():
             return {"flashes": flashes}, 200
     return {"flashes": ["There was a problem adding you to our email list. try again."]}, 406
 
-#keep track of items being rented, items owned, item reviews and item edits
 @bp.get("/accounts/u/id=<int:id>")
 @login_required
 def account(id):
-    searched_user = Users.get(id)
-    user_url = AWS.get_url("users")
-    item_url = AWS.get_url("items")
+    searched_user = Users.get({"id": id})
+    user_url = AWS.get_url(dir="users")
+    item_url = AWS.get_url(dir="items")
     if searched_user:
         user_to_dict = searched_user.to_dict()
         user_to_dict["name"] = searched_user.name
         user_to_dict["cart"] = searched_user.cart.to_dict()
         user_to_dict["profile"] = searched_user.profile.to_dict()
-        listings_obj = Items.filter({"lister_id": searched_user.id})
-        listings = []
-        for item in listings_obj:
+        listings = Items.filter({"lister_id": searched_user.id})
+        listings_to_dict = []
+        for item in listings:
             item_to_dict = item.to_dict()
             next_start, next_end  = item.calendar.next_availability()
             item_to_dict["calendar"] = item.calendar.to_dict()
@@ -87,11 +83,11 @@ def account(id):
             item_to_dict["next_available_start"] = next_start.strftime("%Y-%m-%d")
             item_to_dict["next_available_end"] = next_end.strftime("%Y-%m-%d")
             item_to_dict["details"] = item.details.to_dict()
-            listings.append(item_to_dict)
+            listings_to_dict.append(item_to_dict)
         return {
             "photo_url": {"user": user_url, "item": item_url},
             "user": user_to_dict,
-            "listings": listings
+            "listings": listings_to_dict
         }
     else:
         return {"flashes": ["this user does not exist at the moment."]}, 404
@@ -100,7 +96,7 @@ def account(id):
 @bp.get("/accounts/u/edit")
 @login_required
 def edit_account():
-    photo_url = AWS.get_url("users")
+    photo_url = AWS.get_url(dir="users")
     user_to_dict = g.user.to_dict()
     user_to_dict["address"] = g.user.address.to_dict()
     user_to_dict["profile"] = g.user.profile.to_dict()
@@ -122,14 +118,14 @@ def edit_account_submit():
         "payment": data.get("payment", g.user.payment),
         "phone": data.get("phone", g.user.profile.phone)
     }
-    print(form_data)
+
     form_check = validate_edit_account(form_data)
     if form_check["is_valid"]:
-        Users.set(g.user_id, {
+        Users.set({"id": g.user_id}, {
             "email": form_data["email"],
             "payment": form_data["payment"]
         })
-        Profiles.set(g.user_id, {
+        Profiles.set({"id": g.user_id}, {
             "bio": form_data["bio"],
             "phone": form_data["phone"]
         })
@@ -137,7 +133,7 @@ def edit_account_submit():
         return {"flashes": flashes}, 200
     else:
         flashes.append(form_check["message"])
-    return {"flashes": flashes}, 406
+        return {"flashes": flashes}, 406
 
 @bp.post("/accounts/u/photo/submit")
 @login_required
@@ -153,7 +149,7 @@ def edit_account_photo_submit():
         }
         upload_response = upload_image(image_data)
         if upload_response["is_valid"]:
-            Profiles.set(g.user_id, {"has_pic": True})
+            Profiles.set({"id": g.user_id}, {"has_pic": True})
             flashes.append(upload_response["message"])
             return {"flashes": flashes}, 200
         else:
@@ -177,14 +173,15 @@ def edit_password_submit():
         }
         form_check = validate_edit_password(form_data)
         if form_check["is_valid"]:
-            g.user.password = generate_password_hash(form_data["new_password"])
+            hashed_pass = generate_password_hash(form_data["new_password"])
+            Users.set({"id": g.user_id}, {"password": hashed_pass})
+
             flashes.append(form_check["message"])
             return {"flashes": flashes}, 200
         else:
             errors.append(form_check["message"])
             return {"errors": errors}, 406
-    else:
-        flashes.append("No data was sent! Try again.")
+    flashes.append("No data was sent! Try again.")
     return {"flashes": flashes}, 406
 
 @bp.post("/accounts/u/address/submit")
@@ -200,10 +197,10 @@ def edit_address_submit():
         "city": data["address"]["city"],
         "state": data["address"]["state"]
     }
-    new_address = Addresses.filter(form_data)
-    if not new_address:
-        new_address = Addresses.insert(form_data)
-    Users.set(g.user_id, {
+    address = Addresses.filter(form_data)
+    if not address: address = Addresses.insert(form_data)
+
+    Users.set({"id": g.user_id}, {
         "address_num": form_data["num"],
         "address_street": form_data["street"],
         "address_apt": form_data["apt"],
@@ -212,33 +209,29 @@ def edit_address_submit():
     flashes.append("You successfully changed your address!")
     return {"flashes": flashes}, 200
 
-#users hide items
 @bp.post("/accounts/i/hide/id=<int:item_id>")
 @login_required
 def hide_item(item_id):
-    code = 406
     flashes = []
-    item = Items.get(item_id)
+    item = Items.get({"id": item_id})
     if item:
         if item.lister_id == g.user_id:
             data = request.json
-            item.is_available = data["toggle"]
-            if item.is_available:
-                flashes.append("Item has been revealed. Others can now see it in inventory.")
-            else:
-                flashes.append("Item has been hidden. Come back when you are ready to reveal it.")
-            code = 200
+            if data: Items.set({"id": item_id}, {"is_available": data["toggle"]})
+
+            if item.is_available: flashes.append("Item has been revealed.")
+            else: flashes.append("Item has been hidden.")
+            return {"flashes": flashes}, 200
         else:
             flashes.append("You are not authorized to manage the visibility of this item.")
-        return {"flashes": flashes}, code
-    else:
-        return {"flashes": ["this item does not exist at the moment."]}, 404
+            return {"flashes": flashes}, 403
+    return {"flashes": ["This item does not exist at the moment."]}, 404
 
 @bp.get("/accounts/i/edit/id=<int:item_id>")
 @login_required
 def edit_item(item_id):
     flashes = []
-    item = Items.get(item_id)
+    item = Items.get({"id": item_id})
     if item:
         if item.lister_id == g.user_id:
             item_to_dict = item.to_dict()
@@ -247,10 +240,8 @@ def edit_item(item_id):
             return { "item": item_to_dict }, 200
         else:
             flashes.append("You are not authorized to manage the visibility of this item.")
-        return {"flashes": flashes}, 406
-    else:
-        return {"flashes": ["this item does not exist at the moment."]}, 404
-
+            return {"flashes": flashes}, 403
+    return {"flashes": ["this item does not exist at the moment."]}, 404
 
 @bp.post("/accounts/i/edit/submit")
 @login_required
@@ -258,29 +249,27 @@ def edit_item_submit():
     flashes = []
     data = request.json
     if data:
-        item = Items.get(data["itemId"])
+        item = Items.get({"id": data["itemId"]})
         # date_end_extended = json_date_to_python_date(data["extendEndDate"])
         form_data = {
             "price": data.get("price", item.price),
             "description": data.get("description", item.details.description),
             # "extend": date_end_extended
         }
-        Items.set(item.id, {"price": form_data["price"]})
-        Details.set(item.id, {"description": form_data["description"]})
-        # Calendars.set(item.id, {"date_ended": date_end_extended})
+        Items.set({"id": item.id}, {"price": form_data["price"]})
+        Details.set({"id": item.id}, {"description": form_data["description"]})
+        # Calendars.set({"id": item.id}, {"date_ended": date_end_extended})
         flashes.append(f"Your {item.name} has been updated!")
-        code = 200
-    else:
-        flashes.append("No changes were received! Try again.")
-        code = 406
-    return {"flashes": flashes}, code
+        return {"flashes": flashes}, 200
+    flashes.append("No changes were received! Try again.")
+    return {"flashes": flashes}, 406
 
 @bp.post("/accounts/i/photo/submit")
 @login_required
 def edit_item_photo_submit():
     flashes = []
     data = request.form
-    item = Items.get(data["itemId"])
+    item = Items.get({"id": data["itemId"]})
     image = request.files.get("image")
     if image and item:
         image_data = {
@@ -298,11 +287,12 @@ def edit_item_photo_submit():
             return {"flashes": flashes}, 406
     return {"flashes": ["Failed to receive the photo update for your item."]}, 406
 
+
 @bp.get("/accounts/o/review/id=<int:order_id>")
 @login_required
 def review_item(order_id):
     flashes = []
-    order = Orders.get(order_id)
+    order = Orders.get({"id": order_id})
     if order:
         item = Items.get(order.item_id)
         if order.renter_id == g.user_id:
@@ -312,15 +302,11 @@ def review_item(order_id):
             order_to_dict = order.to_dict()
             order_to_dict["ext_date_end"] = order.ext_date_end.strftime("%Y-%m-%d")
             order_to_dict["reservation"] = order.reservation.to_dict()
-            return {
-                "item": item_to_dict,
-                "order": order_to_dict
-            }, 200
+            return { "item": item_to_dict, "order": order_to_dict }, 200
         else:
             flashes.append("You are not authorized to manage the visibility of this item.")
-        return {"flashes": flashes}, 406
-    else:
-        return {"flashes": ["this order does not exist at the moment."]}, 404
+            return {"flashes": flashes}, 406
+    return {"flashes": ["this order does not exist at the moment."]}, 404
 
 
 @bp.post("/accounts/o/review/submit")
@@ -329,7 +315,7 @@ def review_item_submit():
     flashes = []
     data = request.json
     if data:
-        item = Items.get(data["itemId"])
+        item = Items.get({"id": data["itemId"]})
         review_data = {
             "item_id": item.id,
             "author_id": g.user_id,
@@ -338,11 +324,9 @@ def review_item_submit():
         }
         review = create_review(review_data)
         flashes.append(f"Thanks for your feedback on your {item.name} rental!")
-        code = 200
-    else:
-        flashes.append("No changes were received! Try again.")
-        code = 406
-    return {"flashes": flashes}, code
+        return {"flashes": flashes}, 200
+    return {"flashes": ["No changes were received! Try again."]}, 406
+
 
 @bp.post('/feedback/submit')
 def feedback_submit():
@@ -350,25 +334,24 @@ def feedback_submit():
     data = request.json
     if data:
         feedback = {
-            "complaint": data["feedback"],
             "link": data["href"],
+            "complaint": data["feedback"],
             "user_id": data.get('userId')
         }
         issue = Issues.insert(feedback)
         flashes.append("We got your feedback! Thanks for your patience :)!")
         return {"flashes": flashes}, 200
-    else:
-        flashes.append("There was a problem receiving your feedback :(... Try again or email at hubbubcu@gmail.com.")
+    flashes.append(f"There was a problem receiving your feedback :(... Try again or email at hello@hubbub.shop.")
     return {"flashes": flashes}, 406
+
 
 @bp.get('/accounts/o/receipt/id=<int:order_id>')
 @login_required
 def download_receipt(order_id):
-    order = Orders.get(order_id)
+    order = Orders.get({"id": order_id})
     if order:
         if g.user_id == order.renter_id:
             receipt = generate_receipt_json(order)
             return { "receipt": receipt }, 200
-        return 406
-    else:
-        return {"flashes": ["This order does not exist at the moment."]}, 404
+        return {"flashes": ["You're not authorized to view this receipt."]}, 406
+    return {"flashes": ["This order does not exist at the moment."]}, 404

@@ -22,9 +22,14 @@ def get_newsletter_welcome(newsletter_data):
 
 def get_dropoff_email(dropoff):
     dropoff_logistics = dropoff.logistics
-    renter = Users.get(dropoff_logistics.renter_id)
+    renter = Users.get({"id": dropoff_logistics.renter_id})
     orders = Orders.by_dropoff(dropoff)
-    item_names = [Items.get(order.item_id).name for order in orders]
+
+    item_names = []
+    for order in orders:
+        item = Items.get({"id": order.item_id})
+        item_names.append(item.name)
+
     timeslots = dropoff_logistics.timeslots
     dropoff_date = dropoff.dropoff_date.strftime("%B %-d, %Y")
 
@@ -57,9 +62,14 @@ def get_dropoff_email(dropoff):
 
 def get_pickup_email(pickup):
     pickup_logistics = pickup.logistics
-    renter = Users.get(pickup_logistics.renter_id)
+    renter = Users.get({"id": pickup_logistics.renter_id})
     orders = Orders.by_pickup(pickup)
-    item_names = [Items.get(order.item_id).name for order in orders]
+
+    item_names = []
+    for order in orders:
+        item = Items.get({"id": order.item_id})
+        item_names.append(item.name)
+
     timeslots = pickup_logistics.timeslots
     pickup_date = pickup.pickup_date.strftime("%B %-d, %Y")
 
@@ -130,7 +140,7 @@ def get_lister_receipt_email(transaction):
     item = transaction["item"]
     renter = transaction["renter"]
     reservation = transaction["reservation"]
-    lister = Users.get(item.lister_id)
+    lister = Users.get({"id": item.lister_id})
 
     frame_data = {}
     frame_data["preview"] = f"See your rental receipt for your order on {date.today().strftime('%B %-d, %Y')} - "
@@ -194,7 +204,7 @@ def get_welcome_email(user):
     return email_data
 
 def get_new_listing_email(item):
-    lister = Users.get(item.lister_id)
+    lister = Users.get({"id": item.lister_id})
     frame_data = {}
     frame_data["preview"] = f"This is to confirm that your item was listed on {date.today().strftime('%B %-d, %Y')} - "
     frame_data["user"] = lister.name
@@ -217,8 +227,8 @@ def get_new_listing_email(item):
     return email_data
 
 def get_extension_email(order, ext_reservation):
-    item = Items.get(order.item_id)
-    user = Users.get(order.renter_id)
+    item = Items.get({"id": order.item_id})
+    user = Users.get({"id": order.renter_id})
     frame_data = {}
     frame_data["preview"] = f"This is to confirm that your rental has been extended - "
     frame_data["user"] = user.name
@@ -248,8 +258,8 @@ def get_extension_email(order, ext_reservation):
     return email_data
 
 def get_early_return_email(order, early_reservation):
-    item = Items.get(order.item_id)
-    user = Users.get(order.renter_id)
+    item = Items.get({"id": order.item_id})
+    user = Users.get({"id": order.renter_id})
     frame_data = {}
     frame_data["preview"] = f"This is to confirm that your early return request has been received - "
     frame_data["user"] = user.name
@@ -271,8 +281,8 @@ def get_early_return_email(order, early_reservation):
     return email_data
 
 def get_cancellation_email(order):
-    item = Items.get(order.item_id)
-    user = Users.get(order.renter_id)
+    item = Items.get({"id": order.item_id})
+    user = Users.get({"id": order.renter_id})
     frame_data = {}
     frame_data["preview"] = f"This is to confirm that your order for {item.name} has been cancelled - "
     frame_data["user"] = user.name

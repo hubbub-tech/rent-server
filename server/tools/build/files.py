@@ -4,8 +4,8 @@ from blubber_orm import Items, Orders, Users, Reservations, Dropoffs, Pickups
 from server.tools.settings import SG
 
 def generate_receipt_json(order):
-    item = Items.get(order.item_id)
-    user =  Users.get(order.lister_id)
+    item = Items.get({"id": order.item_id})
+    user =  Users.get({"id": order.lister_id})
 
     receipt_text = f"""
         Rental Invoice for {item.name}\n

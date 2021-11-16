@@ -18,7 +18,7 @@ bp = Blueprint('rent', __name__)
 @bp.get("/inventory", defaults={"search": None})
 @bp.get("/inventory/search=<search>")
 def inventory(search):
-    photo_url = AWS.get_url("items")
+    photo_url = AWS.get_url(dir="items")
     if search:
         listings = search_items(search)
     else:
@@ -26,7 +26,7 @@ def inventory(search):
     listings_to_dict = []
     featured_to_dict = []
     for item in listings:
-        lister = Users.get(item.lister_id)
+        lister = Users.get({"id": item.lister_id})
         tags = Tags.by_item(item)
         item_to_dict = item.to_dict()
         next_start, next_end  = item.calendar.next_availability()
@@ -50,10 +50,10 @@ def inventory(search):
 
 @bp.get("/inventory/i/id=<int:item_id>")
 def view_item(item_id):
-    photo_url = AWS.get_url("items")
-    item = Items.get(item_id)
+    photo_url = AWS.get_url(dir="items")
+    item = Items.get({"id": item_id})
     if item:
-        lister = Users.get(item.lister_id)
+        lister = Users.get({"id": item.lister_id})
         item_to_dict = item.to_dict()
         item_to_dict["lister_name"] = lister.name
         next_start, next_end = item.calendar.next_availability()
@@ -66,7 +66,7 @@ def view_item(item_id):
         recommendations = get_recommendations(item.name)
         recs_to_dict = []
         for rec in recommendations:
-            lister = Users.get(rec.lister_id)
+            lister = Users.get({"id": rec.lister_id})
             rec_to_dict = rec.to_dict()
             next_start, next_end  = rec.calendar.next_availability()
             rec_to_dict["next_available_start"] = next_start.strftime("%Y-%m-%d")
@@ -89,7 +89,7 @@ def validate(item_id):
     flashes = []
     code = 406
     reservation = None
-    item = Items.get(item_id)
+    item = Items.get({"id": item_id})
     if item:
         data = request.json
         if data.get("startDate") and data.get("endDate"):
@@ -127,7 +127,7 @@ def validate(item_id):
 @bp.post("/add/i/id=<int:item_id>")
 @login_required
 def add_to_cart(item_id):
-    item = Items.get(item_id)
+    item = Items.get({"id": item_id})
     if item:
         data = request.json
         if g.user.id != item.lister_id:
@@ -167,21 +167,17 @@ def update(item_id):
     errors = []
     code = 406
     reservation = None
-    item = Items.get(item_id)
+    item = Items.get({"id": item_id})
     if item:
         data = request.json
         if data.get("startDate") and data.get("endDate"):
-            #NOTE: filter always returns a list but should only have 1 item this time
-            _reservation = Reservations.filter({
+            reservation = Reservations.unique({
                 "item_id": item_id,
                 "renter_id": g.user_id,
                 "is_in_cart": True
             })
-            if _reservation:
-                old_reservation, *_ = _reservation
-                g.user.cart.remove(old_reservation)
-            else:
-                g.user.cart.remove_without_reservation(item)
+            if reservation: g.user.cart.remove(reservation)
+            else: g.user.cart.remove_without_reservation(item)
 
             new_date_started = json_date_to_python_date(data["startDate"])
             new_date_ended = json_date_to_python_date(data["endDate"])
@@ -221,7 +217,7 @@ def update(item_id):
 def remove_from_cart(item_id):
     flashes = []
     format = "%Y-%m-%d" # this format when taking dates thru url
-    item = Items.get(item_id)
+    item = Items.get({"id": item_id})
     if item:
         data = request.json
         if data.get("startDate") and data.get("endDate"):
@@ -245,25 +241,25 @@ def remove_from_cart(item_id):
 @bp.get("/checkout")
 @login_required
 def checkout():
-    photo_url = AWS.get_url("items")
+    photo_url = AWS.get_url(dir="items")
     items = [] #for json
     is_ready = g.user.cart.size() > 0
     ready_to_order_items = g.user.cart.get_reserved_contents()
-    _cart_contents = g.user.cart.contents
+    _cart_contents = g.user.cart.contents.copy()
     for item in _cart_contents:
         if is_item_in_itemlist(item, ready_to_order_items):
-            reservation, *_ = Reservations.filter({
+            reservation = Reservations.unique({
                 "renter_id": g.user_id,
                 "item_id": item.id,
                 "is_in_cart": True
             })
-            #FUNC: has someone ordered the item since you've added it to cart?
+            # @func: has someone ordered the item since you've added it to cart?
             if item.calendar.scheduler(reservation) == False:
                 g.user.cart.remove(reservation)
                 g.user.cart.add_without_reservation(item)
             elif not reservation.is_calendared:
                 if item.calendar.scheduler(reservation) is None:
-                    Items.set(item.id, {"is_available": False})
+                    Items.set({"id": item.id}, {"is_available": False})
                     g.user.cart.remove(reservation)
                 elif item.calendar.scheduler(reservation):
                     item_to_dict = item.to_dict()

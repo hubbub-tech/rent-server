@@ -28,7 +28,7 @@ def login_required(view):
         is_authenticated = verify_auth_token(session, user_id)
         if is_authenticated:
             g.user_id = int(user_id)
-            g.user = Users.get(user_id)
+            g.user = Users.get({"id": user_id})
             return view(**kwargs)
         else:
             data = {"flashes": ["Your login session has ended. Login again."]}
@@ -46,7 +46,7 @@ def login_user(user):
         session["user_id"] = user.id
         session["cart_size"] = user.cart.size()
         message = "You're logged in, welcome back!"
-    Users.set(user.id, {"dt_last_active": datetime.now(tz=pytz.UTC)})
+    Users.set({"id": user.id}, {"dt_last_active": datetime.now(tz=pytz.UTC)})
     return {
         "is_valid" : is_valid,
         "message" : message
@@ -61,7 +61,7 @@ def create_auth_token(user):
 
 def verify_auth_token(hashed_token, user_id):
     if user_id and hashed_token:
-        user = Users.get(user_id)
+        user = Users.get({"id": user_id})
         if user.session:
             return check_password_hash(hashed_token, user.session)
     return False
@@ -122,8 +122,7 @@ def search_items(search_key):
             if item.is_available and item.id not in id_tracker:
                 id_tracker.append(item.id)
                 filtered_items.append(item)
-    else:
-        filtered_items = Items.filter({"is_available": True})
+    else: filtered_items = Items.filter({"is_available": True})
     return filtered_items
 
 def generate_proposed_period(item, input_message):
@@ -140,7 +139,7 @@ def generate_proposed_period(item, input_message):
             status_message = f"{input_message} {proposed_start_str} to {proposed_end_str} is currently free."
     #if the calendar is full, item is taken off inventory
     elif proposed_start == proposed_end:
-        Items.set(item.id, {"is_available": False})
+        Items.set({"id": item.id}, {"is_available": False})
         status_message = "Sorry, the item is no longer available."
     return status_message, waitlist_message
 
