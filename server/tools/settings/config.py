@@ -84,13 +84,27 @@ class Config:
     #Celery
     CORS_SUPPORTS_CREDENTIALS = True
     CORS_ALLOW_ORIGIN = os.environ['CORS_ALLOW_ORIGIN']
+
     CELERY_BROKER_URL = os.environ['CLOUDAMQP_URL']
     CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
     BROKER_POOL_LIMIT = 1
-    #CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
 
     #Upload management
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
     #ReCaptcha
     ReCAPTCHA_SERVER_API_KEY= os.environ['ReCAPTCHA_SERVER_API_KEY']
+
+class TestConfig:
+
+    SECRET_KEY = 'dev'
+    TESTING = True
+
+    CORS_SUPPORTS_CREDENTIALS = True
+    CORS_ALLOW_ORIGIN = 'http://localhost:3000'
+
+    CELERY_BROKER_URL = 'amqp://localhost'
+    CELERY_RESULT_BACKEND = 'rpc://localhost'
+    BROKER_POOL_LIMIT = 1
+
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

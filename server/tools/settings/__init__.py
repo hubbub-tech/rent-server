@@ -12,7 +12,7 @@ from .utils import generate_proposed_period
 from .utils import append_sort, json_sort
 from .utils import search_items, get_recommendations, get_random_testimonials
 
-from .config import AWSConfig, MailConfig, Config
+from .config import AWSConfig, MailConfig, Config, TestConfig
 
 from .const import *
 

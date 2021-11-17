@@ -143,7 +143,10 @@ def add_to_cart(item_id):
                         "date_started": date_started,
                         "date_ended": date_ended
                     }
-                    reservation = Reservations.get(reservation_keys) #NOTE: assumes res exists
+                    reservation = Reservations.get(reservation_keys)
+
+                    assert reservation is not None, "Reservation does not exist."
+
                     g.user.cart.add(reservation)
                     message = "The item has been added to your cart!"
             else:
