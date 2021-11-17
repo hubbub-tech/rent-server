@@ -79,7 +79,7 @@ def register():
                 "address_num": data["address"]["num"],
                 "address_street": data["address"]["street"],
                 "address_apt": data["address"]["apt"],
-                "address_zip": data["address"]["zip_code"]
+                "address_zip": data["address"]["zip"]
             },
             "profile": {
                 "phone": data["profile"]["phone"],
@@ -98,7 +98,7 @@ def register():
                 "apt": data["address"]["apt"],
                 "city": data["address"]["city"],
                 "state": data["address"]["state"],
-                "zip": data["address"]["zip_code"]
+                "zip": data["address"]["zip"]
             }
         }
         form_check = validate_registration(form_data["user"])

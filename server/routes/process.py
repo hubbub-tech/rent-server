@@ -78,6 +78,7 @@ def order_history():
     orders = []
     if order_history:
         for order in order_history:
+
             item = Items.get({"id": order.item_id})
             item_to_dict = item.to_dict()
             item_to_dict["calendar"] = item.calendar.to_dict()
@@ -87,7 +88,9 @@ def order_history():
             order_to_dict["is_extended"] = order.ext_date_end != order.res_date_end
             order_to_dict["ext_date_end"] = order.ext_date_end.strftime("%Y-%m-%d")
             order_to_dict["reservation"] = order.reservation.to_dict()
-            order_to_dict["lister"] = order.lister.to_dict()
+
+            lister = Users.get({"id": order.lister_id})
+            order_to_dict["lister"] = lister.to_dict()
             order_to_dict["item"] = item_to_dict
 
             orders.append(order_to_dict)
@@ -116,7 +119,9 @@ def manage_order(order_id):
             order_to_dict["ext_date_start"] = order.ext_date_start.strftime("%Y-%m-%d")
             order_to_dict["ext_date_end"] = order.ext_date_end.strftime("%Y-%m-%d")
             order_to_dict["reservation"] = order.reservation.to_dict()
-            order_to_dict["lister"] = order.lister.to_dict()
+
+            lister = Users.get({"id": order.lister_id})
+            order_to_dict["lister"] = lister.to_dict()
             order_to_dict["item"] = item_to_dict
             return {
                 "order": order_to_dict,
@@ -170,7 +175,7 @@ def schedule_dropoffs_submit():
                 "address_num": data["address"]["num"],
                 "address_street": data["address"]["street"],
                 "address_apt": data["address"]["apt"],
-                "address_zip": data["address"]["zip_code"]
+                "address_zip": data["address"]["zip"]
             },
             "address": {
                 "num": data["address"]["num"],
@@ -178,7 +183,7 @@ def schedule_dropoffs_submit():
                 "apt": data["address"]["apt"],
                 "city": data["address"]["city"],
                 "state": data["address"]["state"],
-                "zip": data["address"]["zip_code"]
+                "zip": data["address"]["zip"]
             }
         }
         orders = [Orders.get({"id": order["id"]}) for order in data["orders"]]
@@ -237,7 +242,7 @@ def schedule_pickups_submit():
                 "address_num": data["address"]["num"],
                 "address_street": data["address"]["street"],
                 "address_apt": data["address"]["apt"],
-                "address_zip": data["address"]["zip_code"]
+                "address_zip": data["address"]["zip"]
             },
             "address": {
                 "num": data["address"]["num"],
@@ -245,7 +250,7 @@ def schedule_pickups_submit():
                 "apt": data["address"]["apt"],
                 "city": data["address"]["city"],
                 "state": data["address"]["state"],
-                "zip": data["address"]["zip_code"]
+                "zip": data["address"]["zip"]
             }
         }
         orders = [Orders.get({"id": order["id"]}) for order in data["orders"]]
@@ -360,7 +365,7 @@ def cancel_order():
         order_id = data["orderId"]
         order = Orders.get({"id": order_id})
         if g.user_id == order.renter_id:
-            if not order.is_dropoff_scheduled:
+            if not order.is_dropoff_sched:
                 reservation_to_delete = order.reservation
                 res_keys = {
                     "date_started": reservation_to_delete.date_started,

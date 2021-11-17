@@ -27,7 +27,7 @@ def generate_receipt_json(order):
         * Tax: {order.reservation.print_tax()}\n
         """
 
-    if order.is_dropoff_scheduled:
+    if order.is_dropoff_sched:
         dropoff = Dropoffs.by_order(order)
         if dropoff:
             dropoff_text = f"""
@@ -38,7 +38,7 @@ def generate_receipt_json(order):
     else:
         dropoff_text = "* Dropoff has not been scheduled.\n"
 
-    if order.is_pickup_scheduled:
+    if order.is_pickup_sched:
         pickup = Pickups.by_order(order)
         if pickup:
             pickup_text = f"""

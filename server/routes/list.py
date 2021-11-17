@@ -34,7 +34,7 @@ def list_submit():
                     "address_num": data["num"],
                     "address_street": data["street"],
                     "address_apt": data["apt"],
-                    "address_zip": data["zip_code"]
+                    "address_zip": data["zip"]
                 },
                 "details": {
                     "description": data["description"],
@@ -54,7 +54,7 @@ def list_submit():
                     "apt": data["apt"],
                     "city": data["city"],
                     "state": data["state"],
-                    "zip": data["zip_code"]
+                    "zip": data["zip"]
                 },
                 "tags": ['all'] + data['tags'].split(","),
                 "is_listed_from_user_address": strtobool(data["isDefaultAddress"])

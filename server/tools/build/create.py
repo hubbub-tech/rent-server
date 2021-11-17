@@ -110,7 +110,7 @@ def create_logistics(insert_data, orders, dropoff=None, pickup=None):
     new_logistics = Logistics.insert(insert_data["logistics"])
     if dropoff:
         dropoff_data = {
-            "dt_sched": new_logistics.dt_scheduled,
+            "dt_sched": new_logistics.dt_sched,
             "renter_id": new_logistics.renter_id,
             "dropoff_date": dropoff
         }
@@ -119,7 +119,7 @@ def create_logistics(insert_data, orders, dropoff=None, pickup=None):
         result = new_dropoff_logistics
     elif pickup:
         pickup_data = {
-            "dt_sched": new_logistics.dt_scheduled,
+            "dt_sched": new_logistics.dt_sched,
             "renter_id": new_logistics.renter_id,
             "pickup_date": pickup
         }
@@ -128,7 +128,7 @@ def create_logistics(insert_data, orders, dropoff=None, pickup=None):
         result = new_pickup_logistics
     else:
         Logistics.delete({
-            "dt_sched": new_logistics.dt_scheduled,
+            "dt_sched": new_logistics.dt_sched,
             "renter_id": new_logistics.renter_id
         })
         result = None
