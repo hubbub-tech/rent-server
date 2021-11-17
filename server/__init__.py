@@ -11,13 +11,15 @@ def internal_server_error(e):
     print("RUNNING EXCEPTION HANDLER")
     return "Internal Server Error", 500
 
-def create_app():
-    config_object = Config()
+def create_app(config_object=Config()):
     app = Flask(__name__)
 
     # Cross-Origin Config
-    CORS(app,
-        origins=[config_object.CORS_ALLOW_ORIGIN],
+    CORS(
+        app,
+        origins=[
+            config_object.CORS_ALLOW_ORIGIN
+        ],
         supports_credentials=config_object.CORS_SUPPORTS_CREDENTIALS
     )
 
