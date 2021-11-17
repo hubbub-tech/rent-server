@@ -161,8 +161,7 @@ def add_to_cart(item_id):
     else:
         return {"flashes": ["This item does not exist at the moment."]}, 404
 
-#TODO: in the new version of the backend, user must propose new dates to reset
-#takes data from changed reservation by deleting the temporary res created previously
+
 @bp.post("/update/i/id=<int:item_id>")
 @login_required
 def update(item_id):
@@ -231,6 +230,9 @@ def remove_from_cart(item_id):
                 "date_ended": datetime.strptime(data.get("endDate"), format).date(),
             }
             reservation = Reservations.get(reservation_keys)
+
+            assert reservation is not None, "Reservation does not exist."
+
             g.user.cart.remove(reservation)
         else:
             g.user.cart.remove_without_reservation(item)
@@ -245,7 +247,7 @@ def remove_from_cart(item_id):
 @login_required
 def checkout():
     photo_url = AWS.get_url(dir="items")
-    items = [] #for json
+    items = []
     is_ready = g.user.cart.size() > 0
     ready_to_order_items = g.user.cart.get_reserved_contents()
     _cart_contents = g.user.cart.contents.copy()
