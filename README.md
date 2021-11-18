@@ -42,8 +42,9 @@ For more information about these environment variables, visit the following reso
 'Fubbub', or 'Fake Hubbub', allows you to run a copy of Hubbub locally. This is convenient for testing new features and manual debugging. Once you've cloned the server from Github run the commands below.
 
 ```
-pip3 install -r requirements.txt
+virtualenv env
 source server/.env.development
+pip3 install -r requirements.txt
 flask run
 ```
 
@@ -56,6 +57,19 @@ Download **Postman**, a service for testing API calls. This can be done simply b
 ### Option 2: Run the ReactJS client WHILE ALSO running the Flask Server
 
 Visit https://www.github.com/hubbub-tech/shop for details on how the ReactJS client works.
+
+### Testing
+
+If you would like to speed up the testing process for the server, you can run tests out of '/tests'.
+These tests were writing using the pytest module, and these files are regularly being updated for new
+features. simply do the following:
+
+```
+virtualenv env
+source server/.env.development
+pip3 install -r requirements.txt
+pytest
+```
 
 ## Built With
 
