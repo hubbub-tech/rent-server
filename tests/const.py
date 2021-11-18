@@ -1,6 +1,10 @@
+from blubber_orm.dev.tools import date_range_generator
+
 MAX_ITEM_ID = 500
-TEST_RES_DATE_START = "2023-01-01"
-TEST_RES_DATE_END = "2023-10-01"
+
+test_res_date_start, test_res_date_end = date_range_generator()
+TEST_RES_DATE_START = test_res_date_start.strftime("%Y-%m-%d")
+TEST_RES_DATE_END = test_res_date_end.strftime("%Y-%m-%d")
 
 TEST_EMAIL = 'johnny.test@hubbub.shop'
 TEST_PASSWORD = 'HubbubRulez1!'

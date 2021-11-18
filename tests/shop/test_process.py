@@ -64,6 +64,27 @@ def test_manage_order(client, auth):
         client.set_cookie(FLASK_SERVER, COOKIE_KEY_USER, value=session_id)
         client.set_cookie(FLASK_SERVER, COOKIE_KEY_SESSION, value=session_token)
 
-        response = client.get(f"/accounts/o/id={test_order}")
+        response = client.get(f"/accounts/o/id={test_order.id}")
+
+        assert response.status_code == 200
+
+
+def test_schedule_dropoffs(client, auth):
+    response = auth.login()
+
+    data = response.get_json()
+    session_id = data[COOKIE_KEY_USER]
+    session_token = data[COOKIE_KEY_SESSION]
+
+    test_orders = Orders.filter({"renter_id": session_id})
+
+    if test_orders:
+        test_order = test_orders.pop()
+        res_date_start = test_order.res_date_start.strftime("%Y-%m-%d")
+
+        client.set_cookie(FLASK_SERVER, COOKIE_KEY_USER, value=session_id)
+        client.set_cookie(FLASK_SERVER, COOKIE_KEY_SESSION, value=session_token)
+
+        response = client.get(f"/schedule/dropoffs/{res_date_start}")
 
         assert response.status_code == 200
