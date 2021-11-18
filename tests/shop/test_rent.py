@@ -1,3 +1,5 @@
+from blubber_orm import Users
+
 from tests.const import (
     MAX_ITEM_ID,
     TEST_RES_DATE_START,
@@ -9,8 +11,6 @@ from server.tools.settings import (
     COOKIE_KEY_SESSION,
     FLASK_SERVER
 )
-
-from blubber_orm import Users
 
 
 def test_inventory(client):
@@ -34,23 +34,26 @@ def test_add_to_cart(client, auth):
     session_id = data[COOKIE_KEY_USER]
     session_token = data[COOKIE_KEY_SESSION]
 
-    client.set_cookie(FLASK_SERVER, COOKIE_KEY_USER, value=session_id)
-    client.set_cookie(FLASK_SERVER, COOKIE_KEY_SESSION, value=session_token)
-
     while True:
-        response = client.post(f"/validate/i/id={item_id}", data={
+        response = client.post(f"/validate/i/id={item_id}", json={
+            COOKIE_KEY_USER: session_id,
+            COOKIE_KEY_SESSION: session_token,
             "startDate": TEST_RES_DATE_START,
             "endDate": TEST_RES_DATE_END,
             "isDiscounted": False
         })
 
+        assert response.status_code != 403
+
         if response.status_code == 200: break
         elif response.status_code == 406: break
 
-        raise Exception(f"Broken reservation validation at item_id {item_id}")
+        raise Exception(f"Broken reservation validation at item_id = {item_id}")
 
     if response.status_code == 200:
-        response = client.post(f"/add/i/id={item_id}", data={
+        response = client.post(f"/add/i/id={item_id}", json={
+            COOKIE_KEY_USER: session_id,
+            COOKIE_KEY_SESSION: session_token,
             "startDate": TEST_RES_DATE_START,
             "endDate": TEST_RES_DATE_END
         })
@@ -75,11 +78,10 @@ def test_update_to_cart(client, auth):
     session_id = data[COOKIE_KEY_USER]
     session_token = data[COOKIE_KEY_SESSION]
 
-    client.set_cookie(FLASK_SERVER, COOKIE_KEY_USER, value=session_id)
-    client.set_cookie(FLASK_SERVER, COOKIE_KEY_SESSION, value=session_token)
-
     item = test_user.cart.contents[0]
-    response = client.post(f"/update/i/id={item.id}", data={
+    response = client.post(f"/update/i/id={item.id}", json={
+        COOKIE_KEY_USER: session_id,
+        COOKIE_KEY_SESSION: session_token,
         "startDate": TEST_RES_DATE_START,
         "endDate": TEST_RES_DATE_END
     })
@@ -105,11 +107,10 @@ def test_remove_from_cart(client, auth):
     session_id = data[COOKIE_KEY_USER]
     session_token = data[COOKIE_KEY_SESSION]
 
-    client.set_cookie(FLASK_SERVER, COOKIE_KEY_USER, value=session_id)
-    client.set_cookie(FLASK_SERVER, COOKIE_KEY_SESSION, value=session_token)
-
     item = test_user.cart.contents[0]
-    response = client.post(f"/remove/i/id={item.id}", data={
+    response = client.post(f"/remove/i/id={item.id}", json={
+        COOKIE_KEY_USER: session_id,
+        COOKIE_KEY_SESSION: session_token,
         "startDate": TEST_RES_DATE_START,
         "endDate": TEST_RES_DATE_END
     })
@@ -124,8 +125,8 @@ def test_checkout(client, auth):
     session_id = data[COOKIE_KEY_USER]
     session_token = data[COOKIE_KEY_SESSION]
 
-    client.set_cookie(FLASK_SERVER, COOKIE_KEY_USER, value=session_id)
-    client.set_cookie(FLASK_SERVER, COOKIE_KEY_SESSION, value=session_token)
+    client.set_cookie(FLASK_SERVER, COOKIE_KEY_USER, session_id)
+    client.set_cookie(FLASK_SERVER, COOKIE_KEY_SESSION, session_token)
 
     response = client.get("/checkout")
 

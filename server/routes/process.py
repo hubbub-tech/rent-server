@@ -186,7 +186,12 @@ def schedule_dropoffs_submit():
                 "zip": data["address"]["zip"]
             }
         }
-        orders = [Orders.get({"id": order["id"]}) for order in data["orders"]]
+
+        orders = []
+        for order in data["orders"]:
+            order = Orders.get({"id": order["id"]})
+            orders.append(order)
+            
         dropoff_date = datetime.strptime(data["dropoffDate"], format).date()
         if date.today() < dropoff_date:
             dropoff_logistics = create_logistics(logistics_data, orders, dropoff=dropoff_date)

@@ -10,7 +10,7 @@ from server.tools.settings import (
     FLASK_SERVER
 )
 
-from blubber_orm import Users
+from blubber_orm import Users, Orders
 
 
 def test_checkout_submit(client, auth):
@@ -20,17 +20,50 @@ def test_checkout_submit(client, auth):
     session_id = data[COOKIE_KEY_USER]
 
     test_user = Users.get({"id": session_id})
-    if not test_user.cart.contents:
-        test_add_to_cart(client, auth)
 
-    assert test_user.cart.contents
+    if test_user.cart.contents:
 
+        response = auth.login()
+
+        data = response.get_json()
+        session_id = data[COOKIE_KEY_USER]
+        session_token = data[COOKIE_KEY_SESSION]
+
+        response = client.post("/checkout/submit")
+
+        assert response.status_code == 200
+
+
+def test_order_history(client, auth):
     response = auth.login()
 
     data = response.get_json()
     session_id = data[COOKIE_KEY_USER]
     session_token = data[COOKIE_KEY_SESSION]
 
-    response = client.post("/checkout/submit")
+    client.set_cookie(FLASK_SERVER, COOKIE_KEY_USER, value=session_id)
+    client.set_cookie(FLASK_SERVER, COOKIE_KEY_SESSION, value=session_token)
+
+    response = client.get("/accounts/u/orders")
 
     assert response.status_code == 200
+
+
+def test_manage_order(client, auth):
+    response = auth.login()
+
+    data = response.get_json()
+    session_id = data[COOKIE_KEY_USER]
+    session_token = data[COOKIE_KEY_SESSION]
+
+    test_orders = Orders.filter({"renter_id": session_id})
+
+    if test_orders:
+        test_order = test_orders.pop()
+
+        client.set_cookie(FLASK_SERVER, COOKIE_KEY_USER, value=session_id)
+        client.set_cookie(FLASK_SERVER, COOKIE_KEY_SESSION, value=session_token)
+
+        response = client.get(f"/accounts/o/id={test_order}")
+
+        assert response.status_code == 200

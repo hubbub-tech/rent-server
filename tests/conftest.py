@@ -46,7 +46,7 @@ class AuthActions:
 
     def login(self, email=TEST_EMAIL, password=TEST_PASSWORD):
         data = { "user": { "email": email, "password": password } }
-        response =  self._client.post("/login", data=data)
+        response =  self._client.post("/login", json=data)
 
         assert response.status_code == 200
         return response

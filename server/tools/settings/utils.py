@@ -55,7 +55,7 @@ def login_user(user):
 def create_auth_token(user):
     letters = string.ascii_letters
     new_session = ''.join(random.choice(letters) for i in range(10))
-    user.session = new_session
+    Users.set({"id": user.id}, {"session": new_session})
     hashed_token = generate_password_hash(new_session)
     return hashed_token
 
