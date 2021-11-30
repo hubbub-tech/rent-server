@@ -19,6 +19,11 @@ from server.tools.build import send_async_email, set_async_timeout
 from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('process', __name__)
+CORS(
+    bp,
+    origins=[Config.CORS_ALLOW_ORIGIN_SHOP],
+    supports_credentials=Config.CORS_SUPPORTS_CREDENTIALS
+)
 
 @bp.get("/checkout/submit")
 @login_required
@@ -191,7 +196,7 @@ def schedule_dropoffs_submit():
         for order in data["orders"]:
             order = Orders.get({"id": order["id"]})
             orders.append(order)
-            
+
         dropoff_date = datetime.strptime(data["dropoffDate"], format).date()
         if date.today() < dropoff_date:
             dropoff_logistics = create_logistics(logistics_data, orders, dropoff=dropoff_date)

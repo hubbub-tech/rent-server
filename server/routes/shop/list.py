@@ -10,6 +10,11 @@ from server.tools.build import get_new_listing_email, send_async_email
 from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('list', __name__)
+CORS(
+    bp,
+    origins=[Config.CORS_ALLOW_ORIGIN_SHOP],
+    supports_credentials=Config.CORS_SUPPORTS_CREDENTIALS
+)
 
 @bp.get('/list')
 @login_required

@@ -6,6 +6,8 @@ from blubber_orm import Orders, Extensions
 from blubber_orm import Logistics, Dropoffs, Pickups
 from blubber_orm import Reviews, Tags
 
+from blubber_orm.wrappers import TaskWrapper
+
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from server.tools.settings import exp_decay, generate_proposed_period
@@ -133,3 +135,9 @@ def create_logistics(insert_data, orders, dropoff=None, pickup=None):
         })
         result = None
     return result
+
+
+def create_task(courier_task=None):
+    """Returns a wrapped version of dropoff/pickup/logistics called 'task'."""
+
+    return TaskWrapper(task=courier_task)

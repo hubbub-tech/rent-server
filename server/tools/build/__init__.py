@@ -16,7 +16,7 @@ from .emails import get_new_listing_email
 
 from .files import generate_receipt_json
 
-from .tasks import send_async_email
-from .tasks import set_async_timeout
+from .async import send_async_email
+from .async import set_async_timeout
 
 from .logs import build_mail_handler

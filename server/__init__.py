@@ -14,15 +14,6 @@ def internal_server_error(e):
 def create_app(config_object=Config()):
     app = Flask(__name__)
 
-    # Cross-Origin Config
-    CORS(
-        app,
-        origins=[
-            config_object.CORS_ALLOW_ORIGIN
-        ],
-        supports_credentials=config_object.CORS_SUPPORTS_CREDENTIALS
-    )
-
     # Flask Config
     app.config.from_object(config_object)
 

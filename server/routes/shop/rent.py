@@ -14,6 +14,11 @@ from server.tools.build import create_reservation, validate_rental_bounds
 from server.tools import blubber_instances_to_dict, json_date_to_python_date, is_item_in_itemlist
 
 bp = Blueprint('rent', __name__)
+CORS(
+    bp,
+    origins=[Config.CORS_ALLOW_ORIGIN_SHOP],
+    supports_credentials=Config.CORS_SUPPORTS_CREDENTIALS
+)
 
 @bp.get("/inventory", defaults={"search": None})
 @bp.get("/inventory/search=<search>")

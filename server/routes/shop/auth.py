@@ -1,5 +1,6 @@
 import requests
 
+from flask_cors import CORS
 from datetime import datetime, timedelta
 from flask import Blueprint, g, request, make_response
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -15,6 +16,11 @@ from server.tools.build import validate_registration, validate_login
 from server.tools.build import get_welcome_email, get_password_reset_email, send_async_email
 
 bp = Blueprint('auth', __name__)
+CORS(
+    bp,
+    origins=[Config.CORS_ALLOW_ORIGIN_SHOP],
+    supports_credentials=Config.CORS_SUPPORTS_CREDENTIALS
+)
 
 @bp.post('/login')
 def login():

@@ -101,7 +101,8 @@ class TestConfig:
     TESTING = True
 
     CORS_SUPPORTS_CREDENTIALS = True
-    CORS_ALLOW_ORIGIN = 'http://localhost:3000'
+    CORS_ALLOW_ORIGIN_SHOP = 'http://localhost:3000'
+    CORS_ALLOW_ORIGIN_ADMIN = 'http://localhost:3000'
 
     CELERY_BROKER_URL = 'amqp://localhost'
     CELERY_RESULT_BACKEND = 'rpc://localhost'

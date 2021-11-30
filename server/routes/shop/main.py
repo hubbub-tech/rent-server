@@ -20,6 +20,11 @@ from server.tools.settings import Config, ReCAPTCHA_VERIFY_URL
 from server.tools import blubber_instances_to_dict, json_date_to_python_date
 
 bp = Blueprint('main', __name__)
+CORS(
+    bp,
+    origins=[Config.CORS_ALLOW_ORIGIN_SHOP],
+    supports_credentials=Config.CORS_SUPPORTS_CREDENTIALS
+)
 
 @bp.get("/index")
 def index():
