@@ -18,4 +18,5 @@ from .const import *
 
 AWS = AWSConfig.get_instance()
 SG = MailConfig.get_instance()
+
 celery = Celery(__name__, broker=Config.CELERY_BROKER_URL)

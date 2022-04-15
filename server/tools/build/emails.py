@@ -33,7 +33,7 @@ def get_late_warning(order):
             per overdue day. You currently owe ${round(overdue_days * item.price / 9, 2)}.
             Please reply to this email to coordinate pickup with us immediately.
             """
-    else and not renter.is_blocked:
+    elif not renter.is_blocked:
         Users.set({"id": renter.id}, {"is_blocked": True})
         response = "You have been permanently banded from Hubbub."
 

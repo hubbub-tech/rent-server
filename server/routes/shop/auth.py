@@ -1,9 +1,11 @@
 import requests
 
-from flask_cors import CORS
 from datetime import datetime, timedelta
-from flask import Blueprint, g, request, make_response
 from werkzeug.security import check_password_hash, generate_password_hash
+
+from flask import Blueprint, g, request, make_response
+from flask_cors import CORS
+
 
 from blubber_orm import Users
 from server.tools.settings import login_user

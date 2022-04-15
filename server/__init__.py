@@ -1,7 +1,6 @@
 import os
 import logging
 from flask import Flask
-from flask_cors import CORS
 
 from blubber_orm import get_db
 

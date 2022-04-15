@@ -1,6 +1,7 @@
 import pytz
 from datetime import datetime, date, timedelta
 from flask import Blueprint, flash, g, redirect, request, session, Markup
+from flask_cors import CORS
 
 from blubber_orm import Users, Orders, Reservations, Extensions
 from blubber_orm import Items, Tags
@@ -9,6 +10,7 @@ from server.tools.settings import get_orders_for_dropoff, get_orders_for_pickup
 from server.tools.settings import get_delivery_schedule, process_early_return
 from server.tools.settings import lock_checkout, check_if_routed, exp_decay
 from server.tools.settings import login_required, AWS, json_sort
+from server.tools.settings import Config
 
 from server.tools.build import create_order, create_logistics, create_reservation, create_extension
 from server.tools.build import get_extension_email, get_early_return_email, get_cancellation_email
@@ -30,8 +32,10 @@ CORS(
 def checkout_submit():
     flashes = []
     cart_response = lock_checkout(g.user)
+
     if cart_response["is_valid"]:
         timeout_clock = datetime.now(tz=pytz.UTC) + timedelta(minutes=30)
+
         set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": g.user_id})
 
         transactions = []

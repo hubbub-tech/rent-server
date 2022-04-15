@@ -68,8 +68,11 @@ def verify_auth_token(hashed_token, user_id):
 
 def get_random_testimonials(size=1):
     testimonials = Testimonials.get_all()
-    random_testimonials = random.sample(testimonials, size)
-    return random_testimonials
+
+    if testimonials: 
+        return random.sample(testimonials, size)
+    else:
+        return []
 
 def get_recommendations(item_name):
     # Split the item name by spaces

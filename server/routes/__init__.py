@@ -1,2 +1,2 @@
-from shop import *
-from admin import *
+from .shop import *
+from .admin import *

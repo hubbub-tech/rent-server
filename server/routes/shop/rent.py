@@ -1,7 +1,9 @@
 import random
 from distutils.util import strtobool
 from datetime import datetime, date, timedelta
+
 from flask import Blueprint, g, request, session, make_response
+from flask_cors import CORS
 
 from blubber_orm import Users, Orders, Reservations
 from blubber_orm import Items, Tags, Details, Calendars
@@ -9,6 +11,7 @@ from blubber_orm import Items, Tags, Details, Calendars
 from server.tools.settings import login_required, AWS
 from server.tools.settings import create_rental_token, json_sort
 from server.tools.settings import get_recommendations, search_items
+from server.tools.settings import Config
 
 from server.tools.build import create_reservation, validate_rental_bounds
 from server.tools import blubber_instances_to_dict, json_date_to_python_date, is_item_in_itemlist
