@@ -31,9 +31,8 @@ TEST_REGISTER_DATA = {
         'phone': '1111111111'
     },
     'address': {
-        'num': 2020,
-        'street': 'Cherry Hill Way',
-        'apt': '10A',
+        'line_1': '2020 Cherry Hill Way',
+        'line_2': '',
         'zip': '10000',
         'city': 'New York',
         'state': 'NY'

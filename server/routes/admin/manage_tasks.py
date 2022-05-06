@@ -159,12 +159,11 @@ def complete_task_pickup():
     if data:
         task = data["task"]
         address_keys = {
-            "num": data["address"]["num"],
-            "street": data["address"]["street"],
+            "line_1": data["address"]["line_1"],
+            "line_2": data["address"]["line_2"],
             "city": data["address"]["city"],
             "zip": data["address"]["zip_code"],
             "state": data["address"]["state"],
-            "apt": data["address"]["apt"],
         }
         address = Addresses.unique(address_keys)
         if address is None: address = Addresses.insert(address_keys)

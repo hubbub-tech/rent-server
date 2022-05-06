@@ -84,9 +84,8 @@ def register():
                 "email": data["user"]["email"].lower(),
                 "payment": data["user"]["payment"],
                 "password": hashed_pass,
-                "address_num": data["address"]["num"],
-                "address_street": data["address"]["street"],
-                "address_apt": data["address"]["apt"],
+                "address_line_1": data["address"]["line_1"],
+                "address_line_2": data["address"]["line_2"],
                 "address_zip": data["address"]["zip"]
             },
             "profile": {
@@ -101,9 +100,8 @@ def register():
                 "id": None
             },
             "address": {
-                "num": data["address"]["num"],
-                "street": data["address"]["street"],
-                "apt": data["address"]["apt"],
+                "line_1": data["address"]["line_1"],
+                "line_2": data["address"]["line_2"],
                 "city": data["address"]["city"],
                 "state": data["address"]["state"],
                 "zip": data["address"]["zip"]

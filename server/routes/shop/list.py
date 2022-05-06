@@ -39,9 +39,8 @@ def list_submit():
                     "lister_id": g.user_id,
                     "name": data["name"],
                     "price": data["price"],
-                    "address_num": data["num"],
-                    "address_street": data["street"],
-                    "address_apt": data["apt"],
+                    "address_line_1": data["line_1"],
+                    "address_line_2": data["line_2"],
                     "address_zip": data["zip"]
                 },
                 "details": {
@@ -57,9 +56,8 @@ def list_submit():
                     "id": None
                 },
                 "address": {
-                    "num": data["num"],
-                    "street": data["street"],
-                    "apt": data["apt"],
+                    "line_1": data["line_1"],
+                    "line_2": data["line_2"],
                     "city": data["city"],
                     "state": data["state"],
                     "zip": data["zip"]

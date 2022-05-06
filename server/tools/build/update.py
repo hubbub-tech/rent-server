@@ -7,9 +7,8 @@ def complete_task(order, task, address=None):
     if isinstance(task, Dropoffs):
         order.complete_dropoff()
         Items.set(order.item_id, {
-            "address_num": task.logistics.address.num,
-            "address_street": task.logistics.address.street,
-            "address_apt": task.logistics.address.apt,
+            "address_line_1": task.logistics.address.line_1,
+            "address_line_2": task.logistics.address.line_2,
             "address_zip": task.logistics.address.zip_code
         })
         is_valid = True
@@ -19,9 +18,8 @@ def complete_task(order, task, address=None):
         if address:
             order.complete_pickup()
             Items.set(order.item_id, {
-                "address_num": address.num,
-                "address_street": address.street,
-                "address_apt": address.apt,
+                "address_line_1": address.line_1,
+                "address_line_2": address.line_2,
                 "address_zip": address.zip_code
             })
             is_valid = True

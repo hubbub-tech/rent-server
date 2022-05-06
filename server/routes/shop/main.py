@@ -202,9 +202,8 @@ def edit_address_submit():
     flashes = []
     data = request.json
     form_data = {
-        "num": data["address"]["num"],
-        "street": data["address"]["street"],
-        "apt": data["address"].get("apt", ""),
+        "line_1": data["address"]["line_1"],
+        "line_2": data["address"]["line_2"],
         "zip": data["address"]["zip"],
         "city": data["address"]["city"],
         "state": data["address"]["state"]
@@ -213,9 +212,8 @@ def edit_address_submit():
     if not address: address = Addresses.insert(form_data)
 
     Users.set({"id": g.user_id}, {
-        "address_num": form_data["num"],
-        "address_street": form_data["street"],
-        "address_apt": form_data["apt"],
+        "address_line_1": form_data["line_1"],
+        "address_line_2": form_data["line_2"],
         "address_zip": form_data["zip"]
     })
     flashes.append("You successfully changed your address!")
