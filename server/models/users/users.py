@@ -8,6 +8,9 @@ class Users(Models):
 
     """
 
+    table_name = "users"
+    table_primaries = ["id"]
+
     def __init__(self, attrs: dict):
         self.id = attrs["id"]
         self.name = attrs["name"]
@@ -36,7 +39,10 @@ class Users(Models):
         valid_roles = ["payees", "payers", "couriers", "renters", "listers"]
         assert role in valid_roles
 
-        SQL = f"SELECT * FROM {role};"
+        SQL = f"""
+            SELECT *
+            FROM {role};
+            """
 
         with Models.database.connection.cursor() as cursor:
             cursor.execute(SQL)

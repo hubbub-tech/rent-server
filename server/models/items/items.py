@@ -7,9 +7,13 @@ class Items(Models):
 
     """
 
+    table_name = "items"
+    table_primaries = ["id"]
+
     def __init__(self, attrs: dict):
         self.id = attrs["id"]
         self.name = attrs["name"]
+        self.manufacturer_id = attr["manufacturer_id"]
         self.retail_price = attrs["retail_price"]
         self.is_visible = attrs["is_visible"]
         self.is_transactable = attrs["is_transactable"]
@@ -31,3 +35,63 @@ class Items(Models):
         self.address_city = attrs["address_city"]
         self.address_country = attrs["address_country"]
         self.address_zip = attrs["address_zip"]
+
+
+    def lock(self, user):
+        SQL = """
+            UPDATE items
+            SET is_locked = %s, last_locked = %s
+            WHERE id = %s;
+            """
+
+        data = (True, user.id, self.id)
+
+        with Models.database.connection.cursor() as cursor:
+            cursor.execute(SQL, data)
+            Models.database.connection.commit()
+
+        self.is_locked = True
+        self.last_locked = user.id
+
+    def unlock(self):
+        SQL = """
+            UPDATE items
+            SET is_locked = %s, last_locked = %s
+            WHERE id = %s;
+            """
+
+        data = (False, None, self.id)
+
+        with Models.database.connection.cursor() as cursor:
+            cursor.execute(SQL, data)
+            Models.database.connection.commit()
+
+        self.is_locked = False
+        self.last_locked = None
+
+
+    def add_tag(self, tag):
+        SQL = """
+            INSERT
+            INTO item_tags (item_id, title)
+            VALUES (%s, %s);
+            """
+
+        data = (self.id, tag.title)
+
+        with Models.database.connection.cursor() as cursor:
+            cursor.execute(SQL, data)
+            Models.database.connection.commit()
+
+    def remove_tag(self, tag):
+        SQL = """
+            DELETE
+            FROM item_tags
+            WHERE item_id = %s AND title = %s;
+            """
+
+        data = (self.id, tag.title)
+
+        with Models.database.connection.cursor() as cursor:
+            cursor.execute(SQL, data)
+            Models.database.connection.commit()
