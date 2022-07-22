@@ -74,6 +74,7 @@ class Carts(Models):
             UPDATE reservations SET is_in_cart = %s
             WHERE item_id = %s AND renter_id = %s AND date_started = %s AND date_ended = %s;
             """
+
         data = (
             False,
             reservation.item_id,
@@ -84,7 +85,6 @@ class Carts(Models):
 
         with Models.database.connection.cursor() as cursor:
             cursor.execute(SQL, data)
-
             Models.database.connection.commit()
 
 
@@ -130,7 +130,6 @@ class Carts(Models):
 
         with Models.database.connection.cursor() as cursor:
             cursor.execute(SQL, data)
-
             Models.database.connection.commit()
 
 
@@ -147,7 +146,6 @@ class Carts(Models):
 
         with Models.database.connection.cursor() as cursor:
             cursor.execute(SQL, data)
-
             Models.database.connection.commit()
 
 
@@ -165,7 +163,6 @@ class Carts(Models):
 
         with Models.database.connection.cursor() as cursor:
             cursor.execute(SQL, data)
-
             Models.database.connection.commit()
 
 
@@ -182,6 +179,21 @@ class Carts(Models):
 
         with Models.database.connection.cursor() as cursor:
             cursor.execute(SQL, data)
-            result = Models.database.cursor.fetchone()
+            result = cursor.fetchone()
 
         return result is not None
+
+
+
+    def __len__(self):
+        SQL = """
+            SELECT count(*)
+            FFROM item_carts
+            WHERE cart_id = %s;
+            """
+
+        data = (self.id,)
+
+        with Models.database.connection.cursor() as cursor:
+            cursor.execute(SQL, data)
+            return cursor.fetchone()

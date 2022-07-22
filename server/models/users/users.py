@@ -52,6 +52,6 @@ class Users(Models):
             users = []
             for user_t in user_tuples:
                 id, *_ = user_t
-                user = Users.get({"id": id})
+                user = cls.get({"id": id})
                 users.append(user)
         return users
