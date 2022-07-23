@@ -32,7 +32,6 @@ class Items(Models):
 
         self.address_line_1 = attrs["address_line_1"]
         self.address_line_2 = attrs["address_line_2"]
-        self.address_city = attrs["address_city"]
         self.address_country = attrs["address_country"]
         self.address_zip = attrs["address_zip"]
 
@@ -95,3 +94,14 @@ class Items(Models):
         with Models.database.connection.cursor() as cursor:
             cursor.execute(SQL, data)
             Models.database.connection.commit()
+
+
+    def to_query_address(self):
+        query_address = {
+            "line_1": self.address_line_1,
+            "line_2": self.address_line_2,
+            "country": self.address_country,
+            "zip": self.address_zip
+        }
+
+        return query_address

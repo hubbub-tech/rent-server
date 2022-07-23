@@ -1,2 +1,4 @@
+from items import Items
 from calendars import Calendars
-from items import items
+
+from manufacturers import Manufacturers

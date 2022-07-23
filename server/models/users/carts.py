@@ -21,7 +21,8 @@ class Carts(Models):
 
         if reserved_only:
             SQL = """
-                SELECT item_id FROM reservations
+                SELECT item_id
+                FROM reservations
                 WHERE is_in_cart = %s AND renter_id = %s AND is_calendared = %s;
                 """
 
@@ -29,7 +30,8 @@ class Carts(Models):
 
         else:
             SQL = """
-                SELECT item_id FROM item_carts
+                SELECT item_id
+                FROM item_carts
                 WHERE cart_id = %s;
                 """
 
@@ -46,7 +48,8 @@ class Carts(Models):
     def remove(self, reservation):
         #ASSERT reservation.item_id is associated with cart_id
         SQL = """
-            DELETE FROM item_carts
+            DELETE
+            FROM item_carts
             WHERE cart_id = %s AND item_id = %s;
             """
 
@@ -61,7 +64,8 @@ class Carts(Models):
         self.total_tax -= reservation.tax
 
         SQL = """
-            UPDATE carts SET total_charge = %s, total_deposit = %s, total_tax = %s
+            UPDATE carts
+            SET total_charge = %s, total_deposit = %s, total_tax = %s
             WHERE id = %s;
             """
 
@@ -71,7 +75,8 @@ class Carts(Models):
             cursor.execute(SQL, data)
 
         SQL = """
-            UPDATE reservations SET is_in_cart = %s
+            UPDATE reservations
+            SET is_in_cart = %s
             WHERE item_id = %s AND renter_id = %s AND date_started = %s AND date_ended = %s;
             """
 
@@ -106,7 +111,8 @@ class Carts(Models):
         self.total_tax += reservation.tax
 
         SQL = """
-            UPDATE carts SET total_charge = %s, total_deposit = %s, total_tax = %s
+            UPDATE carts
+            SET total_charge = %s, total_deposit = %s, total_tax = %s
             WHERE id = %s;
             """
 
@@ -116,7 +122,8 @@ class Carts(Models):
             cursor.execute(SQL, data)
 
         SQL = """
-            UPDATE reservations SET is_in_cart = %s
+            UPDATE reservations
+            SET is_in_cart = %s
             WHERE item_id = %s AND renter_id = %s AND date_started = %s AND date_ended = %s;
             """
 
@@ -138,7 +145,8 @@ class Carts(Models):
         """This resolves the non-commital 'add to cart' where the user didn't reserve."""
         #ASSERT reservation.item_id is NOT associated with cart_id
         SQL = """
-            DELETE FROM item_carts
+            DELETE
+            FROM item_carts
             WHERE cart_id = %s AND item_id = %s;
             """
 
@@ -188,7 +196,7 @@ class Carts(Models):
     def __len__(self):
         SQL = """
             SELECT count(*)
-            FFROM item_carts
+            FROM item_carts
             WHERE cart_id = %s;
             """
 
