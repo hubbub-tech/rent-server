@@ -3,6 +3,9 @@ from blubber_orm import Models
 
 class Charges(Models):
 
+    table_name = "charges"
+    table_primaries = ["id"]
+
 
     def __init__(self, attrs):
         self.id = attrs["id"]

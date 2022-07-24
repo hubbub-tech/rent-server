@@ -8,6 +8,9 @@ class Orders(Models):
 
     """
 
+    table_name = "orders"
+    table_primaries = ["id"]
+
     def __init__(self, attrs):
         self.id = attrs["id"]
         self.dt_placed = attrs["dt_placed"]
