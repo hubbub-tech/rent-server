@@ -1,28 +1,7 @@
-from distutils.util import strtobool
+from flask import Blueprint
 
-from flask import Blueprint, flash, g, redirect, render_template, request, session
-from flask_cors import CORS
+bp = Blueprint("list", __name__)
 
-from blubber_orm import Users
-
-from server.tools.settings import login_required, AWS
-from server.tools.settings import Config
-
-from server.tools.build import validate_listing, upload_image, create_item
-from server.tools.build import get_new_listing_email, send_async_email
-from server.tools import blubber_instances_to_dict, json_date_to_python_date
-
-bp = Blueprint('list', __name__)
-CORS(
-    bp,
-    origins=[Config.CORS_ALLOW_ORIGIN_SHOP],
-    supports_credentials=Config.CORS_SUPPORTS_CREDENTIALS
-)
-
-@bp.get('/list')
-@login_required
-def list():
-    return {"address": g.user.address.to_dict()}
 
 @bp.post('/list/submit')
 @login_required
