@@ -10,11 +10,7 @@ class Logsitics(Models):
     def __init__(self, attrs):
         self.id = attrs["id"]
         self.notes = attrs["notes"]
-        self.timeslots = attrs["timeslots"].split(",") # ?
         self.dt_created = attrs["dt_created"]
-
-        self.date_sched = attrs["date_sched"]
-        self.time_sched = attrs["time_sched"]
 
         self.dt_sent = attrs["dt_sent"]
         self.dt_received = attrs["dt_received"]
@@ -34,18 +30,18 @@ class Logsitics(Models):
         self.to_addr_zip = attrs["to_addr_zip"]
 
 
-    def to_query_address(self, dir):
-        dir = dir.lower()
-        assert dir in ["from", "to"], "Error: select a valid direction ['from', 'to']"
+    def to_query_address(self, direction):
+        direction = direction.lower()
+        assert direction in ["from", "to"], "Error: select a valid direction ['from', 'to']"
 
-        if dir == "from":
+        if direction == "from":
             query_address = {
                 "line_1": self.from_addr_line_1,
                 "line_2": self.from_addr_line_2,
                 "country": self.from_addr_country,
                 "zip": self.from_addr_zip
             }
-        elif dir == "to":
+        elif direction == "to":
             query_address = {
                 "line_1": self.to_addr_line_1,
                 "line_2": self.to_addr_line_2,
@@ -83,7 +79,35 @@ class Logsitics(Models):
         })
 
 
+    def get_timeslots(self):
+        SQL = """
+            SELECT (dt_range_start, dt_range_end)
+            FROM timeslots
+            WHERE logistics_id = %s;
+            """
+
+        data = (self.id,)
+
+        with Models.database.connection.cursor() as cursor:
+            cursor.execute(SQL, data)
+            return cursor.fetchall()
+
+
+    def get_eta(self):
+        SQL = """
+            SELECT (dt_range_start, dt_range_end)
+            FROM timeslots
+            WHERE logistics_id = %s AND is_sched = %s;
+            """
+
+        data = (self.id, True)
+
+        with Models.database.connection.cursor() as cursor:
+            cursor.execute(SQL, data)
+            return cursor.fetchone()
+
     def cancel(self, order):
+        # We want both of these commands to succeed or fail together
         SQL = """
             DELETE
             FROM order_logistics

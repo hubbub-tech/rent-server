@@ -95,3 +95,27 @@ def edit_password_submit():
             return {"errors": errors}, 406
     flashes.append("No data was sent! Try again.")
     return {"flashes": flashes}, 406
+
+
+@bp.post("/accounts/u/address/submit")
+@login_required
+def edit_address_submit():
+    flashes = []
+    data = request.json
+    form_data = {
+        "line_1": data["address"]["line_1"],
+        "line_2": data["address"]["line_2"],
+        "zip": data["address"]["zip"],
+        "city": data["address"]["city"],
+        "state": data["address"]["state"]
+    }
+    address = Addresses.filter(form_data)
+    if not address: address = Addresses.insert(form_data)
+
+    Users.set({"id": g.user_id}, {
+        "address_line_1": form_data["line_1"],
+        "address_line_2": form_data["line_2"],
+        "address_zip": form_data["zip"]
+    })
+    flashes.append("You successfully changed your address!")
+    return {"flashes": flashes}, 200

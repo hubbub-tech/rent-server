@@ -6,6 +6,10 @@ from blubber_orm import Users, Items
 
 from server.tools.settings import AWS, SG
 
+# is_valid -> bool
+# messages -> array of messages (str)
+
+
 #done 5/21
 def validate_edit_account(form_data):
     is_valid = True

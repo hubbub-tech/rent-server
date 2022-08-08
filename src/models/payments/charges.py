@@ -14,6 +14,7 @@ class Charges(Models):
         self.currency = attrs["currency"]
         self.payment_type = attrs["payment_type"]
         self.dt_created = attrs["dt_created"]
+        self.external_id = attrs["external_id"]
         self.order_id = attrs["order_id"]
         self.payee_id = attrs["payee_id"]
         self.payer_id = attrs["payer_id"]
