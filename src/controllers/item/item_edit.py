@@ -1,82 +1,64 @@
-from flask import Blueprint
+from flask import Blueprint, make_response, request
 
-bp = Blueprint("item", __name__)
+from src.models import Items, Calendars
+from src.utils import create_address
 
 
-@bp.post("/accounts/i/hide/id=<int:item_id>")
-@login_required
-def hide_item(item_id):
-    flashes = []
-    item = Items.get({"id": item_id})
-    if item:
-        if item.lister_id == g.user_id:
-            data = request.json
-            if data: Items.set({"id": item_id}, {"is_available": data["toggle"]})
+bp = Blueprint("edit", __name__)
 
-            if item.is_available: flashes.append("Item has been revealed.")
-            else: flashes.append("Item has been hidden.")
-            return {"flashes": flashes}, 200
-        else:
-            flashes.append("You are not authorized to manage the visibility of this item.")
-            return {"flashes": flashes}, 403
-    return {"flashes": ["This item does not exist at the moment."]}, 404
 
-@bp.get("/accounts/i/edit/id=<int:item_id>")
+@bp.get("/items/edit/id=<int:item_id>")
 @login_required
 def edit_item(item_id):
-    flashes = []
     item = Items.get({"id": item_id})
-    if item:
-        if item.lister_id == g.user_id:
-            item_to_dict = item.to_dict()
-            item_to_dict["details"] = item.details.to_dict()
-            item_to_dict["calendar"] = item.calendar.to_dict()
-            return { "item": item_to_dict }, 200
-        else:
-            flashes.append("You are not authorized to manage the visibility of this item.")
-            return {"flashes": flashes}, 403
-    return {"flashes": ["this item does not exist at the moment."]}, 404
 
-@bp.post("/accounts/i/edit/submit")
-@login_required
-def edit_item_submit():
-    flashes = []
-    data = request.json
-    if data:
-        item = Items.get({"id": data["itemId"]})
-        # date_end_extended = json_date_to_python_date(data["extendEndDate"])
-        form_data = {
-            "price": data.get("price", item.price),
-            "description": data.get("description", item.details.description),
-            # "extend": date_end_extended
-        }
-        Items.set({"id": item.id}, {"price": form_data["price"]})
-        Details.set({"id": item.id}, {"description": form_data["description"]})
-        # Calendars.set({"id": item.id}, {"date_ended": date_end_extended})
-        flashes.append(f"Your {item.name} has been updated!")
-        return {"flashes": flashes}, 200
-    flashes.append("No changes were received! Try again.")
-    return {"flashes": flashes}, 406
+    if item is None:
+        errors = ["We can't seem to find the item that you're looking for."]
+        response = make_response({"messages": errors}, 404)
+        return response
 
-@bp.post("/accounts/i/photo/submit")
+    if item.lister_id != g.user_id:
+        errors = ["You are not authorized to edit this item."]
+        response = make_response({"messages": errors}, 403)
+        return response
+
+    item_calendar = Calendars.get({"id": item.id})
+
+    item_to_dict = item.to_dict()
+    item_to_dict["calendar"] = item_calendar.to_dict()
+    response = make_response({ "item": item_to_dict }, 200)
+    return response
+
+
+@bp.post("/items/edit")
 @login_required
-def edit_item_photo_submit():
-    flashes = []
-    data = request.form
-    item = Items.get({"id": data["itemId"]})
-    image = request.files.get("image")
-    if image and item:
-        image_data = {
-            "self": item.id,
-            "image" : image,
-            "directory" : "items",
-            "bucket" : AWS.S3_BUCKET
-        }
-        upload_response = upload_image(image_data)
-        if upload_response["is_valid"]:
-            flashes.append(upload_response["message"])
-            return {"flashes": flashes}, 200
-        else:
-            flashes.append(upload_response["message"])
-            return {"flashes": flashes}, 406
-    return {"flashes": ["Failed to receive the photo update for your item."]}, 406
+def post_edit_item():
+
+    item_id = request.args.get("id", None)
+    item = Items.get({"id": item_id})
+
+    if item is None:
+        errors = ["We can't seem to find the item that you're looking for."]
+        response = make_response({"messages": errors}, 404)
+        return response
+
+    try:
+        new_name = request.json["name"]
+        new_address = request.json["address"]
+    except KeyError:
+        errors = ["Missing data in your attempt to edit. Try again."]
+        response = make_response({"messages": errors}, 401)
+
+    address = create_address(new_address)
+
+    Items.set({"id": item.id}, {
+        "name": new_name,
+        "address_line_1": address.line_1,
+        "address_line_2": address.line_2,
+        "address_country": address.country,
+        "address_zip": address.zip,
+    })
+
+    messages = ["Your edit requests have been received. Thanks!"]
+    response = make_response({"messages": messages}, 200)
+    return response

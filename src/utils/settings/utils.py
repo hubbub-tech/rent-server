@@ -69,7 +69,7 @@ def verify_auth_token(hashed_token, user_id):
 def get_random_testimonials(size=1):
     testimonials = Testimonials.get_all()
 
-    if testimonials: 
+    if testimonials:
         return random.sample(testimonials, size)
     else:
         return []
@@ -163,4 +163,7 @@ def append_sort(arr, element, key):
 
 def json_sort(arr, key, reverse=False):
     """Takes an array of dictionaries with the same structure and sorts"""
-    arr.sort(key = lambda element: element[key], reverse=reverse)
+    if arr == []: return []
+
+    arr_sorted = sorted(arr, key = lambda element: element[key], reverse=reverse)
+    return arr_sorted

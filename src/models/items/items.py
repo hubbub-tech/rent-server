@@ -69,6 +69,22 @@ class Items(Models):
         self.last_locked = None
 
 
+    def get_tags(self):
+        SQL = """
+            SELECT title
+            FROM item_tags
+            WHERE item_id = %s;
+            """
+
+        data = (self.id,)
+
+        with Models.database.connection.cursor() as cursor:
+            cursor.execute(SQL, data)
+            tags = cursor.fetchall()
+
+        return tags
+
+
     def add_tag(self, tag):
         SQL = """
             INSERT

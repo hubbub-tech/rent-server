@@ -168,7 +168,7 @@ class Calendars(Models):
         for avail in availabilities:
             if closest_operating_datetime <= avail[dt_started_index]:
                 return avail
-        return ()
+        return (None, None)
 
 
     #returns true if a reservation if valid, returns false if not, returns none if expired item
