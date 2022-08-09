@@ -7,9 +7,11 @@ from src.utils import create_address
 bp = Blueprint("edit", __name__)
 
 
-@bp.get("/items/edit/id=<int:item_id>")
+@bp.post("/items/edit")
 @login_required
-def edit_item(item_id):
+def edit_item():
+
+    item_id = request.args.get("id", None)
     item = Items.get({"id": item_id})
 
     if item is None:
@@ -20,26 +22,6 @@ def edit_item(item_id):
     if item.lister_id != g.user_id:
         errors = ["You are not authorized to edit this item."]
         response = make_response({"messages": errors}, 403)
-        return response
-
-    item_calendar = Calendars.get({"id": item.id})
-
-    item_to_dict = item.to_dict()
-    item_to_dict["calendar"] = item_calendar.to_dict()
-    response = make_response({ "item": item_to_dict }, 200)
-    return response
-
-
-@bp.post("/items/edit")
-@login_required
-def post_edit_item():
-
-    item_id = request.args.get("id", None)
-    item = Items.get({"id": item_id})
-
-    if item is None:
-        errors = ["We can't seem to find the item that you're looking for."]
-        response = make_response({"messages": errors}, 404)
         return response
 
     try:

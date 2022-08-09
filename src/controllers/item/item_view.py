@@ -29,8 +29,8 @@ def view_item(item_id):
     item_to_dict["lister_name"] = lister.name
     item_to_dict["address"] = item_address.to_dict()
     item_to_dict["calendar"] = item_calendar.to_dict()
-    item_to_dict["calendar"]["next_available_start"] = next_start.strftime("%Y-%m-%d")
-    item_to_dict["calendar"]["next_available_end"] = next_end.strftime("%Y-%m-%d")
+    item_to_dict["calendar"]["next_avail_date_start"] = next_start.strftime("%Y-%m-%d")
+    item_to_dict["calendar"]["next_avail_date_end"] = next_end.strftime("%Y-%m-%d")
 
     recommendations = get_recommendations(item.name)
     recs_to_dict = []
@@ -44,8 +44,8 @@ def view_item(item_id):
         next_start, next_end = rec_calendar.next_availability(days_offset=1)
 
         rec_to_dict = rec.to_dict()
-        rec_to_dict["next_available_start"] = next_start.strftime("%Y-%m-%d")
-        rec_to_dict["next_available_end"] = next_end.strftime("%Y-%m-%d")
+        rec_to_dict["next_avail_date_start"] = next_start.strftime("%Y-%m-%d")
+        rec_to_dict["next_avail_date_end"] = next_end.strftime("%Y-%m-%d")
 
         recs_to_dict.append(rec_to_dict)
 
