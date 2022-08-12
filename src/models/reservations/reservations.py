@@ -15,9 +15,9 @@ class Reservations(Models):
         self.renter_id = attrs["renter_id"]
 
         self.dt_created = attrs["dt_created"]
-        self.charge = attrs["charge"]
-        self.deposit = attrs["deposit"]
-        self.tax = attrs["tax"]
+        self.est_charge = attrs["est_charge"]
+        self.est_deposit = attrs["est_deposit"]
+        self.est_tax = attrs["est_tax"]
 
         self.is_valid = attrs["is_valid"]
         self.is_in_cart = attrs["is_in_cart"]
@@ -25,42 +25,38 @@ class Reservations(Models):
         self.is_calendared = attrs["is_calendared"]
 
 
-    def get_last_version(self):
-        SQL = """
-            SELECT (next_item_id, next_renter_id, next_dt_start, next_dt_end)
-            FROM res_history
-            WHERE item_id = %s AND renter_id = %s AND dt_started = %s AND dt_ended = %s;
-            """
+    def archive(self, notes):
+        if self.is_calendared:
+            SQL = """
+                SELECT order_id
+                FROM orders
+                WHERE item_id = %s AND renter_id = %s AND res_dt_start = %s AND res_dt_end = %s
+                """
 
-        data = (self.item_id, self.renter_id, self.dt_started, self.dt_ended)
+            data = (self.item_id, self.renter_id, self.res_dt_start, self.res_dt_end)
 
-        with Models.database.connection.cursor() as cursor:
-            cursor.execute(SQL, data)
-            last_version_res = cursor.fetchall()
+            with Models.database.connection.cursor() as cursor:
+                cursor.execute(SQL, data)
+                order_id = cursor.fetchone()
 
+            assert order_id, "Reservation is not pointing to an order."
 
-        item_id_index = 0
-        renter_id_index = 1
-        dt_started_index = 2
-        dt_ended_index = 3
+            SQL = """
+                INSERT
+                INTO reservations_archived (item_id, renter_id, dt_started, dt_ended, order_id, notes)
+                VALUES (%s, %s, %s, %s, %s, %s);
+                """
 
-        if last_version_res:
-            last_version_res_pkeys = {
-                "item_id": last_version_res[item_id_index],
-                "renter_id": last_version_res[renter_id_index],
-                "dt_started": last_version_res[dt_started_index],
-                "dt_ended": last_version_res[dt_ended_index],
-            }
+            data = (self.item_id, self.renter_id, self.dt_started, self.dt_ended, order_id, notes)
 
-            # If the last version has been deleted, this should return 'None'
-            last_version_res = Reservations.get(last_version_res_pkeys)
-
-        return last_version_res
+            with Models.database.connection.cursor() as cursor:
+                cursor.execute(SQL, data)
+                Models.database.connection.commit()
 
 
     @property
     def total(self):
-        return self.charge + self.deposit + self.tax
+        return self.est_charge + self.est_deposit + self.est_tax
 
 
     def __len__(self):
