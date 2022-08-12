@@ -2,7 +2,7 @@ from flask import Blueprint, make_response, request
 
 from src.models import Users
 # from src.utils.??? import validate_login
-# from src.utils.??? import create_auth_token
+# from src.utils.??? import gen_token
 # from src.utils.??? import login_user
 
 bp = Blueprint('login', __name__)
@@ -35,8 +35,9 @@ def login():
     login_status = login_user(user)
 
     if login_status["is_valid"]:
-        session_key = create_auth_token(user)
-        response = make_response({ "id": user.id, "session_key": session_key }, 200)
+        session_key = gen_token()
+        Users.set({"id": user.id}, {"session": session_key["unhashed"]})
+        response = make_response({ "id": user.id, "session_key": session_key["hashed"] }, 200)
         return response
     else:
         errors = login_status["messages"]

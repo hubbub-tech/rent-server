@@ -52,19 +52,13 @@ def login_user(user):
         "message" : message
         }
 
-def create_auth_token(user):
+def gen_token():
     letters = string.ascii_letters
-    new_session = ''.join(random.choice(letters) for i in range(10))
-    Users.set({"id": user.id}, {"session": new_session})
-    hashed_token = generate_password_hash(new_session)
-    return hashed_token
+    unhashed_token = ''.join(random.choice(letters) for i in range(10))
+    return { "hashed": hashed_token, "unhashed": unhashed_token }
 
-def verify_auth_token(hashed_token, user_id):
-    if user_id and hashed_token:
-        user = Users.get({"id": user_id})
-        if user.session:
-            return check_password_hash(hashed_token, user.session)
-    return False
+def verify_token(hashed_token, unhashed_token):
+    return check_password_hash(hashed_token, unhashed_token)
 
 def get_random_testimonials(size=1):
     testimonials = Testimonials.get_all()

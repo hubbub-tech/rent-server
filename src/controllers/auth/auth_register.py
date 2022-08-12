@@ -60,7 +60,6 @@ def register():
         return response
 
     user_data["password"] = generate_password_hash(user_data["password"])
-    form_data = { "user": user_data, "address": address_data }
     form_check = validate_registration(user_data)
 
     if not form_check["is_valid"]:
@@ -68,11 +67,11 @@ def register():
         response = make_response({ "messages": errors }, 403)
         return response
 
-    new_user = create_user(form_data)
+    address = create_address(address_data)
+    new_user = create_user(user_data)
     email_data = get_welcome_email(new_user)
     send_async_email.apply_async(kwargs=email_data)
     messages = ["Welcome to the Hubbub community!"]
 
     response = make_response({ "messages": messages }, 200)
     return response
-    
