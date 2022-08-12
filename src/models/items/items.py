@@ -9,6 +9,7 @@ class Items(Models):
 
     table_name = "items"
     table_primaries = ["id"]
+    sensitive_attributes = []
 
     def __init__(self, attrs: dict):
         self.id = attrs["id"]

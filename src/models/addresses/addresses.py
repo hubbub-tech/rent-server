@@ -10,6 +10,7 @@ class Addresses(Models):
 
     table_name = "addresses"
     table_primaries = ["line_1", "line_2", "country", "zip"]
+    sensitive_attributes = []
 
     def __init__(self, attrs):
         self.line_1 = attrs["line_1"]

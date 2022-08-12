@@ -6,6 +6,7 @@ class Logsitics(Models):
 
     table_name = "logistics"
     table_primaries = ["id"]
+    sensitive_attributes = []
 
     def __init__(self, attrs):
         self.id = attrs["id"]

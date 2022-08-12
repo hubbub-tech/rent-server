@@ -5,6 +5,7 @@ class Charges(Models):
 
     table_name = "charges"
     table_primaries = ["id"]
+    sensitive_attributes = []
 
 
     def __init__(self, attrs):

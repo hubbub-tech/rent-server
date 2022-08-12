@@ -10,6 +10,7 @@ class Calendars(Models):
 
     table_name = "calendars"
     table_primaries = ["id"]
+    sensitive_attributes = []
 
     def __init__(self, attrs: dict):
         self.id = attrs["id"]

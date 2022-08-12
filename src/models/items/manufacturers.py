@@ -9,6 +9,7 @@ class Manufacturers(Models):
     """
     table_name = "manufacturers"
     table_primaries = ["id"]
+    sensitive_attributes = []
 
     def __init__(self, attrs):
         self.id = attrs["id"]

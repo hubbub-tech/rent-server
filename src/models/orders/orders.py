@@ -1,4 +1,5 @@
-from blubber_orm import Models
+
+sensitive_attributes = []from blubber_orm import Models
 
 
 class Orders(Models):
@@ -10,6 +11,7 @@ class Orders(Models):
 
     table_name = "orders"
     table_primaries = ["id"]
+    sensitive_attributes = []
 
     def __init__(self, attrs):
         self.id = attrs["id"]

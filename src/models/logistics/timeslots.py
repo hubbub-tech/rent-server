@@ -6,6 +6,7 @@ class Timeslots(Models):
 
     table_name = "timeslots"
     table_primaries = ["logistics_id", "dt_range_start", "dt_range_end"]
+    sensitive_attributes = []
 
 
     def __init__(self, attrs):

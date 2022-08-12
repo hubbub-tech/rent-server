@@ -5,6 +5,7 @@ class Promos(Models):
 
     table_name = "promos"
     table_primaries = ["title"]
+    sensitive_attributes = []
 
 
     def __init__(self, attrs):

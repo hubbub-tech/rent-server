@@ -9,6 +9,7 @@ class Carts(Models):
 
     table_name = "carts"
     table_primaries = ["id"]
+    sensitive_attributes = ["checkout_session_key"]
 
     def __init__(self, attrs: dict):
         self.id = attrs["id"]

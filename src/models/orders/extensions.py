@@ -8,6 +8,7 @@ class Extensions(Models):
 
     table_name = "extensions"
     table_primaries = ["order_id", "res_dt_end"]
+    sensitive_attributes = []
 
     def __init__(self, attrs):
         self.order_id = attrs["order_id"]

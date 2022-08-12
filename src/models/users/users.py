@@ -10,6 +10,7 @@ class Users(Models):
 
     table_name = "users"
     table_primaries = ["id"]
+    sensitive_attributes = ["password", "session_key"]
 
     def __init__(self, attrs: dict):
         self.id = attrs["id"]

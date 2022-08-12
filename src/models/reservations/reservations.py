@@ -7,6 +7,7 @@ class Reservations(Models):
 
     table_name = "reservations"
     table_primaries = ["item_id", "renter_id", "dt_started", "dt_ended"]
+    sensitive_attributes = []
 
     def __init__(self, attrs):
         self.dt_started = attrs["dt_started"]
