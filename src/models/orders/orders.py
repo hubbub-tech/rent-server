@@ -15,6 +15,7 @@ class Orders(Models):
         self.id = attrs["id"]
         self.dt_placed = attrs["dt_placed"]
         self.is_canceled = attrs["is_canceled"]
+        self.checkout_session_key = attrs["checkout_session_key"]
         self.referral = attrs["referral"]
         self.lister_id = attrs["lister_id"]
         self.item_id = attrs["item_id"]
