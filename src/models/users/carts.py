@@ -19,6 +19,10 @@ class Carts(Models):
         self.checkout_session_key = attrs["checkout_session_key"]
 
 
+    def total(self):
+        return self.total_charge + self.total_deposit + self.total_tax
+
+
     def get_item_ids(reserved_only=False):
 
         if reserved_only:
