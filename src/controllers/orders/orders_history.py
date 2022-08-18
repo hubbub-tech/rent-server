@@ -4,32 +4,42 @@ from flask import Blueprint
 bp = Blueprint("orders", __name__)
 
 
-@bp.get("/accounts/u/orders")
+@bp.post("/orders/history")
 @login_required
-def order_history():
-    photo_url = AWS.get_url(dir="items")
-    order_history = Orders.filter({"renter_id": g.user_id})
-    orders = []
-    if order_history:
-        for order in order_history:
+def orders_feed():
 
-            item = Items.get({"id": order.item_id})
-            item_to_dict = item.to_dict()
-            item_to_dict["calendar"] = item.calendar.to_dict()
-            item_to_dict["details"] = item.details.to_dict()
+    dt_started = request.args.get("dt_started")
+    # NOTE: convert to a datetime object
 
-            order_to_dict = order.to_dict()
-            order_to_dict["is_extended"] = order.ext_date_end != order.res_date_end
-            order_to_dict["ext_date_end"] = order.ext_date_end.strftime("%Y-%m-%d")
-            order_to_dict["reservation"] = order.reservation.to_dict()
+    if not isinstance(dt_started, datetime):
+        errors = ["Invalid date entry. Try again."]
+        response = make_response({"messages": errors}, 404)
+        return response
+    elif dt_started is None:
+        orders = Orders.filter({
+            "renter_id": g.user_id,
+            "is_canceled": False
+        })
+    else:
+        orders = Orders.filter({
+            "res_dt_start": dt_started,
+            "renter_id": g.user_id,
+            "is_canceled": False
+        })
 
-            lister = Users.get({"id": order.lister_id})
-            order_to_dict["lister"] = lister.to_dict()
-            order_to_dict["item"] = item_to_dict
+    if orders == []:
+        errors = ["No orders yet. Check out our shop and rent!"]
+        response = make_response({"messages": errors}, 200)
+        return response
 
-            orders.append(order_to_dict)
-        json_sort(orders, "date_placed", reverse=True)
-    return {
-        "photo_url": photo_url,
-        "orders": orders
-    }
+    orders_to_dict = []
+    for order in orders:
+        item = Items.get({"id": order.item_id})
+
+        order_to_dict = order.to_dict()
+        order_to_dict["item_name"] = item.name
+
+        orders_to_dict.append(order_to_dict)
+
+    response = make_response({ "orders": orders_to_dict }, 200)
+    return response
