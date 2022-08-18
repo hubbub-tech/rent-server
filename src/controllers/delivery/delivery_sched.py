@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 
-bp = Blueprint("pickups", __name__)
+bp = Blueprint("schedule", __name__)
 
 
 @bp.post("/delivery/schedule")

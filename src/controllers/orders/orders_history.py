@@ -1,7 +1,9 @@
 from flask import Blueprint
 
+from blubber_orm import Orders
+from blubber_orm import Items
 
-bp = Blueprint("orders", __name__)
+bp = Blueprint("history", __name__)
 
 
 @bp.post("/orders/history")
