@@ -1,33 +1,77 @@
-@bp.post("/accounts/o/cancel/submit")
+from flask import Blueprint, make_response, request
+from datetime import datetime
+
+
+
+bp = Blueprint("cancel", __name__)
+
+
+@bp.post("/orders/cancel")
 @login_required
 def cancel_order():
-    code = 406
-    flashes = []
-    data = request.json
-    if data:
-        order_id = data["orderId"]
-        order = Orders.get({"id": order_id})
-        if g.user_id == order.renter_id:
-            if not order.is_dropoff_sched:
-                reservation_to_delete = order.reservation
-                res_keys = {
-                    "date_started": reservation_to_delete.date_started,
-                    "date_ended": reservation_to_delete.date_ended,
-                    "renter_id": reservation_to_delete.renter_id,
-                    "item_id": reservation_to_delete.item_id
-                }
-                #Need to generate email before deletion
-                email_data = get_cancellation_email(order)
 
-                Reservations.delete(res_keys)
-                flashes.append("Your order was successfully cancelled. Hopefully we'll see you again!")
-                code = 200
+    order_id = request.args.get("order_id")
+    order = Orders.get({"id": order_id})
 
-                send_async_email.apply_async(kwargs=email_data)
-            else:
-                flashes.append("We could not cancel your order, as it has been/is being delivered. Consider an early return instead.")
+    if order is None:
+        errors = ["Sorry, we could not find this order. Please, try again."]
+        response = make_response({ "messages": errors }, 404)
+        return response
+
+    if order.renter_id != g.user_id:
+        errors = ["Sorry, you are not authorized to delete this order. Contact us if this seems wrong."]
+        response = make_response({ "messages": errors }, 403)
+        return response
+
+    if order.res_dt_start <= datetime.now():
+        errors = ["Sorry, your rental has already started. If this seems wrong, contact us."]
+        response = make_response({ "messages": errors }, 401)
+        return response
+
+    if order.is_canceled:
+        errors = ["Your order has been cancelled!"]
+        response = make_response({ "messages": errors }, 200)
+        return response
+
+    dropoff_id = order.get_dropoff_id()
+    pickup_id = order.get_pickup_id()
+
+    # START ORDER CANCELLATION SEQUENCE
+    if dropoff_id:
+        dropoff = Logistics.get({"id": dropoff_id})
+        if dropoff.dt_sent and dropoff.dt_received is None:
+            messages = ["It seems like your order is being delivered already. If this sounds wrong please contact us."]
+            response = make_response({"messages": messages}, 200)
+            return response
         else:
-            flashes.append("This isn't your order, so you can't cancel it...")
-    else:
-        flashes.append("Nothing was sent... try again.")
-    return {"flashes": flashes}, code
+            dropoff.remove_order_by_id(order.id)
+            if dropoff.get_order_ids() == []:
+                Logsitics.set({"id": dropoff.id}, {"is_canceled": True})
+                # WARNING: what happens if only one order is on the delivery?
+
+    if pickup_id:
+        pickup = Logistics.get({"id": pickup_id})
+        if dropoff.dt_sent and dropoff.dt_received is None:
+            messages = ["It seems like your order is being delivered already. If this sounds wrong please contact us."]
+            response = make_response({"messages": messages}, 200)
+            return response
+        else:
+            pickup.remove_order_by_id(order.id)
+            if pickup.get_order_ids() == []:
+                Logsitics.set({"id": pickup.id}, {"is_canceled": True})
+                # WARNING: what happens if only one order is on the delivery?
+
+    res_pkeys = order.to_query_reservation()
+    reservation = Reservations.get(res_pkeys)
+
+    reservation.archive()
+    Reservations.set(res_pkeys, {"is_calendared": False})
+    Orders.set({"id": order.id}, {"is_canceled": True})
+    # END ORDER CANCELLATION SEQUENCE
+
+    email_data = get_cancellation_email(order)
+    send_async_email.apply_async(kwargs=email_data)
+
+    messages = ["Your order was successfully cancelled!"]
+    response = make_response({"messages": messages}, 200)
+    return response

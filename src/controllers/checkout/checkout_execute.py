@@ -87,11 +87,11 @@ def checkout():
         }
         order = create_order(order_data)
 
-        email_data = get_lister_receipt_email(transaction)
-        send_async_email.apply_async(kwargs=email_data)
-
         item.unlock()
         user_cart.remove(reservation)
+
+        email_data = get_lister_receipt_email(order) # WARNING
+        send_async_email.apply_async(kwargs=email_data)
 
 
     email_data = get_renter_receipt_email(transactions)

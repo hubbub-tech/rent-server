@@ -11,6 +11,7 @@ class Logsitics(Models):
     def __init__(self, attrs):
         self.id = attrs["id"]
         self.notes = attrs["notes"]
+        self.is_canceled = attrs["is_canceled"]
         self.dt_created = attrs["dt_created"]
 
         self.dt_sent = attrs["dt_sent"]
@@ -68,6 +69,20 @@ class Logsitics(Models):
             return cursor.fetchall()
 
 
+    def get_courier_ids(self):
+        SQL = """
+            SELECT courier_id
+            FROM logistics_couriers
+            WHERE logistics_id = %s;
+            """
+
+        data = (self.id,)
+
+        with Models.database.connection.cursor() as cursor:
+            cursor.execute(SQL, data)
+            return cursor.fetchall()
+
+
     def confirm_sent(self):
         self.set({"id": self.id}, {
             "dt_sent": datetime.now()
@@ -107,14 +122,28 @@ class Logsitics(Models):
             cursor.execute(SQL, data)
             return cursor.fetchone()
 
-    def cancel(self, order):
+    def remove_order_by_id(self, order_id):
         # We want both of these commands to succeed or fail together
         SQL = """
             DELETE
             FROM order_logistics
             WHERE order_id = %s AND logistics_id = %s;
             """
-        data = (order.id, self.id)
+        data = (order_id, self.id)
+
+        with Models.database.connection.cursor() as cursor:
+            cursor.execute(SQL, data)
+            Models.database.connection.commit()
+
+
+    def remove_courier_by_id(self, courier_id):
+        # We want both of these commands to succeed or fail together
+        SQL = """
+            DELETE
+            FROM logistics_couriers
+            WHERE courier_id = %s AND logistics_id = %s;
+            """
+        data = (courier_id, self.id)
 
         with Models.database.connection.cursor() as cursor:
             cursor.execute(SQL, data)

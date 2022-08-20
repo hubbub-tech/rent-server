@@ -8,7 +8,7 @@ bp = Blueprint("history", __name__)
 
 @bp.post("/orders/history")
 @login_required
-def orders_feed():
+def orders_history():
 
     dt_started = request.args.get("dt_started")
     # NOTE: convert to a datetime object
