@@ -1,9 +1,12 @@
 from flask import Blueprint
 from flask_cors import CORS
 
+from .list_item import list_item
+
 
 bp = Blueprint("list", __name__)
 
+bp.register_blueprint(list_item)
 
 CORS(
     bp,

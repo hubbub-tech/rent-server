@@ -46,8 +46,9 @@ def schedule_delivery():
     } # FILL WITH DATA FOR OBJ CREATION
 
     # NOTE: check to_addr and from_addr
-    logistics = craete_logistics(logistics_data)
+    logistics = create_logistics(logistics_data)
+    status = schedule_deliveries(logistics, order_ids, timeslots)
 
-    messages = ["Successfully scheduled your delivery!"]
+    messages = status["messages"]
     response = make_response({"messages": messages}, 200)
     return response
