@@ -1,17 +1,17 @@
-from flask import Blueprint, make_response
+from flask import Blueprint, make_response, request
 
 
 bp = Blueprint("items", __name__)
 
 
-@bp.post("items/create")
+@bp.post("/items/create")
 @login_required
 def create_item():
     pass
 
-@bp.get("items")
+@bp.get("/items")
 @login_required
-def get_item():
+def get_items():
     item_ids = request.args.get("ids", None)
     item_ids = item_ids.split(",")
 

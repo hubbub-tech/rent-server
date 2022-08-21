@@ -30,6 +30,11 @@ def edit_item():
     except KeyError:
         errors = ["Missing data in your attempt to edit. Try again."]
         response = make_response({"messages": errors}, 401)
+    except Exception as e:
+        errors = ["Something went wrong. Please, try again."]
+        # NOTE: Log error here.
+        response = make_response({ "messages": errors }, 500)
+        return response
 
     address = create_address(new_address)
 
