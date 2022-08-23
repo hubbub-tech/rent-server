@@ -3,7 +3,7 @@ import boto3
 
 #SUPPORTING CONFIGS------------------------------
 
-class AWSConfig:
+class AWSS3Config:
     _instance = None
     S3_OBJECT = None
     S3_LINK = None
@@ -52,7 +52,7 @@ class AWSConfig:
         url = "/".join([AWSConfig.S3_LINK, dir])
         return url
 
-class MailConfig:
+class SMTPConfig:
     _instance = None
     DEFAULT_SENDER = None
     SENDGRID_API_KEY = None
@@ -76,7 +76,7 @@ class MailConfig:
 
 #FLASK CONFIGS------------------------------------
 
-class Config:
+class FlaskConfig:
 
     SECRET_KEY = os.environ['SECRET_KEY']
     TESTING = False
@@ -96,7 +96,7 @@ class Config:
     #ReCaptcha
     ReCAPTCHA_SERVER_API_KEY= os.environ['ReCAPTCHA_SERVER_API_KEY']
 
-class TestConfig:
+class TestFlaskConfig:
 
     SECRET_KEY = 'dev'
     TESTING = True

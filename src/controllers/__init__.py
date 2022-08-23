@@ -1,0 +1,9 @@
+from .account import bp as account
+from .api import bp as api
+from .auth import bp as auth
+from .checkout import bp as checkout
+from .delivery import bp as delivery
+from .item import bp as item
+from .list import bp as list
+from .main import bp as main
+from .orders import bp as orders

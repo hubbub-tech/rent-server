@@ -96,6 +96,46 @@ class Calendars(Models):
         return reservations_pkeys
 
 
+    #returns true if a reservation if valid, returns false if not, returns none if expired item
+    def check_reservation(self, res_dt_start: datetime, res_dt_end: datetime, days_buffer=0, hours_buffer=0):
+        dt_started_index = -2
+        dt_ended_index = -1
+
+        availabilities = self.get_availabilities(days_buffer=days_buffer, hours_buffer=hours_buffer)
+        availabilities.sort(key = lambda avail: avail[dt_ended_index])
+
+        for avail in availabilities:
+            if avail[dt_started_index] <= res_dt_start:
+                if res_dt_end <= avail[dt_ended_index]:
+                    return True
+
+        if self.dt_ended == datetime.now(): return None
+        else: return False
+
+
+    def best_match_reservation(self, res_dt_start: datetime, res_dt_end: datetime, days_buffer=0, hours_buffer=0):
+        dt_started_index = -2
+        dt_ended_index = -1
+
+        availabilities = self.get_availabilities(days_buffer=days_buffer, hours_buffer=hours_buffer)
+        availabilities.sort(key = lambda avail: avail[dt_ended_index])
+
+        for avail in availabilities:
+            if avail[dt_started_index] <= res_dt_start:
+                if res_dt_end <= avail[dt_ended_index]:
+                    return (res_dt_start, res_dt_end)
+                elif res_dt_start < avail[dt_ended_index]:
+                    return (res_dt_start, avail[dt_ended_index])
+            elif avail[dt_started_index] < res_dt_end:
+                if res_dt_end <= avail[dt_ended_index]:
+                    return (avail[dt_started_index], res_dt_end)
+                else:
+                    return tuple(avail)
+
+        return self.next_availability(days_buffer=0, hours_buffer=0)
+
+
+
     def __len__(self):
         SQL = """
             SELECT count(*)
@@ -110,9 +150,8 @@ class Calendars(Models):
             return cursor.fetchone()
 
 
-
     #determining if an item is available day-by-day
-    def check_availability(self, dt_comparison=datetime.now()):
+    def check_datetime(self, dt_comparison: datetime=datetime.now()):
         dt_started_index = -2
         dt_ended_index = -1
 
@@ -127,12 +166,14 @@ class Calendars(Models):
         return True
 
 
-    def get_availabilities(self):
+    def get_availabilities(self, days_buffer=0, hours_buffer=0):
         dt_started_index = -2
         dt_ended_index = -1
 
+        td_buffer = timedelta(days=days_buffer, hours=hours_buffer)
+
         reservations = self.get_reservations()
-        if reservations == []: return [(self.dt_started, self.dt_ended)]
+        if reservations == []: return [(self.dt_started + td_buffer, self.dt_ended)]
 
         reservations.sort(key = lambda res: res[dt_ended_index])
 
@@ -141,49 +182,29 @@ class Calendars(Models):
         availabilities = []
 
         for i in range(res_count):
-            if i == 0 and self.dt_started < res[i][dt_started_index]:
-                availabilities.append((self.dt_started, res[i][dt_started_index]))
+            if i == 0 and self.dt_started + td_buffer < reservations[i][dt_started_index]:
+                availabilities.append((self.dt_started + td_buffer, reservations[i][dt_started_index]))
             elif i + 1 < res_count:
-                if res[i][dt_ended_index] < res[i + 1][dt_started_index]:
-                    availabilities.append((res[i][dt_ended_index], res[i + 1][dt_started_index]))
+                if reservations[i][dt_ended_index] + td_buffer < reservations[i + 1][dt_started_index]:
+                    availabilities.append((reservations[i][dt_ended_index] + td_buffer, reservations[i + 1][dt_started_index]))
                 # if equal, continue
                 # if greater than, throw BIG error
-            elif i + 1 == res_count and res[i][dt_ended_index] < self.dt_ended:
-                availabilities.append((res[i][dt_ended_index], self.dt_ended))
+            elif i + 1 == res_count and reservations[i][dt_ended_index] + td_buffer < self.dt_ended:
+                availabilities.append((reservations[i][dt_ended_index] + td_buffer, self.dt_ended))
 
         return availabilities
 
 
-    def next_availability(self, days_offset=0, mins_offset=0):
+    def next_availability(self, days_buffer=0, hours_buffer=0):
         dt_started_index = -2
         dt_ended_index = -1
 
-        closest_operating_datetime = datetime.now() + timedelta(
-            days=days_offset,
-            minutes=mins_offset
-        )
+        closest_operating_datetime = datetime.now()
 
-        availabilities = self.get_availabilities()
+        availabilities = self.get_availabilities(days_buffer=days_buffer, hours_buffer=hours_buffer)
         availabilities.sort(key = lambda res: res[dt_ended_index])
 
         for avail in availabilities:
             if closest_operating_datetime <= avail[dt_started_index]:
                 return avail
         return (None, None)
-
-
-    #returns true if a reservation if valid, returns false if not, returns none if expired item
-    def scheduler(self, res):
-        dt_started_index = -2
-        dt_ended_index = -1
-
-        availabilities = self.get_availabilities()
-        availabilities.sort(key = lambda res: res[dt_ended_index])
-
-        for avail in availabilities:
-            if avail[dt_started_index] <= res[dt_started_index]:
-                if res[dt_ended_index] <= avail[dt_ended_index]:
-                    return True
-
-        if self.dt_ended == datetime.now(): return None
-        else: return False
