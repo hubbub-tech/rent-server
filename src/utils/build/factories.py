@@ -1,18 +1,18 @@
-from datetime import datetime, date
-from blubber_orm import Users, Profiles, Carts
-from blubber_orm import Items, Details, Calendars
-from blubber_orm import Addresses, Reservations
-from blubber_orm import Orders, Extensions
-from blubber_orm import Logistics, Dropoffs, Pickups
-from blubber_orm import Reviews, Tags
+from src.models import Users
+from src.models import Carts
+from src.models import Items
+from src.models import Calendars
+from src.models import Addresses
+from src.models import Logistics
+from src.models import Reservations
+from src.models import Orders
+from src.models import Extensions
+from src.models import Reviews
+from src.models import Tags
 
-from blubber_orm.wrappers import TaskWrapper
+from src.utils import PriceCalculator
+from server.utils import DEPOSIT, TAX, DISCOUNT
 
-from werkzeug.security import check_password_hash, generate_password_hash
-
-from server.tools.settings import exp_decay, generate_proposed_period
-from server.tools.settings import DEPOSIT, TAX, DISCOUNT
-#done
 
 def create_address(insert_data):
     address = Addresses.unique(insert_data)
@@ -57,89 +57,43 @@ def create_review(review_data):
 def create_reservation(insert_data):
     item = Items.get({"id": insert_data["item_id"]})
     reservation = Reservations.unique(insert_data)
+
     if reservation is None:
-        date_ended = insert_data["date_ended"]
-        date_started = insert_data["date_started"]
+        dt_ended = insert_data["dt_ended"]
+        dt_started = insert_data["dt_started"]
         duration = (date_ended - date_started).days
 
-        insert_data["charge"] = exp_decay(item.price, duration)
-        insert_data["deposit"] = insert_data["charge"] * DEPOSIT
-        insert_data["tax"] = insert_data["charge"] * TAX
+        price_calculator = PriceCalculator()
+        insert_data["est_charge"] = price_calculator.get_rental_cost(item.retail_price, duration)
+        insert_data["est_deposit"] = insert_data["est_charge"] * DEPOSIT
+        insert_data["est_tax"] = insert_data["est_charge"] * TAX
 
-        if discount:
-            insert_data["charge"] *= (1 - DISCOUNT)
-            insert_data["tax"] *= (1 - DISCOUNT)
         reservation = Reservations.insert(insert_data)
 
-    #scheduler() checks if the res conflicts with other reservations
-    is_valid_reservation = item.calendar.scheduler(reservation)
-
-    if is_valid_reservation:
-        action_message = "Great, the item is available! If it isn't in your cart already make sure you 'Add to Cart'!"
-        waitlist_message = None
-    else:
-        #TODO: maybe delete the reservation if it isnt schedulable?
-        #tells users when an item is available if the res conflicts
-        reservation = None
-        first_sentence = "The time you entered is already booked."
-        action_message, waitlist_message = generate_proposed_period(item, first_sentence)
-
-    return reservation, action_message, waitlist_message
+    return reservation
 
 def create_extension(insert_data):
     reservation_keys = {
-        "date_started": insert_data["res_date_start"],
-        "date_ended": insert_data["res_date_end"],
+        "dt_started": insert_data["res_date_start"],
+        "dt_ended": insert_data["res_date_end"],
         "renter_id": insert_data["renter_id"],
         "item_id": insert_data["item_id"]
     }
-    order = Orders.get({"id": insert_data["order_id"]})
+
     Reservations.set(reservation_keys, {"is_extended": True})
     new_extension = Extensions.insert(insert_data)
 
-    pickup = Pickups.by_order(order)
-    if pickup: pickup.cancel(order)
     return new_extension
+
 
 def create_order(insert_data):
     new_order = Orders.insert(insert_data)
+
     renter = Users.get({"id": new_order.renter_id})
-    renter.make_renter()
+    renter.add_role(role="renters")
     return new_order
 
-def create_logistics(insert_data, orders, dropoff=None, pickup=None):
-    logistics_address = Addresses.unique(insert_data["address"])
-    if not logistics_address: Addresses.insert(insert_data["address"])
 
-    new_logistics = Logistics.insert(insert_data["logistics"])
-    if dropoff:
-        dropoff_data = {
-            "dt_sched": new_logistics.dt_sched,
-            "renter_id": new_logistics.renter_id,
-            "dropoff_date": dropoff
-        }
-        new_dropoff_logistics = Dropoffs.insert(dropoff_data)
-        new_dropoff_logistics.schedule_orders(orders)
-        result = new_dropoff_logistics
-    elif pickup:
-        pickup_data = {
-            "dt_sched": new_logistics.dt_sched,
-            "renter_id": new_logistics.renter_id,
-            "pickup_date": pickup
-        }
-        new_pickup_logistics = Pickups.insert(pickup_data)
-        new_pickup_logistics.schedule_orders(orders)
-        result = new_pickup_logistics
-    else:
-        Logistics.delete({
-            "dt_sched": new_logistics.dt_sched,
-            "renter_id": new_logistics.renter_id
-        })
-        result = None
-    return result
-
-
-def create_task(courier_task=None):
-    """Returns a wrapped version of dropoff/pickup/logistics called 'task'."""
-
-    return TaskWrapper(task=courier_task)
+def create_logistics(insert_data):
+    logistics = Logistics.insert(insert_data)
+    return logistics

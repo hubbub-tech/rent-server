@@ -5,7 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from blubber_orm import Reservations, Items, Orders, Users, Extensions
 
 
-def unlock_checkout(user, specified_items=None):
+def lock_cart(user, specified_items=None):
     if specified_items:
         for item in specified_items:
             item.unlock()
@@ -14,7 +14,7 @@ def unlock_checkout(user, specified_items=None):
             item.unlock()
 
 
-def lock_checkout(user):
+def lock_cart(user):
     locked_items = []
     #check that reservations don't overlap and that item is unlocked
     for item in user.cart.contents:
@@ -29,13 +29,13 @@ def lock_checkout(user):
                 item.lock(user)
                 locked_items.append(item)
             else:
-                unlock_checkout(user, specified_items=locked_items)
+                lock_cart(user, specified_items=locked_items)
                 return {
                     "is_valid" : False,
                     "message" : "Seems like someone got to an item before you. Check your rental periods."
                     }
         else:
-            unlock_checkout(user, specified_items=locked_items)
+            lock_cart(user, specified_items=locked_items)
             return {
                 "is_valid" : False,
                 "message" : "Not all of your items had reservations set for checkout."

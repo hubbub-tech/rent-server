@@ -24,8 +24,8 @@ def validate_checkout():
         response = make_response({"messages": errors}, 401)
         return response
 
-    lock_response = lock_cart(user_cart)
-    if lock_response["is_valid"] == False:
+    status = lock_cart(user_cart)
+    if status.is_successful == False:
         errors = ["Your cart is not prepared for checkout."]
         response = make_response({"messages": errors}, 401)
         return response

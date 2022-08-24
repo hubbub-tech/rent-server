@@ -37,8 +37,8 @@ def validate_extend_order():
 
     reservation = create_reservation(reservation_data)
 
-    if form_check["is_valid"] == False:
-        errors = form_check["messages"]
+    if status.is_successful == False:
+        errors = status.messages
         response = make_response({ "messages": errors }, 401)
         return response
 
@@ -111,7 +111,7 @@ def extend_order():
         "item_id": reservation.item_id,
         "order_id": order.id
     }
-    extension = create_extension(order_data)
+    extension = create_extension(extension_data)
 
     item.unlock()
     user_cart.remove(reservation)

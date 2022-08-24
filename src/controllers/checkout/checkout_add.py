@@ -92,7 +92,7 @@ def add():
             user_cart.remove_without_reservation(item)
 
     item_calendar = Calendars.get({"id": item.id})
-    form_check = validate_rental(item_calendar, dt_started, dt_ended)
+    status = validate_rental(item_calendar, dt_started, dt_ended)
 
     reservation_data = {
         "renter_id": user_cart.id,
@@ -102,8 +102,8 @@ def add():
     }
     reservation = create_reservation(reservation_data)
 
-    if form_check["is_valid"] == False:
-        errors = form_check["messages"]
+    if status.is_successful == False:
+        errors = status.messages
         response = make_response({ "messages": errors }, 401)
         return response
 

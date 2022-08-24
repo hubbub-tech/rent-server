@@ -52,13 +52,13 @@ def list_item():
         response = make_response({ "messages": errors }, 500)
         return response
 
-    form_check = validate_calendar(
+    status = validate_calendar(
         dt_lbound=calendar_data["dt_started"],
         dt_ubound=calendar_data["dt_ended"]
     )
 
-    if not form_check["is_valid"]:
-        errors = form_check["messages"]
+    if not status.is_successful:
+        errors = status.messages
         response = make_response({ "messages": errors }, 403)
         return response
 
