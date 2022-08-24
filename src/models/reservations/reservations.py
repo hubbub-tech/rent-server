@@ -36,7 +36,7 @@ class Reservations(Models):
 
             data = (self.item_id, self.renter_id, self.res_dt_start, self.res_dt_end)
 
-            with Models.database.connection.cursor() as cursor:
+            with Models.db.conn.cursor() as cursor:
                 cursor.execute(SQL, data)
                 order_id = cursor.fetchone()
 
@@ -50,9 +50,9 @@ class Reservations(Models):
 
             data = (self.item_id, self.renter_id, self.dt_started, self.dt_ended, order_id, notes)
 
-            with Models.database.connection.cursor() as cursor:
+            with Models.db.conn.cursor() as cursor:
                 cursor.execute(SQL, data)
-                Models.database.connection.commit()
+                Models.db.conn.commit()
 
 
     @property

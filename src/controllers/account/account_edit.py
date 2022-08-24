@@ -1,5 +1,8 @@
 from flask import Blueprint
 
+from src.models import Users
+
+from src.utils import
 
 bp = Blueprint("account", __name__)
 
@@ -25,10 +28,10 @@ def edit_password():
     user = Users.get({"id": g.user_id})
 
     form_data = { "email": user.email, "password": curr_password }
-    form_check = validate_login(form_data)
+    status = validate_login(form_data)
 
-    if form_check["is_valid"] == False:
-        errors = form_check["messages"]
+    if status.is_successful == False:
+        errors = status.messages
         response = make_response({"messages": errors}, 401)
         return response
 
@@ -66,11 +69,6 @@ def edit_address():
 
     new_address = create_address(new_address_data)
 
-    if form_check["is_valid"] == False:
-        errors = form_check["messages"]
-        response = make_response({"messages": errors}, 401)
-        return response
-
     Users.set({"id": g.user_id}, {
         "address_line_1": new_address.line_1,
         "address_line_2": new_address.line_2,
@@ -81,4 +79,3 @@ def edit_address():
     messages = ["Successfully changed your address!"]
     response = make_response({"messages": messages}, 200)
     return response
-    

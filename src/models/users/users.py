@@ -31,12 +31,15 @@ class Users(Models):
 
         self._password = attrs.get("password")
 
+    @classmethod
+    def get_valid_roles(cls):
+        return ["payees", "payers", "couriers", "renters", "listers", "senders", "receivers"]
 
     @classmethod
     def get_all(cls, role=None):
         if role is None: return super().get_all()
 
-        valid_roles = ["payees", "payers", "couriers", "renters", "listers", "senders", "receivers"]
+        valid_roles = Users.get_valid_roles()
         assert role in valid_roles
 
         SQL = f"""
@@ -44,7 +47,7 @@ class Users(Models):
             FROM {role};
             """
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL)
             user_tuples = cursor.fetchall()
             user_tuples = copy.deepcopy(user_ids)
@@ -66,3 +69,24 @@ class Users(Models):
         }
 
         return query_address
+
+
+    def add_role(self, role: str):
+        role = role.lower()
+        valid_roles = Users.get_valid_roles()
+        assert role in valid_roles, f"This is not a valid role. Try: [{', '.join(valid_roles)}]"
+
+        role_id = f"{role[:-1]}_id"
+
+        SQL = f"""
+            INSERT
+            INTO {role} ({role_id})
+            VALUES ({role_id} = %s);
+            """
+
+        data = (self.id,)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            
+            Models.db.conn.commit()

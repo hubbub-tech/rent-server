@@ -14,43 +14,22 @@ from .const import COOKIE_KEY_SESSION, COOKIE_KEY_USER
 def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if request.method == 'POST':
-            if request.json: data = request.json
-            elif request.form: data = request.form
-            else: return {"flashes": "No data was sent, try again."}, 403
 
-            session = data.get(COOKIE_KEY_SESSION)
-            user_id = data.get(COOKIE_KEY_USER)
-        else:
-            session = request.cookies.get(COOKIE_KEY_SESSION)
-            user_id = request.cookies.get(COOKIE_KEY_USER)
+        headers = request.headers
 
-        is_authenticated = verify_auth_token(session, user_id)
-        if is_authenticated:
-            g.user_id = int(user_id)
-            g.user = Users.get({"id": user_id})
-            return view(**kwargs)
-        else:
-            data = {"flashes": ["Your login session has ended. Login again."]}
-            response = make_response(data, 403)
-            return response
+        print(headers)
+        g.user_id = 1
+
+        return view(**kwargs)
+
     return wrapped_view
 
 def login_user(user):
-    is_valid = True
-    if user.is_blocked:
-        is_valid = False
-        message = f"The admin has decided to block your account. Contact {os.environ['MAIL_DEFAULT_RECEIVER']} for more info."
-    else:
-        session.clear()
-        session["user_id"] = user.id
-        session["cart_size"] = user.cart.size()
-        message = "You're logged in, welcome back!"
-    Users.set({"id": user.id}, {"dt_last_active": datetime.now(tz=pytz.UTC)})
-    return {
-        "is_valid" : is_valid,
-        "message" : message
-        }
+
+    status = Status()
+    status.is_successful = True
+    status.messages.append("Welcome back!")
+    return status
 
 def gen_token():
     letters = string.ascii_letters

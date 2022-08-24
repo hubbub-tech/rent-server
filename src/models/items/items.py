@@ -46,9 +46,9 @@ class Items(Models):
 
         data = (True, user.id, self.id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
         self.is_locked = True
         self.last_locked = user.id
@@ -62,9 +62,9 @@ class Items(Models):
 
         data = (False, None, self.id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
         self.is_locked = False
         self.last_locked = None
@@ -79,7 +79,7 @@ class Items(Models):
 
         data = (self.id,)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             tags = cursor.fetchall()
 
@@ -95,9 +95,9 @@ class Items(Models):
 
         data = (self.id, tag.title)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
     def remove_tag(self, tag):
         SQL = """
@@ -108,9 +108,9 @@ class Items(Models):
 
         data = (self.id, tag.title)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
 
     def to_query_address(self):

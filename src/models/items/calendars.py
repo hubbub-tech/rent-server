@@ -34,9 +34,9 @@ class Calendars(Models):
             reservation.dt_ended
         )
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
 
     def add(self, reservation):
@@ -55,9 +55,9 @@ class Calendars(Models):
             reservation.dt_ended
         )
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
 
     def get_reservations(dt_lbound=None, dt_ubound=None, descending=True):
@@ -89,7 +89,7 @@ class Calendars(Models):
 
         data = (self.id, dt_lbound, dt_ubound)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             reservations_pkeys = cursor.fetchall()
 
@@ -145,7 +145,7 @@ class Calendars(Models):
 
         data = (self.id, True)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchone()
 

@@ -13,46 +13,48 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from server.tools.settings import exp_decay, generate_proposed_period
 from server.tools.settings import DEPOSIT, TAX, DISCOUNT
 #done
-def create_user(insert_data):
-    user_address = Addresses.unique(insert_data["address"])
-    if not user_address: Addresses.insert(insert_data["address"])
 
+def create_address(insert_data):
+    address = Addresses.unique(insert_data)
+    if not address:
+        address = Addresses.insert(insert_data)
+
+    return address
+
+def create_user(insert_data):
     new_user = Users.insert(insert_data["user"])
 
-    insert_data["profile"]["id"] = new_user.id
     insert_data["cart"]["id"] = new_user.id
 
-    Profiles.insert(insert_data["profile"])
     Carts.insert(insert_data["cart"])
     return new_user
 
-#done
-def create_item(insert_data):
-    item_address = Addresses.unique(insert_data["address"])
-    if not item_address: Addresses.insert(insert_data["address"])
 
+def create_item(insert_data):
     new_item = Items.insert(insert_data["item"])
 
     lister = Users.get({"id": new_item.lister_id})
-    lister.make_lister()
+    lister.add_role(role="listers")
 
-    insert_data["details"]["id"] = new_item.id
     insert_data["calendar"]["id"] = new_item.id
 
     Calendars.insert(insert_data["calendar"])
-    Details.insert(insert_data["details"])
 
-    for tag_name in insert_data["tags"]:
-        tag = Tags.get({"tag_name": tag_name})
-        if tag is None: tag = Tags.insert({"tag_name": tag_name})
+    for tag_title in insert_data["tags"]:
+        tag = Tags.get({"title": tag_title})
+        if tag is None:
+            tag = Tags.insert({"title": tag_title})
+
         new_item.add_tag(tag)
     return new_item
+
 
 def create_review(review_data):
     new_review = Reviews.insert(review_data)
     return new_review
 
-def create_reservation(insert_data, discount=False):
+
+def create_reservation(insert_data):
     item = Items.get({"id": insert_data["item_id"]})
     reservation = Reservations.unique(insert_data)
     if reservation is None:

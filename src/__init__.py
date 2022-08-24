@@ -30,12 +30,25 @@ def create_app(config_object=Config()):
     from .tools.settings import celery
     celery.conf.update(app.config)
 
-    from .routes import main, auth, list, rent, process
-    app.register_blueprint(main)
+    from .routes import account
+    from .routes import api
+    from .routes import auth
+    from .routes import checkout
+    from .routes import delivery
+    from .routes import item
+    from .routes import list
+    from .routes import main
+    from .routes import orders
+
+    app.register_blueprint(account)
+    app.register_blueprint(api)
     app.register_blueprint(auth)
+    app.register_blueprint(checkout)
+    app.register_blueprint(delivery)
+    app.register_blueprint(item)
     app.register_blueprint(list)
-    app.register_blueprint(rent)
-    app.register_blueprint(process)
+    app.register_blueprint(main)
+    app.register_blueprint(orders)
 
     app.register_error_handler(500, internal_server_error)
     return app

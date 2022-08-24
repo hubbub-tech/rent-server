@@ -43,7 +43,7 @@ class Carts(Models):
 
             data = (self.id, )
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             item_ids = cursor.fetchall()
 
@@ -61,7 +61,7 @@ class Carts(Models):
 
         data = (self.id, reservation.item_id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
 
 
@@ -77,7 +77,7 @@ class Carts(Models):
 
         data = (self.total_charge, self.total_deposit, self.total_tax, self.id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
 
         SQL = """
@@ -94,9 +94,9 @@ class Carts(Models):
             reservation.date_ended
         )
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
 
 
@@ -109,7 +109,7 @@ class Carts(Models):
 
         data = (self.id, reservation.item_id) #sensitive to tuple order
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
 
         self.total_charge += reservation.charge
@@ -124,7 +124,7 @@ class Carts(Models):
 
         data = (self.total_charge, self.total_deposit, self.total_tax, self.id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
 
         SQL = """
@@ -141,9 +141,9 @@ class Carts(Models):
             reservation.date_ended
         )
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
 
 
@@ -158,9 +158,9 @@ class Carts(Models):
 
         data = (self.id, item.id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
 
     #NOTE to add a reservation to this later, "remove_without_reservation()" then re-add with "add()"
@@ -175,9 +175,9 @@ class Carts(Models):
 
         data = (self.id, item.id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
 
 
@@ -191,7 +191,7 @@ class Carts(Models):
             """
         data = (self.id, item.id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             result = cursor.fetchone()
 
@@ -208,6 +208,6 @@ class Carts(Models):
 
         data = (self.id,)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchone()

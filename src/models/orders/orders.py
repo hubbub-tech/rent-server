@@ -37,7 +37,7 @@ class Orders(Models):
 
         data = (self.id,)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             extensions = cursor.fetchall()
 
@@ -84,7 +84,7 @@ class Orders(Models):
 
         data = (self.id, self.renter_id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchone()
 
@@ -100,6 +100,6 @@ class Orders(Models):
 
         data = (self.id, self.renter_id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchone()

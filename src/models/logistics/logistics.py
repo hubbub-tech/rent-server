@@ -64,7 +64,7 @@ class Logsitics(Models):
 
         data = (self.id,)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchall()
 
@@ -78,7 +78,7 @@ class Logsitics(Models):
 
         data = (self.id,)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchall()
 
@@ -104,7 +104,7 @@ class Logsitics(Models):
 
         data = (self.id,)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchall()
 
@@ -118,7 +118,7 @@ class Logsitics(Models):
 
         data = (self.id, True)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchone()
 
@@ -131,9 +131,9 @@ class Logsitics(Models):
             """
         data = (order_id, self.id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
 
 
     def remove_courier_by_id(self, courier_id):
@@ -145,6 +145,6 @@ class Logsitics(Models):
             """
         data = (courier_id, self.id)
 
-        with Models.database.connection.cursor() as cursor:
+        with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            Models.database.connection.commit()
+            Models.db.conn.commit()
