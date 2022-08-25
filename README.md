@@ -13,7 +13,7 @@ In order to run this server locally, you will need several development variables
 *./server/.env.development*
 ```
 export FLASK_APP=application.py
-export FLASK_ENV=development
+export FLASK_DEBUG=1
 export SECRET_KEY=<some-super-secret-key>
 export CORS_ALLOW_ORIGIN=<route-to-react-client>
 
