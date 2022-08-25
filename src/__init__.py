@@ -4,13 +4,13 @@ from flask import Flask
 
 from blubber_orm import get_db
 
-from .tools.settings.config import Config
+from .tools.settings.config import FlaskConfig
 
 def internal_server_error(e):
     print("RUNNING EXCEPTION HANDLER")
     return "Internal Server Error", 500
 
-def create_app(config_object=Config()):
+def create_app(config_object=FlaskConfig()):
     app = Flask(__name__)
 
     # Flask Config

@@ -1,7 +1,10 @@
 from flask import Blueprint
 
+from src.models import Orders
 
-bp = Blueprint("orders", __name__)
+from src.utils import get_receipt
+
+bp = Blueprint("manage", __name__)
 
 
 @bp.get('/order/receipt')
@@ -21,6 +24,6 @@ def download_receipt():
         response = make_response({"messages": errors}, 403)
         return response
 
-    receipt = generate_receipt_json(order)
+    receipt = get_receipt(order)
     response = make_response({ "receipt": receipt }, 200)
     return response

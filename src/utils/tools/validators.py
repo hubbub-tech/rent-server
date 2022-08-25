@@ -4,10 +4,6 @@ from werkzeug.security import check_password_hash
 from blubber_orm import Users, Items
 
 
-# is_valid -> bool
-# messages -> array of messages (str)
-
-
 def validate_login(form_data):
     loaded_user = Users.unique({"email": form_data["email"]})
 
@@ -78,11 +74,17 @@ def validate_rental(calendar: Calendars, dt_started: datetime, dt_ended: datetim
     if calendar.check_reservation(dt_started, dt_ended, days_buffer=0) == False:
         res_dt_start, res_dt_end = best_match_reservation(dt_started, dt_ended, days_buffer=0)
 
+        avail_date_start_str = res_dt_start.strftime("%B %-d, %Y")
+
+        if res_dt_end > datetime.now() + timedelta(years=10):
+            avail_date_range = avail_date_start_str
+        else:
+            avail_date_end_str = res_dt_end.strftime("%B %-d, %Y")
+            avail_date_range = f"{avail_date_start_str} until {avail_date_end_str}"
+
         status.messages.append("This item is unavailable for the period you requested.")
-        status.messages.append(f"""
-            Currently, the item is available from {res_dt_start.strftime("%B %-d, %Y")}
-            to {res_dt_end.strftime("%B %-d, %Y")}.
-        """)
+        status.messages.append(f"Currently, the item is available starting {avail_date_range}.")
+        status.messages.append("You can also request more of this item in the form at the bottom of the page, and we will get back to you within 48hrs!")
 
         status.is_successful = False
         return status
@@ -91,6 +93,7 @@ def validate_rental(calendar: Calendars, dt_started: datetime, dt_ended: datetim
         Items.set({"id": calendar.id}, {"is_available": False})
 
         status.messages.append("Sorry, the item is not currently available.")
+        status.messages.append("You can also request more of this item in the form at the bottom of the page, and we will get back to you within 48hrs!")
         status.is_successful = False
         return status
 

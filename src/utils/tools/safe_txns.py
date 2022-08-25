@@ -62,6 +62,34 @@ def lock_cart(cart: Carts):
     return status
 
 
+def get_charge_from_stripe():
+    return None
+
+
+def return_order_early(order, early_reservation):
+
+    status = _validate_early_return(order, early_reservation)
+    if status.is_successful == False: return status
+
+    assert order.ext_date_end >= order.res_date_end, "This order has already been extended."
+
+    item = Items.get(order.item_id)
+    renter = Users.get(order.renter_id)
+    status = _safe_early_return(order, item, renter, early_reservation)
+    return status
+
+
+def return_extension_early(extension, early_return_reservation):
+
+    status = _validate_early_return(extension, early_return_reservation)
+    if status.is_successful == False: return status
+
+    item = Items.get(order.item_id)
+    renter = Users.get(order.renter_id)
+    status = _safe_early_return(order, item, renter, early_reservation)
+    return status
+
+
 def _validate_early_return(txn, early_reservation):
     if early_reservation.dt_ended < txn.res_date_end:
         status = Status()
@@ -143,27 +171,3 @@ def _safe_early_return(txn, item, user, early_reservation):
         status.is_successful = False
         status.messages.append("Someone else is processing the item right now. Try again in a few minutes.")
         return status
-
-
-def return_order_early(order, early_reservation):
-
-    status = _validate_early_return(order, early_reservation)
-    if status.is_successful == False: return status
-
-    assert order.ext_date_end >= order.res_date_end, "This order has already been extended."
-
-    item = Items.get(order.item_id)
-    renter = Users.get(order.renter_id)
-    status = _safe_early_return(order, item, renter, early_reservation)
-    return status
-
-
-def return_extension_early(extension, early_return_reservation):
-
-    status = _validate_early_return(extension, early_return_reservation)
-    if status.is_successful == False: return status
-
-    item = Items.get(order.item_id)
-    renter = Users.get(order.renter_id)
-    status = _safe_early_return(order, item, renter, early_reservation)
-    return status

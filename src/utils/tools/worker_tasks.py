@@ -2,23 +2,24 @@ import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-from server.tools.settings import celery, SG
+from src.utils.safe_txns import unlock_cart
+from src.utils.settings import celery, SMTP
 
 @celery.task
 def send_async_email(subject, to, body, error=None):
     msg = Mail(
-        from_email=SG.DEFAULT_SENDER,
+        from_email=SMTP.DEFAULT_SENDER,
         to_emails=to,
         subject=subject,
         html_content=body
     )
     try:
-        sg = SendGridAPIClient(SG.SENDGRID_API_KEY)
+        sg = SendGridAPIClient(SMTP.SENDGRID_API_KEY)
         response = sg.send(msg)
         print(response.status_code)
         print(response.body)
         print(response.headers)
-        
+
     except Exception as e:
         print(e.message)
 
@@ -26,18 +27,16 @@ def send_async_email(subject, to, body, error=None):
 def set_async_timeout(user_id):
     """Background task to unlock items if user does not transact."""
 
-    from server import create_app
+    from src import create_app
     app = create_app()
 
     try:
         with app.app_context():
             user_cart = Carts.get({"id": user_id})
-            item_ids = user_cart.get_item_ids()
-            for item_id in item_ids:
-                item = Items.get({"id": item_id})
-                item.unlock()
+            unlock_cart(user_cart)
 
-        print(f"All items in {user.name}'s cart have been unlocked again.") # TODO: log this
+        timestamp = datetime.now()
+        print(f"[{timestamp.strftime("%Y-%m-%d")}] All items in cart with id: {user_cart.id} have been unlocked.") # TODO: log this
         return True
 
     except:

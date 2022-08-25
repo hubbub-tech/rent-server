@@ -1,7 +1,18 @@
-from flask import Blueprint
+from flask import Blueprint, make_response, request
 
+from src.models import Users
+from src.models import Orders
+from src.models import Calendars
+from src.models import Reservations
 
-bp = Blueprint("orders", __name__)
+from src.utils import validate_rental
+from src.utils import create_reservation
+from src.utils import create_extension
+
+from src.utils import get_lister_receipt_email, get_renter_receipt_email
+from src.utils import send_async_email
+
+bp = Blueprint("extend", __name__)
 
 
 @bp.post("/orders/extend/validate")
