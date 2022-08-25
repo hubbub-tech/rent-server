@@ -1,5 +1,6 @@
 from flask import Blueprint, make_response, request
 
+from src.models import Users
 
 bp = Blueprint("users", __name__)
 

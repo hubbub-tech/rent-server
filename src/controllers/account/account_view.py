@@ -1,5 +1,9 @@
 from flask import Blueprint
 
+from src.models import Users
+from src.models import Items
+
+
 bp = Blueprint("account", __name__)
 
 
@@ -27,4 +31,4 @@ def view_account(user_id):
 
     data = {"user": user_to_dict, "listed_items": listed_items_to_dict}
     response = make_response(data, 200)
-    return response 
+    return response

@@ -1,9 +1,10 @@
 from flask import Blueprint, make_response, request
 
 from src.models import Users
-# from src.utils.??? import validate_login
-# from src.utils.??? import gen_token
-# from src.utils.??? import login_user
+
+from src.utils import validate_login
+from src.utils import gen_token
+from src.utils import login_user
 
 bp = Blueprint('login', __name__)
 

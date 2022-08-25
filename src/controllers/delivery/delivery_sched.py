@@ -1,5 +1,10 @@
-from flask import Blueprint
+from flask import Blueprint, make_response, request
 
+from src.models import Orders
+
+from src.utils import create_address
+from src.utils import create_logistics
+from src.utils import schedule_deliveries
 
 bp = Blueprint("schedule", __name__)
 
@@ -11,8 +16,8 @@ def schedule_delivery():
     try:
         order_ids = request.json["orderIds"]
         timeslots = request.json["timeslots"]
-        to_address = request.json["toAddress"]
-        from_address = request.json["fromAddress"]
+        to_address_data = request.json["toAddress"]
+        from_address_data = request.json["fromAddress"]
 
         notes = request.json["notes"]
         referral = request.json["referral"]
@@ -35,20 +40,22 @@ def schedule_delivery():
         "sender_id": sender_id,
         "receiver_id": receiver_id,
         "notes": notes,
-        "to_addr_line_1": to_address["lineOne"],
-        "to_addr_line_2": to_address["lineTwo"],
-        "to_addr_country": to_address["country"],
-        "to_addr_zip": to_address["zip"],
-        "from_addr_line_1": from_address["lineOne"],
-        "from_addr_line_2": from_address["lineTwo"],
-        "from_addr_country": from_address["country"],
-        "from_addr_zip": from_address["zip"],
+        "to_addr_line_1": to_address_data["lineOne"],
+        "to_addr_line_2": to_address_data["lineTwo"],
+        "to_addr_country": to_address_data["country"],
+        "to_addr_zip": to_address_data["zip"],
+        "from_addr_line_1": from_address_data["lineOne"],
+        "from_addr_line_2": from_address_data["lineTwo"],
+        "from_addr_country": from_address_data["country"],
+        "from_addr_zip": from_address_data["zip"],
     } # FILL WITH DATA FOR OBJ CREATION
 
-    # NOTE: check to_addr and from_addr
+    to_address = create_address(to_address_data)
+    from_address = create_address(from_address_data)
+
     logistics = create_logistics(logistics_data)
     status = schedule_deliveries(logistics, order_ids, timeslots)
 
-    messages = status["messages"]
+    messages = status.messages
     response = make_response({"messages": messages}, 200)
     return response

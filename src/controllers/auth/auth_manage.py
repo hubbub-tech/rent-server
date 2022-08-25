@@ -2,10 +2,12 @@ from flask import Blueprint, make_response, request
 from werkzeug.security import generate_password_hash
 
 from src.models import Users
-# from src.utils.??? import Config
-# from src.utils.??? import gen_token, verify_token
-# from src.utils.??? import get_password_reset_email
-# from src.utils.??? import send_async_email
+
+from src.utils import Config
+from src.utils import gen_token, verify_token
+
+from src.utils import get_password_reset_email
+from src.utils import send_async_email
 
 bp = Blueprint('manage', __name__)
 

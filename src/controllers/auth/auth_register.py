@@ -3,6 +3,14 @@ from flask import Blueprint, make_response, request
 
 from src.models import Users
 
+from src.utils import create_user
+from src.utils import create_address
+
+from src.utils import get_welcome_email
+from src.utils import send_async_email
+
+from src.utils import validate_registration
+
 bp = Blueprint('register', __name__)
 
 @bp.post('/register')

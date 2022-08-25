@@ -1,11 +1,12 @@
 from flask import Blueprint, make_response, request
 
-from blubber_orm import Reservations
 from blubber_orm import Carts
 from blubber_orm import Items, Calendars
+from blubber_orm import Reservations
 
-# from src.utils.??? import validate_rental
-# from src.utils.??? import create_reservation
+from src.utils import validate_rental
+
+from src.utils import create_reservation
 
 bp = Blueprint("edit", __name__)
 

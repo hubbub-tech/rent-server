@@ -4,7 +4,7 @@ from blubber_orm import Reservations
 from blubber_orm import Users, Carts
 from blubber_orm import Items, Calendars
 
-# src.utils.??? import gen_token
+from src.utils import gen_token
 
 bp = Blueprint("cart", __name__)
 

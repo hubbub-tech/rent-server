@@ -1,5 +1,9 @@
 from flask import Blueprint, make_response, request
 
+from src.models import Items
+
+from src.utils import create_review
+
 bp = Blueprint("review", __name__)
 
 # NOTE: Consider only allowing people who have rented to leave reviews.

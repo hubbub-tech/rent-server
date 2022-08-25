@@ -2,7 +2,9 @@ from flask import Blueprint
 
 from src.models import Users
 
-from src.utils import
+from src.utils import validate_login
+
+from src.utils import create_address
 
 bp = Blueprint("account", __name__)
 

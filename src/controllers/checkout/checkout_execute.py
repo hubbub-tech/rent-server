@@ -1,5 +1,16 @@
 from flask import Blueprint
 
+from src.models import Carts
+from src.models import Calendars
+from src.models import Reservations
+
+from src.utils import lock_cart
+from src.utils import verify_token
+from src.utils import create_order
+
+from src.utils import send_async_email, set_async_timeout
+from src.utils import get_lister_receipt_email, get_renter_receipt_email
+
 
 bp = Blueprint("execute", __name__)
 
@@ -18,8 +29,7 @@ def validate_checkout():
     user_cart = Carts.get({"id": g.user_id})
     checkout_session_key = request.args.get("checkoutSession", "Failed")
 
-    if checkout_session_key is None or \
-        verify_token(user_cart.checkout_session_key, checkout_session_key) == False:
+    if checkout_session_key is None or verify_token(user_cart.checkout_session_key, checkout_session_key) == False:
         errors = ["Your cart is not prepared for checkout."]
         response = make_response({"messages": errors}, 401)
         return response

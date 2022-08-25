@@ -1,8 +1,9 @@
 from flask import Blueprint, make_response, request
 
 from src.models import Items, Calendars
-# from src.utils import json_sort
-# from src.utils import search_items
+
+from src.utils import json_sorted
+from src.utils import Recommender
 
 bp = Blueprint('feed', __name__)
 
@@ -15,7 +16,8 @@ def item_feed():
     page_number = requests.args.get("page", 1) # Not in use right now
 
     if search_term:
-        items = search_items(search_term)
+        recommender = Recommender()
+        items = recommender.search_for(search_term)
     else:
         items = Items.filter({"is_visible": True, "is_transactable": True})
 
@@ -34,8 +36,8 @@ def item_feed():
 
         items_to_dict.append(item_to_dict)
 
-    items_to_dict_sorted = json_sort(items_to_dict, "next_available_start")
-    items_to_dict_sorted = json_sort(items_to_dict_sorted, "is_featured")
+    items_to_dict_sorted = json_sorted(items_to_dict, "next_available_start")
+    items_to_dict_sorted = json_sorted(items_to_dict_sorted, "is_featured")
 
     data = { "items": items_to_dict_sorted, "photo_url": photo_url }
     response = make_response(data, 200)

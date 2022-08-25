@@ -1,8 +1,9 @@
-from flask import Blueprint
+from flask import Blueprint, make_response, request
 
-from blubber_orm import Logistics
-from blubber_orm import Orders
-from blubber_orm import Items
+from src.models import Addresses
+from src.models import Logistics
+from src.models import Orders
+from src.models import Items
 
 bp = Blueprint("view", __name__)
 

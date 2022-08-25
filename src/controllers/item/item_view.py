@@ -2,7 +2,10 @@ from flask import Blueprint, make_response
 
 from src.models import Users
 from src.models import Addresses
-from src.models import Items, Calendars
+from src.models import Items
+from src.models import Calendars
+
+from src.utils import get_recommendations
 
 bp = Blueprint("view", __name__)
 
@@ -32,7 +35,9 @@ def view_item(item_id):
     item_to_dict["calendar"]["next_avail_date_start"] = next_start.strftime("%Y-%m-%d")
     item_to_dict["calendar"]["next_avail_date_end"] = next_end.strftime("%Y-%m-%d")
 
-    recommendations = get_recommendations(item.name)
+    recommender = Recommender()
+    recommendations = recommender.on(item)
+    
     recs_to_dict = []
     for rec in recommendations:
         if rec.id == item.id: continue

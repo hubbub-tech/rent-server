@@ -5,11 +5,13 @@ import string
 import random
 import functools
 from datetime import datetime
-from flask import session, request, flash, g, make_response
-from blubber_orm import Users, Items, Details, Tags, Testimonials
+from flask import request, g, make_response
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from src.models import Users, Items, Tags
+
 from .const import COOKIE_KEY_SESSION, COOKIE_KEY_USER
+
 
 def login_required(view):
     @functools.wraps(view)
@@ -24,6 +26,7 @@ def login_required(view):
 
     return wrapped_view
 
+
 def login_user(user):
 
     status = Status()
@@ -31,13 +34,16 @@ def login_user(user):
     status.messages.append("Welcome back!")
     return status
 
+
 def gen_token():
     letters = string.ascii_letters
     unhashed_token = ''.join(random.choice(letters) for i in range(10))
     return { "hashed": hashed_token, "unhashed": unhashed_token }
 
+
 def verify_token(hashed_token, unhashed_token):
     return check_password_hash(hashed_token, unhashed_token)
+
 
 def get_random_testimonials(size=1):
     testimonials = Testimonials.get_all()
@@ -47,59 +53,7 @@ def get_random_testimonials(size=1):
     else:
         return []
 
-def get_recommendations(item_name):
-    # Split the item name by spaces
-    item_name_components = item_name.split(" ")
 
-    # Take the last word in the name--this is likely to be an identifier as to what it is
-    searchable = f"%{item_name_components[-1]}%"
-
-    items = Items.like("name", searchable)
-    details = Details.like("description", searchable)
-    unfiltered_items = [detail.item for detail in details]
-
-    # remove duplicates
-    filtered_items = []
-    id_tracker = []
-    for item in unfiltered_items:
-        if item.is_available and item.id not in id_tracker:
-            id_tracker.append(item.id)
-            filtered_items.append(item)
-
-    # get recommendations
-    size = 3
-    recommendations = []
-    if len(filtered_items) > size:
-        recommendations = random.sample(filtered_items, size)
-    else:
-        recommendations = filtered_items
-    return recommendations
-
-def search_items(search_key):
-    searchable = f"%{search_key}%"
-    if search_key != 'all':
-        # search by tag
-        unfiltered_items = []
-        tags = Tags.like("tag_name", searchable)
-        for tag in tags:
-            unfiltered_items += Items.by_tag(tag)
-
-        # search by item details description
-        details = Details.like("description", searchable)
-        unfiltered_items += [detail.item for detail in details]
-
-        # search by item name
-        unfiltered_items += Items.like("name", searchable)
-
-        # remove duplicates
-        filtered_items = []
-        id_tracker = []
-        for item in unfiltered_items:
-            if item.is_available and item.id not in id_tracker:
-                id_tracker.append(item.id)
-                filtered_items.append(item)
-    else: filtered_items = Items.filter({"is_available": True})
-    return filtered_items
 
 def generate_proposed_period(item, input_message):
     status_message = None
@@ -119,8 +73,11 @@ def generate_proposed_period(item, input_message):
         status_message = "Sorry, the item is no longer available."
     return status_message, waitlist_message
 
+
+
 def append_sort(arr, element, key):
     """element should be type dictionary containing the passed key"""
+
     if len(arr) == 0:
         arr.append(element)
     else:
@@ -134,7 +91,9 @@ def append_sort(arr, element, key):
                 break
             i += 1
 
-def json_sort(arr, key, reverse=False):
+
+
+def json_sorted(arr, key, reverse=False):
     """Takes an array of dictionaries with the same structure and sorts"""
     if arr == []: return []
 
