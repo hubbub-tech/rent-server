@@ -103,8 +103,14 @@ def checkout():
         email_data = get_lister_receipt_email(order) # WARNING
         send_async_email.apply_async(kwargs=email_data)
 
+    checkout_session_key = user_cart.checkout_session_key
 
-    email_data = get_renter_receipt_email(transactions)
+    orders = Orders.filter({
+        "renter_id": user_cart.id,
+        "checkout_session_key": checkout_session_key
+    })
+
+    email_data = get_renter_receipt_email(orders)
     send_async_email.apply_async(kwargs=email_data)
 
     messages = [

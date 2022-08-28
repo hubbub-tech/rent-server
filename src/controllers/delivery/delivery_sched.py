@@ -56,6 +56,15 @@ def schedule_delivery():
     logistics = create_logistics(logistics_data)
     status = schedule_deliveries(logistics, order_ids, timeslots)
 
+    if logistics.receiver_id == g.user_id:
+        email_data = get_dropoff_request_email(logistics)
+    elif logistics.sender_id == g.user_id
+        email_data = get_pickup_request_email(logistics)
+    else:
+        pass # NOTE: when is this the case?
+
+    send_async_email.apply_async(kwargs=email_data)
+    
     messages = status.messages
     response = make_response({"messages": messages}, 200)
     return response

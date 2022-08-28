@@ -103,3 +103,19 @@ class Orders(Models):
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchone()
+
+
+    def get_promos(self):
+        SQL = """
+            SELECT title
+            FROM order_promos
+            WHERE order_id = %s;
+            """
+
+        data = (self.id,)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            return cursor.fetchall()
+
+    

@@ -130,7 +130,7 @@ def extend_order():
     email_data = get_lister_receipt_email(extension) # WARNING
     send_async_email.apply_async(kwargs=email_data)
 
-    email_data = get_renter_receipt_email(extension)
+    email_data = get_extension_receipt_email(extension)
     send_async_email.apply_async(kwargs=email_data)
 
     messages = ["Successfully extended your order!"]
