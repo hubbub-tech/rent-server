@@ -1,3 +1,11 @@
+from datetime import datetime
+
+from src.utils.settings import SMTP
+
+from ._email_data import EmailData
+from ._email_body_formatter import EmailBodyFormatter
+
+
 def get_cancellation_email(order):
 
     email_data = EmailData()
@@ -17,11 +25,11 @@ def get_cancellation_email(order):
 
     email_body_formatter.content = ""
 
-    email_body_formatter.conclusion = f"If you have any questions, please contact us at {SG.DEFAULT_RECEIVER}."
+    email_body_formatter.conclusion = f"If you have any questions, please contact us at {SMTP.DEFAULT_RECEIVER}."
 
     body = email_body_formatter.build()
 
     email_data.subject = f"[Hubbub] Your Order Cancellation on {item.name}"
-    email_data.to = (user.email, SG.DEFAULT_RECEIVER)
+    email_data.to = (user.email, SMTP.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data

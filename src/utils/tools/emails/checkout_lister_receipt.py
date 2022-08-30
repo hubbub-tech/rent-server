@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils import SMTP
+from src.utils.settings import SMTP
 
 from src.models import Items
 from src.models import Users

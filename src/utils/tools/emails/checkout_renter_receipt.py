@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils import SMTP
+from src.utils.settings import SMTP
 
 from src.models import Items
 from src.models import Users
@@ -49,9 +49,9 @@ def get_renter_receipt_email(orders):
     if promos: pass # NOTE: build promos into cost table.
 
     row_data = {
-        "item_name": "TOTAL"
-        "date_started": "",
-        "date_ended": "",
+        "item_name": "TOTAL",
+        "date_started": "-",
+        "date_ended": "-",
         "charge": f"${total_charge:.2f}",
         "deposit": f"${total_deposit:.2f}",
         "tax": f"${total_tax:.2f}",

@@ -2,8 +2,9 @@ import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-from src.utils.safe_txns import unlock_cart
 from src.utils.settings import celery, SMTP
+
+from .safe_txns import unlock_cart
 
 @celery.task
 def send_async_email(subject, to, body, error=None):
@@ -36,7 +37,7 @@ def set_async_timeout(user_id):
             unlock_cart(user_cart)
 
         timestamp = datetime.now()
-        print(f"[{timestamp.strftime("%Y-%m-%d")}] All items in cart with id: {user_cart.id} have been unlocked.") # TODO: log this
+        print(f"[{timestamp.strftime('%Y-%m-%d')}] All items in cart with id: {user_cart.id} have been unlocked.") # TODO: log this
         return True
 
     except:

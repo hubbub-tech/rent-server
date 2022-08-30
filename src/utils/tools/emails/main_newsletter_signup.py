@@ -1,9 +1,17 @@
+from datetime import datetime
+
+from src.utils.settings import SMTP
+
+from ._email_data import EmailData
+from ._email_body_formatter import EmailBodyFormatter
+
+
 def get_newsletter_welcome(newsletter_data):
 
     email_data = EmailData()
     email_body_formatter = EmailBodyFormatter()
 
-    email_body_formatter.preview = f"New newsletter signup '{newsletter_data['email']}' {date.today().strftime('%B %-d, %Y')} - "
+    email_body_formatter.preview = f"New newsletter signup '{newsletter_data['email']}' {datetime.now().strftime('%B %-d, %Y')} - "
 
     email_body_formatter.user = "Hubbub Team"
 
@@ -19,6 +27,6 @@ def get_newsletter_welcome(newsletter_data):
     body = email_body_formatter.build()
 
     email_data.subject = "[Internal] New Newsletter Signup"
-    email_data.to = (SG.DEFAULT_RECEIVER,)
+    email_data.to = (SMTP.DEFAULT_RECEIVER,)
     email_data.body = body
     return email_data

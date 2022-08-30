@@ -160,7 +160,7 @@ class Calendars(Models):
 
         if res_count > 0:
             for res in reservations:
-                if res[dt_started_index] <= dt_comparison and /
+                if res[dt_started_index] <= dt_comparison and \
                     dt_comparison <= res[dt_ended_index]:
                     return False
         return True

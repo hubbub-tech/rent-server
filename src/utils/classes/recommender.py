@@ -1,7 +1,7 @@
 import random
 
-import src.models import Items
-import src.models import Tags
+from src.models import Items
+from src.models import Tags
 
 class Recommender:
 

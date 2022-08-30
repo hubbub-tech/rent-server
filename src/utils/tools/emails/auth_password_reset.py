@@ -1,11 +1,11 @@
 from datetime import datetime
 
-from src.utils import SMTP
+from src.utils.settings import SMTP
 
 from ._email_data import EmailData
 from ._email_body_formatter import EmailBodyFormatter
 
-def get_auth_password_reset_email(user, reset_link):
+def get_password_reset_email(user, reset_link):
 
     email_data = EmailData()
     email_body_formatter = EmailBodyFormatter()

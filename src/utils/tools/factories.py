@@ -10,8 +10,8 @@ from src.models import Extensions
 from src.models import Reviews
 from src.models import Tags
 
-from src.utils import PriceCalculator
-from server.utils import DEPOSIT, TAX, DISCOUNT
+from src.utils.classes import PriceCalculator
+from src.utils.settings import DEPOSIT, TAX, DISCOUNT
 
 
 def create_address(insert_data):

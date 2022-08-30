@@ -2,7 +2,7 @@ from blubber_orm import Models
 from datetime import datetime
 
 
-class Logsitics(Models):
+class Logistics(Models):
 
     table_name = "logistics"
     table_primaries = ["id"]
@@ -122,7 +122,23 @@ class Logsitics(Models):
             cursor.execute(SQL, data)
             return cursor.fetchone()
 
-    def remove_order_by_id(self, order_id):
+
+    def add_order(self, order_id: int):
+
+        SQL = """
+            INSERT
+            INTO order_logistics (order_id, logistics_id)
+            VALUES (%s, %s)
+            """
+
+        data = (order_id, self.id)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            Models.db.conn.commit()
+
+
+    def remove_order(self, order_id: int):
         # We want both of these commands to succeed or fail together
         SQL = """
             DELETE
@@ -136,7 +152,22 @@ class Logsitics(Models):
             Models.db.conn.commit()
 
 
-    def remove_courier_by_id(self, courier_id):
+    def add_courier(self, courier_id: int):
+
+        SQL = """
+            INSERT
+            INTO logistics_couriers (logistics_id, courier_id)
+            VALUES (%s, %s)
+            """
+
+        data = (self.id, courier_id)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            Models.db.conn.commit()
+
+
+    def remove_courier(self, courier_id: int):
         # We want both of these commands to succeed or fail together
         SQL = """
             DELETE

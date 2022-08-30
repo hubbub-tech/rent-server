@@ -2,9 +2,7 @@ import os
 import logging
 from flask import Flask
 
-from blubber_orm import get_db
-
-from .tools.settings.config import FlaskConfig
+from .utils.settings.config import FlaskConfig
 
 def internal_server_error(e):
     print("RUNNING EXCEPTION HANDLER")
@@ -17,7 +15,7 @@ def create_app(config_object=FlaskConfig()):
     app.config.from_object(config_object)
 
     # Logger Config
-    from .tools.build import build_mail_handler
+    from .utils.classes import build_mail_handler
     mail_handler = build_mail_handler()
 
     for logger in (
@@ -27,7 +25,7 @@ def create_app(config_object=FlaskConfig()):
         logger.addHandler(mail_handler)
 
     # Celery Worker Config
-    from .tools.settings import celery
+    from .utils.settings import celery
     celery.conf.update(app.config)
 
     from .routes import account

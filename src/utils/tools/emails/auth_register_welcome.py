@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils import SMTP
+from src.utils.settings import SMTP
 
 from ._email_data import EmailData
 from ._email_body_formatter import EmailBodyFormatter

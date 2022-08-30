@@ -1,6 +1,6 @@
 from blubber_orm import Models
 
-class ReservationArchived(Models):
+class ReservationsArchived(Models):
 
     table_name = "reservations_archived"
     table_primaries = ["item_id", "renter_id", "dt_started", "dt_ended"]

@@ -1,3 +1,14 @@
+from datetime import datetime
+
+from src.utils.settings import SMTP
+
+from src.models import Items
+from src.models import Users
+
+from ._email_data import EmailData
+from ._email_body_formatter import EmailBodyFormatter
+
+
 def get_early_return_email(txn, early_reservation):
     """Must remain compatible with extensions and orders."""
 

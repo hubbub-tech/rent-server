@@ -10,7 +10,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from src.models import Users, Items, Tags
 
-from .const import COOKIE_KEY_SESSION, COOKIE_KEY_USER
+from src.utils.settings import COOKIE_KEY_SESSION, COOKIE_KEY_USER
 
 
 def login_required(view):

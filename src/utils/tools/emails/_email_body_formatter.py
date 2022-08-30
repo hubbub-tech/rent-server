@@ -1,5 +1,3 @@
-from pandas import DataFrame
-
 class EmailBodyFormatter:
 
     def __init__(self):
@@ -25,7 +23,7 @@ class EmailBodyFormatter:
 
 
     def generate_table(self, columns: list, data):
-        df = DataFrame(data, columns=columns)
+        # df = DataFrame(data, columns=columns)
         return df.to_html()
 
 # --------------------

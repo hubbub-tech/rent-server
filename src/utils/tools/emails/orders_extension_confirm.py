@@ -1,3 +1,14 @@
+from datetime import datetime
+
+from src.utils.settings import SMTP
+
+from src.models import Items
+from src.models import Users
+from src.models import Reservations
+
+from ._email_data import EmailData
+from ._email_body_formatter import EmailBodyFormatter
+
 def get_extension_receipt_email(extension):
 
     email_data = EmailData()
@@ -39,6 +50,6 @@ def get_extension_receipt_email(extension):
     body = email_body_formatter.build()
 
     email_data.subject = f"[Hubbub] Your Rental on {item.name} has been Extended!"
-    email_data.to = (user.email, SG.DEFAULT_RECEIVER)
+    email_data.to = (user.email, SMTP.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data

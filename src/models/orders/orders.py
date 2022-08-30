@@ -1,5 +1,4 @@
-
-sensitive_attributes = []from blubber_orm import Models
+from blubber_orm import Models
 
 
 class Orders(Models):
@@ -117,5 +116,3 @@ class Orders(Models):
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchall()
-
-    

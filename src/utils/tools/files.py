@@ -5,7 +5,7 @@ from src.models import Users
 from src.models import Logistics
 from src.models import Reservations
 
-from server.tools.settings import SMTP
+from src.utils.settings import SMTP
 
 def get_receipt(order):
     item = Items.get({"id": order.item_id})
