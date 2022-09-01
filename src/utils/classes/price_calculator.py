@@ -8,7 +8,7 @@ class PriceCalculator:
         self.days_to_floor = days_to_floor
 
 
-    def get_rental_cost(retail_price, duration):
+    def get_rental_cost(self, retail_price, duration):
         """
         An exponential decay function for per-day cost, integrated over rental duration.
 

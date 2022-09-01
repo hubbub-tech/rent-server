@@ -26,19 +26,19 @@ def login():
         return response
 
     form_data = { "email": email, "password": password }
-    form_check = validate_login(form_data)
+    status = validate_login(form_data)
 
-    if not form_check["is_valid"]:
+    if status.is_successful == False:
         errors = form_check["messages"]
         response = make_response({ "messages": errors }, 403)
         return response
 
     user = Users.unique({"email": email})
-    login_status = login_user(user)
+    status = login_user(user)
 
-    if login_status["is_valid"]:
+    if status.is_successful:
         session_key = gen_token()
-        Users.set({"id": user.id}, {"session": session_key["unhashed"]})
+        Users.set({"id": user.id}, {"session_key": session_key["unhashed"]})
         response = make_response({ "id": user.id, "session_key": session_key["hashed"] }, 200)
         return response
     else:

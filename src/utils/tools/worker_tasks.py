@@ -24,6 +24,7 @@ def send_async_email(subject, to, body, error=None):
     except Exception as e:
         print(e.message)
 
+
 @celery.task
 def set_async_timeout(user_id):
     """Background task to unlock items if user does not transact."""

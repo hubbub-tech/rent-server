@@ -1,4 +1,5 @@
-from flask import Blueprint, make_response, request
+from datetime import datetime
+from flask import Blueprint, make_response, request, g
 
 from src.models import Carts
 from src.models import Items
@@ -7,6 +8,8 @@ from src.models import Calendars
 from src.utils import validate_rental
 from src.utils import login_required
 from src.utils import create_reservation
+
+from src.utils import JSON_DT_FORMAT
 
 bp = Blueprint("add", __name__)
 
@@ -50,14 +53,15 @@ def add_without_reservation():
     response = make_response({ "messages": messages }, 200)
     return response
 
+
 @bp.post("/cart/add")
 @login_required
 def add():
 
     try:
         item_id = request.json["itemId"]
-        dt_started = request.json["dtStarted"]
-        dt_ended = request.json["dtEnded"]
+        dt_started_json = request.json["dtStarted"]
+        dt_ended_json = request.json["dtEnded"]
     except KeyError:
         errors = ["No item added to cart. Please, try again."]
         response = make_response({ "messages": errors }, 401)
@@ -67,6 +71,9 @@ def add():
         # NOTE: Log error here.
         response = make_response({ "messages": errors }, 500)
         return response
+
+    dt_started = datetime.strptime(dt_started_json, JSON_DT_FORMAT)
+    dt_ended = datetime.strptime(dt_ended_json, JSON_DT_FORMAT)
 
     item = Items.get({"id": item_id})
     user_cart = Carts.get({"id": g.user_id})
@@ -105,6 +112,8 @@ def add():
     reservation = create_reservation(reservation_data)
 
     if status.is_successful == False:
+        user_cart.add_without_reservation(item)
+
         errors = status.messages
         response = make_response({ "messages": errors }, 401)
         return response

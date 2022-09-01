@@ -2,6 +2,7 @@ from datetime import datetime, date
 
 from src.models import Items
 from src.models import Users
+from src.models import Addresses
 from src.models import Logistics
 from src.models import Reservations
 

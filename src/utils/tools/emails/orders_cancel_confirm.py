@@ -1,5 +1,8 @@
 from datetime import datetime
 
+from src.models import Items
+from src.models import Users
+
 from src.utils.settings import SMTP
 
 from ._email_data import EmailData

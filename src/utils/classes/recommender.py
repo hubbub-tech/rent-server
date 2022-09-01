@@ -18,11 +18,12 @@ class Recommender:
 
         items_by_name = Items.like("name", last_token)
         items_by_description = Items.like("description", last_token)
-
+        unfiltered_items = items_by_name + items_by_description
+        
         memo = []
         filtered_items = []
         for item in unfiltered_items:
-            if item.is_available and item.id not in memo:
+            if (item.is_visible and item.is_transactable) and item.id not in memo:
                 memo.append(item.id)
                 filtered_items.append(item)
 

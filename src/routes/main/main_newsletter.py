@@ -23,7 +23,7 @@ def newsletter_form_submit():
         email = data.get("email")
         if email:
             email_data = get_newsletter_welcome({"name": name, "email": email})
-            send_async_email.apply_async(kwargs=email_data)
+            send_async_email.apply_async(kwargs=email_data.to_dict())
             flashes.append("Woo, you've been added to our newsletter!")
             return {"flashes": flashes}, 200
     return {"flashes": ["There was a problem adding you to our email list. try again."]}, 406

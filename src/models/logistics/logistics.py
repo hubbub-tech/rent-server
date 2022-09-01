@@ -19,7 +19,6 @@ class Logistics(Models):
 
         self.sender_id = attrs["sender_id"]
         self.receiver_id = attrs["receiver_id"]
-        self.courier_id = attrs["courier_id"]
 
         self.from_addr_line_1 = attrs["from_addr_line_1"]
         self.from_addr_line_2 = attrs["from_addr_line_2"]
@@ -97,7 +96,7 @@ class Logistics(Models):
 
     def get_timeslots(self):
         SQL = """
-            SELECT (dt_range_start, dt_range_end)
+            SELECT dt_range_start, dt_range_end
             FROM timeslots
             WHERE logistics_id = %s;
             """
@@ -111,7 +110,7 @@ class Logistics(Models):
 
     def get_eta(self):
         SQL = """
-            SELECT (dt_range_start, dt_range_end)
+            SELECT dt_range_start, dt_range_end
             FROM timeslots
             WHERE logistics_id = %s AND is_sched = %s;
             """

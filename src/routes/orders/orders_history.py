@@ -1,35 +1,36 @@
-from flask import Blueprint, make_response, request
+from datetime import datetime
+from flask import Blueprint, make_response, request, g
 
 from src.models import Orders
 from src.models import Items
+from src.models import Reservations
 
 from src.utils import login_required
+from src.utils import JSON_DT_FORMAT
 
 bp = Blueprint("history", __name__)
 
 
-@bp.post("/orders/history")
+@bp.get("/orders/history")
 @login_required
 def orders_history():
 
-    dt_started = request.args.get("dt_started")
-    # NOTE: convert to a datetime object
+    dt_started_json = request.args.get("dt_started")
 
-    if not isinstance(dt_started, datetime):
-        errors = ["Invalid date entry. Try again."]
-        response = make_response({"messages": errors}, 404)
-        return response
-    elif dt_started is None:
-        orders = Orders.filter({
-            "renter_id": g.user_id,
-            "is_canceled": False
-        })
-    else:
+    try:
+        dt_started = datetime.strptime(dt_started_json, JSON_DT_FORMAT)
         orders = Orders.filter({
             "res_dt_start": dt_started,
             "renter_id": g.user_id,
             "is_canceled": False
         })
+    except:
+        dt_started = None
+        orders = Orders.filter({
+            "renter_id": g.user_id,
+            "is_canceled": False
+        })
+
 
     if orders == []:
         errors = ["No orders yet. Check out our shop and rent!"]
@@ -40,8 +41,17 @@ def orders_history():
     for order in orders:
         item = Items.get({"id": order.item_id})
 
+        res_pkeys = order.to_query_reservation()
+        res = Reservations.get(res_pkeys)
+
         order_to_dict = order.to_dict()
+
+        order_to_dict["dropoff_id"] = order.get_dropoff_id()
+        order_to_dict["pickup_id"] = order.get_pickup_id()
+
         order_to_dict["item_name"] = item.name
+        order_to_dict["ext_dt_end"] = order.ext_dt_end.strftime("%Y-%m-%d")
+        order_to_dict["reservation"] = res.to_dict()
 
         orders_to_dict.append(order_to_dict)
 

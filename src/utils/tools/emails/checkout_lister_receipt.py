@@ -19,14 +19,14 @@ def get_lister_receipt_email(order):
     renter = Users.get({"id": order.renter_id})
     lister = Users.get({"id": item.lister_id})
 
-    email_body_formatter.preview = f"See your lister receipt for your item, ordered on {date.today().strftime('%B %-d, %Y')} - "
+    email_body_formatter.preview = f"See your lister receipt for your item, ordered on {datetime.now().strftime('%B %-d, %Y')} - "
 
     email_body_formatter.user = lister.name
 
     email_body_formatter.introduction = f"""
         Thank you for listing on Hubbub! Your {item.name} has been rented
-        by {renter.name}. The rental begins on {reservation.date_started.strftime('%B %-d, %Y')}
-        and ends on {reservation.date_ended.strftime('%B %-d, %Y')}.
+        by {renter.name}. The rental begins on {order.res_dt_start.strftime('%B %-d, %Y')}
+        and ends on {order.res_dt_end.strftime('%B %-d, %Y')}.
         """
 
     email_body_formatter.content = """

@@ -40,7 +40,7 @@ def pass_recover():
         # NOTE: async timer which invalidates token after X hours
         pass_reset_link = f"{Config.CORS_ALLOW_ORIGIN}/pass/reset?token={recovery_token['hashed']}"
         email_data = get_password_reset_email(user, reset_link)
-        send_async_email.apply_async(kwargs=email_data)
+        send_async_email.apply_async(kwargs=email_data.to_dict())
 
     messages = ["If this email has an account, we have sent the recovery link there."]
     response = make_response({ "messages": messages }, 200)

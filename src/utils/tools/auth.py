@@ -10,6 +10,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from src.models import Users, Items, Tags
 
+from src.utils.classes import Status
 from src.utils.settings import COOKIE_KEY_SESSION, COOKIE_KEY_USER
 
 
@@ -38,6 +39,7 @@ def login_user(user):
 def gen_token():
     letters = string.ascii_letters
     unhashed_token = ''.join(random.choice(letters) for i in range(10))
+    hashed_token = generate_password_hash(unhashed_token)
     return { "hashed": hashed_token, "unhashed": unhashed_token }
 
 

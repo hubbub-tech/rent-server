@@ -7,10 +7,13 @@ from src.models import Calendars
 
 from src.utils import login_required
 
+from src.utils.settings import AWS
+from src.utils.classes import Recommender
+
 bp = Blueprint("view", __name__)
 
 
-@bp.get("/items/view/id=<int:item_id>")
+@bp.get("/inventory/i/id=<int:item_id>")
 def view_item(item_id):
     photo_url = AWS.get_url(dir="items")
     item = Items.get({"id": item_id})
@@ -23,7 +26,7 @@ def view_item(item_id):
     lister = Users.get({"id": item.lister_id})
 
     item_calendar = Calendars.get({"id": item.id})
-    next_start, next_end = item_calendar.next_availability(days_offset=1)
+    next_start, next_end = item_calendar.next_availability(days_buffer=1)
 
     item_addr_dict = item.to_query_address()
     item_address = Addresses.get(item_addr_dict)
@@ -46,7 +49,7 @@ def view_item(item_id):
         rec_address = Addresses.get(rec_addr_dict)
 
         rec_calendar = Calendars.get({"id": rec.id})
-        next_start, next_end = rec_calendar.next_availability(days_offset=1)
+        next_start, next_end = rec_calendar.next_availability(days_buffer=1)
 
         rec_to_dict = rec.to_dict()
         rec_to_dict["next_avail_date_start"] = next_start.strftime("%Y-%m-%d")

@@ -1,4 +1,4 @@
-from flask import Blueprint, make_response, request
+from flask import Blueprint, make_response, request, g
 
 from src.models import Users
 from src.models import Orders
@@ -129,10 +129,10 @@ def extend_order():
     user_cart.remove(reservation)
 
     email_data = get_lister_receipt_email(extension) # WARNING
-    send_async_email.apply_async(kwargs=email_data)
+    send_async_email.apply_async(kwargs=email_data.to_dict())
 
     email_data = get_extension_receipt_email(extension)
-    send_async_email.apply_async(kwargs=email_data)
+    send_async_email.apply_async(kwargs=email_data.to_dict())
 
     messages = ["Successfully extended your order!"]
     response = make_response({"messages": messages}, 200)

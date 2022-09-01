@@ -24,7 +24,7 @@ class EmailBodyFormatter:
 
     def generate_table(self, columns: list, data):
         # df = DataFrame(data, columns=columns)
-        return df.to_html()
+        return "<p>TESTING</p>"
 
 # --------------------
 

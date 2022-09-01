@@ -1,4 +1,4 @@
-from flask import Blueprint, make_response, request
+from flask import Blueprint, make_response, request, g
 
 from src.models import Addresses
 from src.models import Logistics

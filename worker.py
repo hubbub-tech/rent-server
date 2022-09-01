@@ -1,5 +1,5 @@
-from server import create_app
-from server.tools.settings import celery
+from src import create_app
+from src.utils import celery
 
 app = create_app()
 app.app_context().push()

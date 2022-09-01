@@ -17,6 +17,7 @@ class Users(Models):
         self.name = attrs["name"]
         self.phone = attrs["phone"]
         self.email = attrs["email"]
+        self.password = attrs["password"]
         self.bio = attrs["bio"]
         self.profile_pic = attrs["profile_pic"]
         self.dt_joined = attrs["dt_joined"]
@@ -31,9 +32,14 @@ class Users(Models):
 
         self._password = attrs.get("password")
 
+
+    def get_name(self):
+        return self.name.replace(",", " ")
+
     @classmethod
     def get_valid_roles(cls):
         return ["payees", "payers", "couriers", "renters", "listers", "senders", "receivers"]
+
 
     @classmethod
     def get_all(cls, role=None):
@@ -81,12 +87,13 @@ class Users(Models):
         SQL = f"""
             INSERT
             INTO {role} ({role_id})
-            VALUES ({role_id} = %s);
+            VALUES (%s)
+            ON CONFLICT ({role_id}) DO NOTHING;
             """
 
         data = (self.id,)
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            
+
             Models.db.conn.commit()

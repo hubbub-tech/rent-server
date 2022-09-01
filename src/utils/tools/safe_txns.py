@@ -6,6 +6,8 @@ from src.models import Items
 from src.models import Calendars
 from src.models import Reservations
 
+from src.utils.classes import Status
+
 
 def unlock_cart(cart: Carts, specified_items=None):
     if specified_items:
@@ -34,26 +36,26 @@ def lock_cart(cart: Carts):
             "is_in_cart": True
         })
 
-        if reservation is None:
+        if res is None:
             unlock_cart(cart, specified_items=locked_items)
 
             status = Status()
             status.is_successful = False
-            status.messages.append("Seems like someone got to an item before you. Check your rental periods.")
+            status.messages.append(f"Your {item.name} was not ready for checkout.")
             return status
 
         item_calendar = Calendars.get({"id": item.id})
-        if item_calendar.check_reservation(res) and item.is_locked == False:
+        if item_calendar.check_reservation(res.dt_started, res.dt_ended) and item.is_locked == False:
             user = Users.get({"id": cart.id})
 
             item.lock(user)
             locked_items.append(item)
         else:
-            unlock_cart(user, specified_items=locked_items)
+            unlock_cart(cart, specified_items=locked_items)
 
             status = Status()
             status.is_successful = False
-            status.messages.append("Seems like someone got to an item before you. Check your rental periods.")
+            status.messages.append(f"Seems like someone got to the {item.name} before you. Check your rental period.")
             return status
 
     status = Status()
@@ -62,8 +64,9 @@ def lock_cart(cart: Carts):
     return status
 
 
-def get_charge_from_stripe():
-    return None
+def get_charge_from_stripe(txn_token):
+    return txn_token
+
 
 
 def return_order_early(order, early_reservation):
@@ -77,6 +80,7 @@ def return_order_early(order, early_reservation):
     renter = Users.get(order.renter_id)
     status = _safe_early_return(order, item, renter, early_reservation)
     return status
+
 
 
 def return_extension_early(extension, early_return_reservation):
@@ -122,7 +126,7 @@ def _safe_early_return(txn, item, user, early_reservation):
         Reservations.set(curr_reservation_pkeys, {"is_calendared": False})
 
         curr_reservation = Reservations.get(curr_reservation_pkeys)
-        curr_reservation.archive()
+        curr_reservation.archive(notes="Early Return.")
         archive_reservation = curr_reservation
 
         if isinstance(txn, Extensions):

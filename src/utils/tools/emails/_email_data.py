@@ -4,4 +4,8 @@ class EmailData:
         self.subject = None
         self.to = None
         self.body = None
-        self.e = None
+        self.error = None
+
+
+    def to_dict(self):
+        return self.__dict__

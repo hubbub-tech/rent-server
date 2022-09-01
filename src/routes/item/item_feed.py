@@ -5,15 +5,17 @@ from src.models import Items, Calendars
 from src.utils import json_sorted
 from src.utils.classes import Recommender
 
+from src.utils.settings import AWS
+
 bp = Blueprint('feed', __name__)
 
 
-@bp.get("/items/feed")
+@bp.get("/inventory")
 def item_feed():
 
-    search_term = requests.args.get("search", None)
-    page_limit = requests.args.get("limit", 50) # Not in use right now
-    page_number = requests.args.get("page", 1) # Not in use right now
+    search_term = request.args.get("search", None)
+    page_limit = request.args.get("limit", 50) # Not in use right now
+    page_number = request.args.get("page", 1) # Not in use right now
 
     if search_term:
         recommender = Recommender()

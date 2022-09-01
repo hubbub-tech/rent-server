@@ -16,7 +16,7 @@ from src.utils.settings import DEPOSIT, TAX, DISCOUNT
 
 def create_address(insert_data):
     address = Addresses.unique(insert_data)
-    if not address:
+    if address is None:
         address = Addresses.insert(insert_data)
 
     return address
@@ -61,7 +61,7 @@ def create_reservation(insert_data):
     if reservation is None:
         dt_ended = insert_data["dt_ended"]
         dt_started = insert_data["dt_started"]
-        duration = (date_ended - date_started).days
+        duration = (dt_ended - dt_started).days
 
         price_calculator = PriceCalculator()
         insert_data["est_charge"] = price_calculator.get_rental_cost(item.retail_price, duration)
@@ -74,8 +74,8 @@ def create_reservation(insert_data):
 
 def create_extension(insert_data):
     reservation_keys = {
-        "dt_started": insert_data["res_date_start"],
-        "dt_ended": insert_data["res_date_end"],
+        "dt_started": insert_data["res_dt_start"],
+        "dt_ended": insert_data["res_dt_end"],
         "renter_id": insert_data["renter_id"],
         "item_id": insert_data["item_id"]
     }

@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, make_response, request
+from flask import Blueprint, make_response, request, g
 
 from src.models import Orders
 from src.models import Logistics
@@ -72,13 +72,13 @@ def cancel_order():
     res_pkeys = order.to_query_reservation()
     reservation = Reservations.get(res_pkeys)
 
-    reservation.archive()
+    reservation.archive(notes="Order canceled.")
     Reservations.set(res_pkeys, {"is_calendared": False})
     Orders.set({"id": order.id}, {"is_canceled": True})
     # END ORDER CANCELLATION SEQUENCE
 
     email_data = get_cancellation_email(order)
-    send_async_email.apply_async(kwargs=email_data)
+    send_async_email.apply_async(kwargs=email_data.to_dict())
 
     messages = ["Your order was successfully cancelled!"]
     response = make_response({"messages": messages}, 200)
@@ -133,12 +133,12 @@ def cancel_extension():
                 Logsitics.set({"id": pickup.id}, {"is_canceled": True})
                 # WARNING: what happens if only one order is on the delivery?
 
-    reservation.archive()
+    reservation.archive(notes="Extension Canceled.")
     Reservations.set(res_pkeys, {"is_calendared": False})
     # END ORDER CANCELLATION SEQUENCE
 
     email_data = get_cancellation_email(extension)
-    send_async_email.apply_async(kwargs=email_data)
+    send_async_email.apply_async(kwargs=email_data.to_dict())
 
     messages = ["Your extension was successfully cancelled!"]
     response = make_response({"messages": messages}, 200)

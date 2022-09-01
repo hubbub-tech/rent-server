@@ -59,26 +59,23 @@ def validate_rental(calendar: Calendars, dt_started: datetime, dt_ended: datetim
     DAYS_BUFFER = 2
     MAX_RENTAL_DURATION = 365
 
-    rental_start_date = rental_range["date_started"]
-    rental_end_date = rental_range["date_ended"]
-
     status = validate_date_range(dt_lbound=dt_started, dt_ubound=dt_ended)
 
     if status.is_successful == False:
         return status
 
     status = Status()
-    if (rental_end_date - rental_start_date).days > MAX_RENTAL_DURATION:
+    if (dt_ended - dt_started).days > MAX_RENTAL_DURATION:
         status.messages.append(f"Rentals cannot exceed {MAX_RENTAL_DURATION} days.")
         status.is_successful = False
         return status
 
     if calendar.check_reservation(dt_started, dt_ended, days_buffer=0) == False:
-        res_dt_start, res_dt_end = best_match_reservation(dt_started, dt_ended, days_buffer=0)
+        res_dt_start, res_dt_end = calendar.best_match_reservation(dt_started, dt_ended, days_buffer=0)
 
         avail_date_start_str = res_dt_start.strftime("%B %-d, %Y")
 
-        if res_dt_end > datetime.now() + timedelta(years=10):
+        if res_dt_end > datetime.now() + timedelta(weeks=104):
             avail_date_range = avail_date_start_str
         else:
             avail_date_end_str = res_dt_end.strftime("%B %-d, %Y")

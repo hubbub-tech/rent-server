@@ -23,7 +23,7 @@ class Carts(Models):
         return self.total_charge + self.total_deposit + self.total_tax
 
 
-    def get_item_ids(reserved_only=False):
+    def get_item_ids(self, reserved_only=False):
 
         if reserved_only:
             SQL = """
@@ -65,9 +65,9 @@ class Carts(Models):
             cursor.execute(SQL, data)
 
 
-        self.total_charge -= reservation.charge
-        self.total_deposit -= reservation.deposit
-        self.total_tax -= reservation.tax
+        self.total_charge -= reservation.est_charge
+        self.total_deposit -= reservation.est_deposit
+        self.total_tax -= reservation.est_tax
 
         SQL = """
             UPDATE carts
@@ -83,15 +83,15 @@ class Carts(Models):
         SQL = """
             UPDATE reservations
             SET is_in_cart = %s
-            WHERE item_id = %s AND renter_id = %s AND date_started = %s AND date_ended = %s;
+            WHERE item_id = %s AND renter_id = %s AND dt_started = %s AND dt_ended = %s;
             """
 
         data = (
             False,
             reservation.item_id,
             reservation.renter_id,
-            reservation.date_started,
-            reservation.date_ended
+            reservation.dt_started,
+            reservation.dt_ended
         )
 
         with Models.db.conn.cursor() as cursor:
@@ -112,9 +112,9 @@ class Carts(Models):
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
 
-        self.total_charge += reservation.charge
-        self.total_deposit += reservation.deposit
-        self.total_tax += reservation.tax
+        self.total_charge += reservation.est_charge
+        self.total_deposit += reservation.est_deposit
+        self.total_tax += reservation.est_tax
 
         SQL = """
             UPDATE carts
@@ -130,15 +130,15 @@ class Carts(Models):
         SQL = """
             UPDATE reservations
             SET is_in_cart = %s
-            WHERE item_id = %s AND renter_id = %s AND date_started = %s AND date_ended = %s;
+            WHERE item_id = %s AND renter_id = %s AND dt_started = %s AND dt_ended = %s;
             """
 
         data = (
             True,
             reservation.item_id,
             reservation.renter_id,
-            reservation.date_started,
-            reservation.date_ended
+            reservation.dt_started,
+            reservation.dt_ended
         )
 
         with Models.db.conn.cursor() as cursor:
@@ -210,4 +210,6 @@ class Carts(Models):
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            return cursor.fetchone()
+            result = cursor.fetchone()
+
+        return result[0]

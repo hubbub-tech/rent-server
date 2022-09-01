@@ -1,14 +1,20 @@
-from flask import Blueprint
+import pytz
+from datetime import datetime, timedelta
+from flask import Blueprint, make_response, request, g
 
 from src.models import Carts
+from src.models import Items
+from src.models import Orders
 from src.models import Calendars
 from src.models import Reservations
 
 from src.utils import lock_cart
+from src.utils import unlock_cart
 from src.utils import verify_token
 from src.utils import create_order
 from src.utils import login_required
 
+from src.utils import get_charge_from_stripe
 from src.utils import send_async_email, set_async_timeout
 from src.utils import get_lister_receipt_email, get_renter_receipt_email
 
@@ -23,21 +29,27 @@ bp = Blueprint("execute", __name__)
 # 5. server verifies using the token that the goods were paid for--then reserves items and unlocks
 # 6. confetti
 
-@bp.post("/checkout/validate")
+@bp.get("/checkout/validate")
 @login_required
 def validate_checkout():
 
     user_cart = Carts.get({"id": g.user_id})
-    checkout_session_key = request.args.get("checkoutSession", "Failed")
+    checkout_session_key = request.args.get("session", "Failed")
 
-    if checkout_session_key is None or verify_token(user_cart.checkout_session_key, checkout_session_key) == False:
+    if user_cart.checkout_session_key != checkout_session_key:
+        errors = ["Your cart is not prepared for checkout."]
+        response = make_response({"messages": errors}, 401)
+        return response
+
+    reserved_items = user_cart.get_item_ids(reserved_only=True)
+    if len(reserved_items) != len(user_cart):
         errors = ["Your cart is not prepared for checkout."]
         response = make_response({"messages": errors}, 401)
         return response
 
     status = lock_cart(user_cart)
     if status.is_successful == False:
-        errors = ["Your cart is not prepared for checkout."]
+        errors = status.messages
         response = make_response({"messages": errors}, 401)
         return response
 
@@ -50,7 +62,7 @@ def validate_checkout():
     return response
 
 
-@bp.post("/checkout")
+@bp.get("/checkout")
 @login_required
 def checkout():
 
@@ -61,25 +73,32 @@ def checkout():
     user_cart =  Carts.get({ "id": g.user_id })
 
     # hand wavy~
-    txn_token = request.args.get(TXN_KEY)
+    txn_token = request.args.get("txn")
+    txn_method = request.args.get("method")
 
-    # test that the amount paid is accurate
-    total_paid = get_charge_from_stripe(txn_token)
+    # NOTE: test that the amount paid is accurate
+    if txn_method == 'online':
+        total_paid = get_charge_from_stripe(txn_token)
 
-    est_total_paid = user_cart.total()
-    if total_paid != est_total_paid:
-        errors = [
-            "It seems that you paid the wrong amount.",
-            f"You paid ${total_paid} instead of ${est_total_paid}."
-        ]
-        response = make_response({"messages": errors}, 401)
-        return response
+        est_total_paid = user_cart.total()
+        if total_paid != est_total_paid:
+            unlock_cart(user_cart)
+            errors = [
+                "It seems that you paid the wrong amount.",
+                f"You paid ${total_paid} instead of ${round(est_total_paid, 2)}."
+            ]
+            response = make_response({"messages": errors}, 401)
+            return response
+    else:
+        pass
+        # NOTE: queue up an email that notifies user that they are paying in person
 
 
     item_ids = user_cart.get_item_ids()
 
     for item_id in item_ids:
-        item_calendar = Calendars.get({ "id": item_id })
+        item = Items.get({"id": item_id})
+        item_calendar = Calendars.get({ "id": item.id })
 
         reservation = Reservations.unique({
             "renter_id": user_cart.id,
@@ -102,7 +121,7 @@ def checkout():
         user_cart.remove(reservation)
 
         email_data = get_lister_receipt_email(order) # WARNING
-        send_async_email.apply_async(kwargs=email_data)
+        send_async_email.apply_async(kwargs=email_data.to_dict())
 
     checkout_session_key = user_cart.checkout_session_key
 
@@ -112,7 +131,7 @@ def checkout():
     })
 
     email_data = get_renter_receipt_email(orders)
-    send_async_email.apply_async(kwargs=email_data)
+    send_async_email.apply_async(kwargs=email_data.to_dict())
 
     messages = [
         "Successfully rented all items!",

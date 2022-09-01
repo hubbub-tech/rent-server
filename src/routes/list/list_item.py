@@ -1,4 +1,4 @@
-from flask import Blueprint, make_response, request
+from flask import Blueprint, make_response, request, g
 
 
 from src.utils import create_item
@@ -72,7 +72,7 @@ def list_item():
     address = create_address(address_data)
     new_item = create_item(item_data, calandar_data)
     email_data = get_successful_listing_email(new_item)
-    send_async_email.apply_async(kwargs=email_data)
+    send_async_email.apply_async(kwargs=email_data.to_dict())
 
     messages = ["Thanks for listing on Hubbub!"]
 

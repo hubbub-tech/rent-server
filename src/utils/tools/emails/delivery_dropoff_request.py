@@ -47,7 +47,7 @@ def get_dropoff_request_email(logistics):
     email_body_formatter.content = f"""
         <p>You ordered: {", ".join(item_names)}</p>
         <p>For drop-off on: {dropoff_date_str}</p>
-        <p>Meeting here: {to_addr.display()}</p>
+        <p>Meeting here: {to_addr.to_str()}</p>
         <p>Available at: {timeslots}</p>
         """
 

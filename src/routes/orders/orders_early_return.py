@@ -1,4 +1,4 @@
-from flask import Blueprint, make_response, request
+from flask import Blueprint, make_response, request, g
 
 from src.models import Orders
 from src.models import Extensions
@@ -43,7 +43,7 @@ def orders_early_return():
 
     if status.is_successful:
         email_data = get_early_return_email(order, early_reservation)
-        send_async_email.apply_async(kwargs=email_data)
+        send_async_email.apply_async(kwargs=email_data.to_dict())
 
         response = make_response({ "messages": status.messages }, 200)
         return response
@@ -87,7 +87,7 @@ def extensions_early_return():
 
     if status.is_successful:
         email_data = get_early_return_email(extension, early_reservation)
-        send_async_email.apply_async(kwargs=email_data)
+        send_async_email.apply_async(kwargs=email_data.to_dict())
 
         response = make_response({ "messages": status.messages }, 200)
         return response

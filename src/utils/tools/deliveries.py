@@ -1,11 +1,17 @@
+from datetime import datetime
+
 from src.models import Timeslots
+from src.utils.classes import Status
 
 def schedule_deliveries(logistics, order_ids, timeslots):
 
     for order_id in order_ids:
         logistics.add_order(order_id)
 
-    for dt_start, dt_end in timeslots:
+    for timeslot in timeslots:
+        dt_start = datetime.strptime(timeslot["start"], "%H:%M")
+        dt_end = datetime.strptime(timeslot["end"], "%H:%M")
+
         timeslot_data = {
             "logistics_id": logistics.id,
             "dt_range_start": dt_start,
@@ -14,3 +20,8 @@ def schedule_deliveries(logistics, order_ids, timeslots):
             "dt_sched_eta": None,
         }
         timeslot = Timeslots.insert(timeslot_data)
+
+    status = Status()
+    status.is_successful = True
+    status.messages.append("Successfully scheduled your delivery!")
+    return status

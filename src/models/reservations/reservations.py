@@ -20,21 +20,20 @@ class Reservations(Models):
         self.est_deposit = attrs["est_deposit"]
         self.est_tax = attrs["est_tax"]
 
-        self.is_valid = attrs["is_valid"]
         self.is_in_cart = attrs["is_in_cart"]
         self.is_extension = attrs["is_extension"]
         self.is_calendared = attrs["is_calendared"]
 
 
-    def archive(self, notes):
+    def archive(self, notes=None):
         if self.is_calendared:
             SQL = """
-                SELECT order_id
+                SELECT id
                 FROM orders
                 WHERE item_id = %s AND renter_id = %s AND res_dt_start = %s AND res_dt_end = %s
                 """
 
-            data = (self.item_id, self.renter_id, self.res_dt_start, self.res_dt_end)
+            data = (self.item_id, self.renter_id, self.dt_started, self.dt_ended)
 
             with Models.db.conn.cursor() as cursor:
                 cursor.execute(SQL, data)

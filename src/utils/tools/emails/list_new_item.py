@@ -3,7 +3,7 @@ from datetime import datetime
 from src.utils.settings import SMTP
 
 from src.models import Items
-from src.models import Users
+from src.models import Calendars
 from src.models import Orders
 from src.models import Addresses
 
@@ -20,10 +20,11 @@ def get_new_listing_email(item):
     lister = Users.get({"id": item.lister_id})
     email_body_formatter.user = lister.name
 
+    item_calendar = Calendars.get({"id": item.id})
     email_body_formatter.introduction = f"""
         Thank you for listing on Hubbub. Your item, the {item.name}, has been published to
-        Hubbub. The rental is available starting {item.calendar.date_started.strftime('%B %-d, %Y')}
-        and ending {item.calendar.date_ended.strftime('%B %-d, %Y')}.
+        Hubbub. The rental is available starting {item_calendar.dt_started.strftime('%B %-d, %Y')}
+        and ending {item_calendar.dt_ended.strftime('%B %-d, %Y')}.
         """
 
     email_body_formatter.content = ""

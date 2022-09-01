@@ -14,7 +14,7 @@ class Items(Models):
     def __init__(self, attrs: dict):
         self.id = attrs["id"]
         self.name = attrs["name"]
-        self.manufacturer_id = attr["manufacturer_id"]
+        self.manufacturer_id = attrs["manufacturer_id"]
         self.retail_price = attrs["retail_price"]
         self.is_visible = attrs["is_visible"]
         self.is_transactable = attrs["is_transactable"]
@@ -40,7 +40,7 @@ class Items(Models):
     def lock(self, user):
         SQL = """
             UPDATE items
-            SET is_locked = %s, last_locked = %s
+            SET is_locked = %s, locker_id = %s
             WHERE id = %s;
             """
 
@@ -56,7 +56,7 @@ class Items(Models):
     def unlock(self):
         SQL = """
             UPDATE items
-            SET is_locked = %s, last_locked = %s
+            SET is_locked = %s, locker_id = %s
             WHERE id = %s;
             """
 

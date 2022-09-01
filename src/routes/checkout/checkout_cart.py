@@ -1,4 +1,4 @@
-from flask import Blueprint, make_response, request
+from flask import Blueprint, make_response, request, g
 
 from src.models import Users
 from src.models import Carts
@@ -32,31 +32,44 @@ def cart():
     reserved_items_to_dict = []
     unreserved_items_to_dict = []
     for item_id in item_ids:
+        item = Items.get({"id": item_id})
+        item_calendar = Calendars.get({"id": item.id})
+
         if item_id in reserved_item_ids:
-            item_calendar = Calendars.get({"id": item_id})
-            reservation = Reservations.unique({
+            res = Reservations.unique({
                 "renter_id": g.user_id,
                 "item_id": item_id,
                 "is_in_cart": True
             })
 
-            if item_calendar.scheduler(reservation) == False:
-                user_cart.remove(reservation)
+            if item_calendar.check_reservation(res.dt_started, res.dt_ended) == False:
+                user_cart.remove(res)
                 user_cart.add_without_reservation(item)
-            elif reservation.is_calendared == False:
-                if item_calendar.scheduler(reservation) is None:
+
+                next_start, next_end = item_calendar.next_availability()
+
+                item_to_dict = item.to_dict()
+                item_to_dict["calendar"] = item_calendar.to_dict()
+                item_to_dict["calendar"]["next_available_start"] = next_start.strftime("%Y-%m-%d")
+                item_to_dict["calendar"]["next_available_end"] = next_end.strftime("%Y-%m-%d")
+                unreserved_items_to_dict.append(item_to_dict)
+
+            elif res.is_calendared == False:
+                if item_calendar.check_reservation(res.dt_started, res.dt_ended) is None:
                     Items.set({"id": item_calendar.id}, {"is_available": False})
-                    user_cart.remove(reservation)
-                elif item_calendar.scheduler(reservation):
+                    user_cart.remove(res)
+                elif item_calendar.check_reservation(res.dt_started, res.dt_ended):
                     next_start, next_end = item_calendar.next_availability()
 
                     item_to_dict = item.to_dict()
                     item_to_dict["calendar"] = item_calendar.to_dict()
-                    item_to_dict["reservation"] = reservation.to_dict()
+                    item_to_dict["reservation"] = res.to_dict()
                     item_to_dict["calendar"]["next_available_start"] = next_start.strftime("%Y-%m-%d")
                     item_to_dict["calendar"]["next_available_end"] = next_end.strftime("%Y-%m-%d")
                     reserved_items_to_dict.append(item_to_dict)
         else:
+            next_start, next_end = item_calendar.next_availability()
+
             item_to_dict = item.to_dict()
             item_to_dict["calendar"] = item_calendar.to_dict()
             item_to_dict["calendar"]["next_available_start"] = next_start.strftime("%Y-%m-%d")
@@ -65,12 +78,15 @@ def cart():
 
     if len(unreserved_items_to_dict) == 0:
         checkout_token = gen_token()
-        Carts.set({"id": user_cart.id}, {"checkout_session_key": checkout_token["unhashed"]})
+        checkout_token_unhashed = checkout_token["unhashed"]
+        Carts.set({"id": user_cart.id}, {"checkout_session_key": checkout_token_unhashed})
     else:
-        checkout_token = None
+        checkout_token_unhashed = None
 
+    cart_to_dict = user_cart.to_dict()
     data = {
-        "checkout_session": checkout_token,
+        "cart": cart_to_dict,
+        "checkout_session": checkout_token_unhashed,
         "reserved_items": reserved_items_to_dict,
         "unreserved_items": unreserved_items_to_dict
     }

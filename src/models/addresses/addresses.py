@@ -32,3 +32,58 @@ class Addresses(Models):
         address_http_formatted = address_str.replace(' ', '+')
         address_http_formatted = address_str.replace(',', '')
         return address_http_formatted
+
+    def set_as_origin(self):
+        SQL = """
+            SELECT line_1, line_2, country, zip
+            FROM from_addresses
+            WHERE line_1 = %s AND line_2 = %s AND country = %s AND zip = %s;
+            """
+
+        data = (self.line_1, self.line_2, self.country, self.zip)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            address_pkeys = cursor.fetchone()
+
+        if address_pkeys: return
+
+        SQL = f"""
+            INSERT
+            INTO from_addresses (line_1, line_2, country, zip)
+            VALUES (%s, %s, %s, %s);
+            """
+
+        data = (self.line_1, self.line_2, self.country, self.zip)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            Models.db.conn.commit()
+
+
+    def set_as_destination(self):
+        SQL = """
+            SELECT line_1, line_2, country, zip
+            FROM to_addresses
+            WHERE line_1 = %s AND line_2 = %s AND country = %s AND zip = %s;
+            """
+
+        data = (self.line_1, self.line_2, self.country, self.zip)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            address_pkeys = cursor.fetchone()
+
+        if address_pkeys: return
+
+        SQL = f"""
+            INSERT
+            INTO to_addresses (line_1, line_2, country, zip)
+            VALUES (%s, %s, %s, %s);
+            """
+
+        data = (self.line_1, self.line_2, self.country, self.zip)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            Models.db.conn.commit()

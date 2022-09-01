@@ -60,7 +60,7 @@ class Calendars(Models):
             Models.db.conn.commit()
 
 
-    def get_reservations(dt_lbound=None, dt_ubound=None, descending=True):
+    def get_reservations(self, dt_lbound=None, dt_ubound=None, descending=True):
         """
         Returns an array of tuples.
         Structure:
@@ -73,7 +73,7 @@ class Calendars(Models):
         """
 
         if dt_lbound is None: dt_lbound = self.dt_started
-        elif dt_ubound is None: dt_ubound = self.dt_ended
+        if dt_ubound is None: dt_ubound = self.dt_ended
 
         assert dt_lbound < dt_ubound, "Invalid bounds set."
 
@@ -81,13 +81,13 @@ class Calendars(Models):
         else: order_direction = 'ASC'
 
         SQL = f"""
-            SELECT (item_id, renter_id, dt_started, dt_ended)
+            SELECT item_id, renter_id, dt_started, dt_ended
             FROM reservations
-            ORDER BY dt_started {order_direction}
-            WHERE item_id = %s AND dt_started >= %s AND dt_ended <= %s;
+            WHERE item_id = %s AND dt_started >= %s AND dt_ended <= %s AND is_calendared = %s
+            ORDER BY dt_started {order_direction};
             """
 
-        data = (self.id, dt_lbound, dt_ubound)
+        data = (self.id, dt_lbound, dt_ubound, True)
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
@@ -136,20 +136,6 @@ class Calendars(Models):
 
 
 
-    def __len__(self):
-        SQL = """
-            SELECT count(*)
-            FFROM reservations
-            WHERE item_id = %s AND is_calendared = %s;
-            """
-
-        data = (self.id, True)
-
-        with Models.db.conn.cursor() as cursor:
-            cursor.execute(SQL, data)
-            return cursor.fetchone()
-
-
     #determining if an item is available day-by-day
     def check_datetime(self, dt_comparison: datetime=datetime.now()):
         dt_started_index = -2
@@ -182,15 +168,15 @@ class Calendars(Models):
         availabilities = []
 
         for i in range(res_count):
-            if i == 0 and self.dt_started + td_buffer < reservations[i][dt_started_index]:
+            if i + 1 == res_count and reservations[i][dt_ended_index] + td_buffer < self.dt_ended:
+                availabilities.append((reservations[i][dt_ended_index] + td_buffer, self.dt_ended))
+            elif i == 0 and self.dt_started + td_buffer < reservations[i][dt_started_index]:
                 availabilities.append((self.dt_started + td_buffer, reservations[i][dt_started_index]))
             elif i + 1 < res_count:
                 if reservations[i][dt_ended_index] + td_buffer < reservations[i + 1][dt_started_index]:
                     availabilities.append((reservations[i][dt_ended_index] + td_buffer, reservations[i + 1][dt_started_index]))
                 # if equal, continue
                 # if greater than, throw BIG error
-            elif i + 1 == res_count and reservations[i][dt_ended_index] + td_buffer < self.dt_ended:
-                availabilities.append((reservations[i][dt_ended_index] + td_buffer, self.dt_ended))
 
         return availabilities
 
@@ -207,4 +193,21 @@ class Calendars(Models):
         for avail in availabilities:
             if closest_operating_datetime <= avail[dt_started_index]:
                 return avail
-        return (None, None)
+        # return (None, None)
+        return availabilities[-1]
+
+
+def __len__(self):
+    SQL = """
+        SELECT count(*)
+        FFROM reservations
+        WHERE item_id = %s AND is_calendared = %s;
+        """
+
+    data = (self.id, True)
+
+    with Models.db.conn.cursor() as cursor:
+        cursor.execute(SQL, data)
+        result = cursor.fetchone()
+
+    return result[0]
