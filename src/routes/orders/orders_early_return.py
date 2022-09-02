@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, make_response, request, g
 
 from src.models import Orders
@@ -8,6 +9,11 @@ from src.utils import login_required
 from src.utils import create_reservation
 from src.utils import return_order_early, return_extension_early
 
+from src.utils import get_early_return_email
+from src.utils import send_async_email
+
+from src.utils import JSON_DT_FORMAT
+
 bp = Blueprint("early_return", __name__)
 
 
@@ -15,11 +21,9 @@ bp = Blueprint("early_return", __name__)
 @login_required
 def orders_early_return():
 
-    order_id = request.args.get("order_id")
-    order = Orders.get({"id": order_id})
-
     try:
-        early_dt_end = request.json["dtEnded"]
+        order_id = request.json["orderId"]
+        early_dt_end_json = request.json["dtEnded"]
     except KeyError:
         errors = ["Please submit an early return date for your order."]
         response = make_response({"messages": errors}, 401)
@@ -29,6 +33,10 @@ def orders_early_return():
         # NOTE: Log error here.
         response = make_response({ "messages": errors }, 500)
         return response
+
+    order = Orders.get({"id": order_id})
+
+    early_dt_end = datetime.strptime(early_dt_end_json, JSON_DT_FORMAT)
 
     early_reservation_keys = {
         "renter_id": g.user_id,
@@ -48,7 +56,7 @@ def orders_early_return():
         response = make_response({ "messages": status.messages }, 200)
         return response
     else:
-        response = make_response({ "messages": status.messages }, 200)
+        response = make_response({ "messages": status.messages }, 401)
         return response
 
 

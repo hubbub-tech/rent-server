@@ -62,7 +62,7 @@ def validate_checkout():
     return response
 
 
-@bp.get("/checkout")
+@bp.post("/checkout")
 @login_required
 def checkout():
 
@@ -73,8 +73,8 @@ def checkout():
     user_cart =  Carts.get({ "id": g.user_id })
 
     # hand wavy~
-    txn_token = request.args.get("txn")
-    txn_method = request.args.get("method")
+    txn_token = request.json["txnToken"]
+    txn_method = request.json["txnMethod"]
 
     # NOTE: test that the amount paid is accurate
     if txn_method == 'online':

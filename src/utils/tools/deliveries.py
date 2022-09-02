@@ -9,8 +9,8 @@ def schedule_deliveries(logistics, order_ids, timeslots):
         logistics.add_order(order_id)
 
     for timeslot in timeslots:
-        dt_start = datetime.strptime(timeslot["start"], "%H:%M")
-        dt_end = datetime.strptime(timeslot["end"], "%H:%M")
+        dt_start = datetime.strptime(timeslot["start"], "%Y-%m-%dT%H:%M")
+        dt_end = datetime.strptime(timeslot["end"], "%Y-%m-%dT%H:%M")
 
         timeslot_data = {
             "logistics_id": logistics.id,

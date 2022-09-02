@@ -16,7 +16,18 @@ def get_dropoff_request_email(logistics):
     email_body_formatter = EmailBodyFormatter()
 
     timeslots = logistics.get_timeslots()
-    # NOTE: need printable timeslots
+
+    dt_range_start_index = 0
+    dt_range_end_index = 1
+
+    timeslots_printables = []
+    for timeslot in timeslots:
+        time_start_str = timeslot[dt_range_start_index].strftime("%H:%M")
+        time_end_str = timeslot[dt_range_end_index].strftime("%H:%M")
+
+        timeslots_printables.append(f"{time_start_str}-{time_end_str}")
+
+    timeslots_str = ", ".join(timeslots_printables)
 
     dt_range_start_index = 0
     dt_range_end_index = 1
@@ -48,7 +59,7 @@ def get_dropoff_request_email(logistics):
         <p>You ordered: {", ".join(item_names)}</p>
         <p>For drop-off on: {dropoff_date_str}</p>
         <p>Meeting here: {to_addr.to_str()}</p>
-        <p>Available at: {timeslots}</p>
+        <p>Available at: {timeslots_str}</p>
         """
 
     email_body_formatter.conclusion = f"""

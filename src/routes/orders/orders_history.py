@@ -50,7 +50,8 @@ def orders_history():
         order_to_dict["pickup_id"] = order.get_pickup_id()
 
         order_to_dict["item_name"] = item.name
-        order_to_dict["ext_dt_end"] = order.ext_dt_end.strftime("%Y-%m-%d")
+        order_to_dict["ext_dt_start"] = order.ext_dt_start.strftime("%Y-%m-%d %H:%M:%S.%f")
+        order_to_dict["ext_dt_end"] = order.ext_dt_end.strftime("%Y-%m-%d %H:%M:%S.%f")
         order_to_dict["reservation"] = res.to_dict()
 
         orders_to_dict.append(order_to_dict)

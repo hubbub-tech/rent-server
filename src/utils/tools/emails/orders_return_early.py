@@ -4,6 +4,8 @@ from src.utils.settings import SMTP
 
 from src.models import Items
 from src.models import Users
+from src.models import Orders
+from src.models import Extensions
 
 from ._email_data import EmailData
 from ._email_body_formatter import EmailBodyFormatter
@@ -26,7 +28,7 @@ def get_early_return_email(txn, early_reservation):
 
     email_body_formatter.introduction = f"""
         This email is to confirm that your request for an early return on {item.name}, has been received.
-        This rental will now end on {early_reservation.date_ended.strftime('%B %-d, %Y')}.
+        This rental will now end on {early_reservation.dt_ended.strftime('%B %-d, %Y')}.
         """
 
     email_body_formatter.content = ""
@@ -39,6 +41,6 @@ def get_early_return_email(txn, early_reservation):
 
     body = email_body_formatter.build()
     email_data.subject = f"[Hubbub] Your Early Return Request on {item.name}"
-    email_data.to = (user.email, SG.DEFAULT_RECEIVER)
+    email_data.to = (user.email, SMTP.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data

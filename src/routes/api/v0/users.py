@@ -10,8 +10,7 @@ bp = Blueprint("users", __name__)
 @bp.get("/users")
 @login_required
 def get_users():
-    user_ids = request.args.get("ids", None)
-    user_ids = item_ids.split(",")
+    user_ids = request.json["ids"]
 
     users_to_dict = []
     for user_id in user_ids:

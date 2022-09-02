@@ -80,7 +80,7 @@ def create_extension(insert_data):
         "item_id": insert_data["item_id"]
     }
 
-    Reservations.set(reservation_keys, {"is_extended": True})
+    Reservations.set(reservation_keys, {"is_extension": True})
     new_extension = Extensions.insert(insert_data)
 
     return new_extension

@@ -4,6 +4,9 @@ from src.models import Users
 from src.models import Carts
 from src.models import Items
 from src.models import Calendars
+
+from src.models import Orders
+from src.models import Extensions
 from src.models import Reservations
 
 from src.utils.classes import Status
@@ -74,10 +77,10 @@ def return_order_early(order, early_reservation):
     status = _validate_early_return(order, early_reservation)
     if status.is_successful == False: return status
 
-    assert order.ext_date_end >= order.res_date_end, "This order has already been extended."
+    assert order.ext_dt_end >= order.res_dt_end, "This order has already been extended."
 
-    item = Items.get(order.item_id)
-    renter = Users.get(order.renter_id)
+    item = Items.get({"id": order.item_id})
+    renter = Users.get({"id": order.renter_id})
     status = _safe_early_return(order, item, renter, early_reservation)
     return status
 
@@ -88,14 +91,14 @@ def return_extension_early(extension, early_return_reservation):
     status = _validate_early_return(extension, early_return_reservation)
     if status.is_successful == False: return status
 
-    item = Items.get(order.item_id)
-    renter = Users.get(order.renter_id)
+    item = Items.get({"id": order.item_id})
+    renter = Users.get({"id": order.renter_id})
     status = _safe_early_return(order, item, renter, early_reservation)
     return status
 
 
 def _validate_early_return(txn, early_reservation):
-    if early_reservation.dt_ended < txn.res_date_end:
+    if early_reservation.dt_ended > txn.res_dt_end:
         status = Status()
         status.is_successful = False
         status.messages.append("Early returns must be earlier than the current return date.")
@@ -136,16 +139,16 @@ def _safe_early_return(txn, item, user, early_reservation):
                 "res_dt_end": early_reservation.dt_ended,
             })
 
-            is_extended = True
+            is_extension = True
         elif isinstance(txn, Orders):
             Orders.set({"id": txn.id}, {
                 "item_id": early_reservation.item_id,
                 "renter_id": early_reservation.renter_id,
-                "res_dt_start": early_reservation.res_dt_start,
+                "res_dt_start": early_reservation.dt_started,
                 "res_dt_end": early_reservation.dt_ended,
             })
 
-            is_extended = True
+            is_extension = True
         else:
             item.unlock()
             raise Exception("Transaction does not match valid object types.")
@@ -157,7 +160,7 @@ def _safe_early_return(txn, item, user, early_reservation):
             "dt_ended": early_reservation.dt_ended,
         }, {
             "is_calendared": True,
-            "is_extended": is_extended,
+            "is_extension": is_extension,
             "est_charge": archive_reservation.est_charge,
             "est_deposit": archive_reservation.est_deposit,
             "est_tax": archive_reservation.est_tax

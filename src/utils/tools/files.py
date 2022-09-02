@@ -44,11 +44,14 @@ def get_receipt(order):
         to_addr_pkeys = dropoff.to_query_address("to")
         to_address = Addresses.get(to_addr_pkeys)
 
-        dropoff_text = f"""
-            \n
-            * Dropoff date: {dropoff.dt_received.strftime('%Y-%m-%d')}\n
-            * Dropoff address: {to_address.display()}\n
-            """
+        if dropoff.dt_received:
+            dropoff_text = f"""
+                \n
+                * Dropoff date: {dropoff.dt_received.strftime('%Y-%m-%d')}\n
+                * Dropoff address: {to_address.display()}\n
+                """
+        else:
+            dropoff_text = "* Dropoff has been scheduled.\n"
     else:
         dropoff_text = "* Dropoff has not been scheduled.\n"
 
@@ -58,11 +61,14 @@ def get_receipt(order):
         from_addr_pkeys = dropoff.to_query_address("from")
         from_address = Addresses.get(from_addr_pkeys)
 
-        pickup_text = f"""
-            \n
-            * Pickup date: {pickup.dt_sent.strftime('%Y-%m-%d')}\n
-            * Pickup address: {from_address.display()}\n
-            """
+        if pickup.dt_received:
+            pickup_text = f"""
+                \n
+                * Pickup date: {pickup.dt_sent.strftime('%Y-%m-%d')}\n
+                * Pickup address: {from_address.display()}\n
+                """
+        else:
+            pickup_text = "* Pickup has been scheduled.\n"
     else:
         pickup_text = "* Pickup has not been scheduled.\n"
 

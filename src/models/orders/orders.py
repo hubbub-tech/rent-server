@@ -43,6 +43,23 @@ class Orders(Models):
 
 
     @property
+    def ext_dt_start(self):
+        """Get the start date of the order, extensions considered."""
+
+        res_dt_start_index = -2
+        res_dt_end_index = -1
+
+        extensions = self.get_extensions()
+
+        if extensions:
+            extensions.sort(key = lambda ext: ext[res_dt_end_index])
+            ext_dt_start = extensions[-1][res_dt_start_index]
+        else:
+            ext_dt_start = self.res_dt_start
+        return ext_dt_start
+
+
+    @property
     def ext_dt_end(self):
         """Get the true end date of the order, extensions considered."""
 

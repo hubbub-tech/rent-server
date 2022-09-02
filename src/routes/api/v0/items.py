@@ -16,8 +16,7 @@ def create_item():
 @bp.get("/items")
 @login_required
 def get_items():
-    item_ids = request.args.get("ids", None)
-    item_ids = item_ids.split(",")
+    item_ids = request.json["ids"]
 
     items_to_dict = []
     for item_id in item_ids:

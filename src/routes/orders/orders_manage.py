@@ -41,7 +41,10 @@ def download_receipt():
 def get_orders_by_date():
 
     dt_started_json = request.args.get("dt_started")
+    dt_started = None
+
     dt_ended_json = request.args.get("dt_ended")
+    dt_ended = None
 
     try:
         if dt_started_json:

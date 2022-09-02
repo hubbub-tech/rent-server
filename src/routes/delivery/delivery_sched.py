@@ -39,9 +39,9 @@ def schedule_delivery():
         }
 
         notes = request.json["notes"]
-        referral = request.json["referral"]
-        sender_id = request.json["senderId"]
-        receiver_id = g.user_id # request.json["receiverId"]
+        referral = request.json.get("referral")
+        sender_id = request.json.get("senderId", g.user_id)
+        receiver_id = request.json.get("receiverId", g.user_id)
     except KeyError:
         errors = ["Sorry, you didn't send anything in the form, try again."]
         response = make_response({ "messages": errors }, 406)
@@ -55,7 +55,9 @@ def schedule_delivery():
     order_ids = []
     for order in orders:
         order_ids.append(order["id"])
-        Orders.set({"id": order["id"]}, {"referral": referral})
+
+        if referral:
+            Orders.set({"id": order["id"]}, {"referral": referral})
 
     logistics_data = {
         "sender_id": sender_id,
@@ -82,12 +84,11 @@ def schedule_delivery():
 
     if logistics.receiver_id == g.user_id:
         email_data = get_dropoff_request_email(logistics)
-    elif logistics.sender_id == g.user_id:
-        email_data = get_pickup_request_email(logistics)
-    else:
-        pass # NOTE: when is this the case?
+        send_async_email.apply_async(kwargs=email_data.to_dict())
 
-    send_async_email.apply_async(kwargs=email_data.to_dict())
+    if logistics.sender_id == g.user_id:
+        email_data = get_pickup_request_email(logistics)
+        send_async_email.apply_async(kwargs=email_data.to_dict())
 
     messages = status.messages
     response = make_response({"messages": messages}, 200)
