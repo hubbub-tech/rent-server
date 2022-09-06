@@ -34,7 +34,7 @@ def create_app(config_object=FlaskConfig()):
     from .routes import auth
     from .routes import checkout
     from .routes import delivery
-    from .routes import item
+    from .routes import items
     from .routes import list
     from .routes import main
     from .routes import orders
@@ -44,7 +44,7 @@ def create_app(config_object=FlaskConfig()):
     app.register_blueprint(auth)
     app.register_blueprint(checkout)
     app.register_blueprint(delivery)
-    app.register_blueprint(item)
+    app.register_blueprint(items)
     app.register_blueprint(list)
     app.register_blueprint(main)
     app.register_blueprint(orders)

@@ -10,7 +10,7 @@ from src.utils.settings import AWS
 bp = Blueprint('feed', __name__)
 
 
-@bp.get("/inventory")
+@bp.get("/items/feed")
 def item_feed():
 
     search_term = request.args.get("search", None)
