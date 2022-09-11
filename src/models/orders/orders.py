@@ -131,4 +131,5 @@ class Orders(Models):
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            return cursor.fetchall()
+            promos = cursor.fetchall()
+            promos = [promo_title for promo_t in promos for promo_title in promo_t]

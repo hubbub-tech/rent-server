@@ -22,5 +22,6 @@ class Tags(Models):
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             item_ids = cursor.fetchall()
+            item_ids = [item_id for item_t in item_ids for item_id in item_t]
 
         return item_ids

@@ -45,7 +45,11 @@ class Carts(Models):
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
+
+            # list of tuples
             item_ids = cursor.fetchall()
+            item_ids = [item_id for item_t in item_ids for item_id in item_t]
+
 
         return item_ids
 
@@ -53,6 +57,10 @@ class Carts(Models):
     #for remove() and add(), you need to pass the specific res, bc no way to tell otherwise
     def remove(self, reservation):
         #ASSERT reservation.item_id is associated with cart_id
+
+        cart_items = self.get_item_ids()
+        if reservation.item_id not in cart_items: return
+
         SQL = """
             DELETE
             FROM item_carts
@@ -102,8 +110,16 @@ class Carts(Models):
 
     def add(self, reservation):
         #ASSERT reservation.item_id is NOT associated with cart_id
+
+        cart_items = self.get_item_ids()
+        if reservation.item_id in cart_items: return
+
+        print(reservation.item_id)
+        print(cart_items)
+
         SQL = """
-            INSERT INTO item_carts (cart_id, item_id)
+            INSERT
+            INTO item_carts (cart_id, item_id)
             VALUES (%s, %s);
             """
 
@@ -149,7 +165,10 @@ class Carts(Models):
 
     def remove_without_reservation(self, item):
         """This resolves the non-commital 'add to cart' where the user didn't reserve."""
-        #ASSERT reservation.item_id is NOT associated with cart_id
+
+        cart_items = self.get_item_ids()
+        if item.id not in cart_items: return
+
         SQL = """
             DELETE
             FROM item_carts
@@ -166,7 +185,10 @@ class Carts(Models):
     #NOTE to add a reservation to this later, "remove_without_reservation()" then re-add with "add()"
     def add_without_reservation(self, item):
         """This is a non-commital add to cart where the user doesn't have to reserve immediately."""
-        #ASSERT reservation.item_id is NOT associated with cart_id
+
+        cart_items = self.get_item_ids()
+        if item.id in cart_items: return
+
         SQL = """
             INSERT
             INTO item_carts (cart_id, item_id)

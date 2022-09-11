@@ -120,5 +120,5 @@ def add():
 
     user_cart.add(reservation)
     messages = ["The item has been added to your cart!"]
-    response = make_response({ "messages": messages }, 200)
+    response = make_response({ "messages": messages, "est_charge": reservation.est_charge }, 200)
     return response

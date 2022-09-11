@@ -13,9 +13,9 @@ from src.utils.classes import Recommender
 bp = Blueprint("view", __name__)
 
 
-@bp.get("/inventory/i/id=<int:item_id>")
+@bp.get("/item/<int:item_id>")
 def view_item(item_id):
-    photo_url = AWS.get_url(dir="items")
+
     item = Items.get({"id": item_id})
 
     if item is None:
@@ -57,6 +57,6 @@ def view_item(item_id):
 
         recs_to_dict.append(rec_to_dict)
 
-    data = { "item": item_to_dict, "photo_url": photo_url, "recommendations": recs_to_dict }
+    data = { "item": item_to_dict, "recommendations": recs_to_dict }
     response = make_response(data, 200)
     return response

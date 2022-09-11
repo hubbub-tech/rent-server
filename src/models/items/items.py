@@ -82,6 +82,7 @@ class Items(Models):
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             tags = cursor.fetchall()
+            tags = [tag for tag_t in tags for tag in tag_t]
 
         return tags
 

@@ -19,7 +19,7 @@ class Recommender:
         items_by_name = Items.like("name", last_token)
         items_by_description = Items.like("description", last_token)
         unfiltered_items = items_by_name + items_by_description
-        
+
         memo = []
         filtered_items = []
         for item in unfiltered_items:
@@ -58,9 +58,9 @@ class Recommender:
         # remove duplicates
         memo = []
         filtered_items = []
-        for item_id in unfiltered_items:
+        for item_id in unfiltered_item_ids:
             if item_id not in memo:
-                memo.append(item.id)
+                memo.append(item_id)
                 item = Items.get({"id": item_id})
 
                 if item.is_transactable and item.is_visible:

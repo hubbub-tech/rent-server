@@ -65,7 +65,8 @@ class Logistics(Models):
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            return cursor.fetchall()
+            order_ids = cursor.fetchall()
+            order_ids = [order_id for order_t in order_ids for order_id in order_t]
 
 
     def get_courier_ids(self):
