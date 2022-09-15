@@ -21,8 +21,8 @@ def edit():
 
     try:
         item_id = request.json["itemId"]
-        new_dt_started_json = request.json["newDtStarted"]
-        new_dt_ended_json = request.json["newDtEnded"]
+        new_dt_started_json = request.json["dtStarted"]
+        new_dt_ended_json = request.json["dtEnded"]
     except KeyError:
         errors = ["No item added to cart. Please, try again."]
         response = make_response({ "messages": errors }, 401)

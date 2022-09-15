@@ -84,9 +84,9 @@ def cart():
         checkout_token_unhashed = None
 
     cart_to_dict = user_cart.to_dict()
+    cart_to_dict["checkout_session_key"] = checkout_token_unhashed
     data = {
         "cart": cart_to_dict,
-        "checkout_session": checkout_token_unhashed,
         "reserved_items": reserved_items_to_dict,
         "unreserved_items": unreserved_items_to_dict
     }

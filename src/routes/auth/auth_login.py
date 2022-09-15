@@ -39,7 +39,13 @@ def login():
     if status.is_successful:
         session_key = gen_token()
         Users.set({"id": user.id}, {"session_key": session_key["unhashed"]})
-        response = make_response({ "id": user.id, "session_key": session_key["hashed"] }, 200)
+
+        data = {
+            "userId": user.id,
+            "messages": ["Welcome back!"],
+            "sessionToken": session_key["hashed"]
+        }
+        response = make_response(data, 200)
         return response
     else:
         errors = login_status["messages"]

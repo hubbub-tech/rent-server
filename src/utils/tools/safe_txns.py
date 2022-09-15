@@ -1,3 +1,4 @@
+import stripe
 from datetime import datetime
 
 from src.models import Users
@@ -67,8 +68,53 @@ def lock_cart(cart: Carts):
     return status
 
 
-def get_charge_from_stripe(txn_token):
-    return txn_token
+def _get_line_items(cart):
+    item_ids = cart.get_item_ids(reserved_only=True)
+
+    line_items = []
+    for item_id in item_ids:
+        item = Items.get({ "id": item_id })
+        reservation = Reservations.unique({
+            "item_id": item_id,
+            "renter_id": cart.id,
+            "is_in_cart": True
+        })
+
+        unit_amount = round(reservation.total(), 2) * 100
+        line_item = {
+            "price_data": {
+                "currency": "usd",
+                "product_data": {
+                    "name": item.name,
+                    "description": item.description
+                },
+                "unit_amount": unit_amount,
+                "tax_behavior": "inclusive"
+            },
+            "quantity": 1,
+        }
+
+        line_items.append(line_item)
+
+    return line_items
+
+def get_stripe_checkout_session(cart):
+    stripe.api_key = os.getenv("STRIPE_API_KEY")
+
+    line_items = _get_line_items(cart)
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            line_items=line_items,
+            mode='payment',
+            success_url=os.getenv("SERVER_DOMAIN") + '/checkout?status=success',
+            cancel_url=os.getenv("SERVER_DOMAIN") + '/checkout?status=cancel',
+            automatic_tax={'enabled': True},
+        )
+    except Exception as e:
+        return str(e)
+
+    return checkout_session
 
 
 

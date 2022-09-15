@@ -38,6 +38,10 @@ def view_item(item_id):
     item_to_dict["calendar"]["next_avail_date_start"] = next_start.strftime("%Y-%m-%d")
     item_to_dict["calendar"]["next_avail_date_end"] = next_end.strftime("%Y-%m-%d")
 
+    item_to_dict["calendar"]["available_days_in_next_90"] = item_calendar.available_days_in_next(90)
+
+    item_to_dict["tags"] = item.get_tags()
+
     recommender = Recommender()
     recommendations = recommender.on(item)
 
@@ -52,11 +56,13 @@ def view_item(item_id):
         next_start, next_end = rec_calendar.next_availability(days_buffer=1)
 
         rec_to_dict = rec.to_dict()
-        rec_to_dict["next_avail_date_start"] = next_start.strftime("%Y-%m-%d")
-        rec_to_dict["next_avail_date_end"] = next_end.strftime("%Y-%m-%d")
+        rec_to_dict["calendar"] = rec_calendar.to_dict()
+        rec_to_dict["calendar"]["next_avail_date_start"] = next_start.strftime("%Y-%m-%d")
+        rec_to_dict["calendar"]["next_avail_date_end"] = next_end.strftime("%Y-%m-%d")
 
         recs_to_dict.append(rec_to_dict)
 
     data = { "item": item_to_dict, "recommendations": recs_to_dict }
+
     response = make_response(data, 200)
     return response

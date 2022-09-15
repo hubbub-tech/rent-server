@@ -197,17 +197,42 @@ class Calendars(Models):
         return availabilities[-1]
 
 
-def __len__(self):
-    SQL = """
-        SELECT count(*)
-        FFROM reservations
-        WHERE item_id = %s AND is_calendared = %s;
-        """
+    def available_days_in_next(self, days):
+        dt_started_index = -2
+        dt_ended_index = -1
 
-    data = (self.id, True)
+        dt_ubound = datetime.now() + timedelta(days=days)
+        dt_lbound = datetime.now()
 
-    with Models.db.conn.cursor() as cursor:
-        cursor.execute(SQL, data)
-        result = cursor.fetchone()
+        reservations = self.get_reservations()
+        available_days = 0
 
-    return result[0]
+        dt_current = dt_lbound
+        while dt_current < dt_ubound:
+            is_available = self.check_datetime(dt_current)
+
+            if is_available: available_days += 1
+
+            dt_current += timedelta(days=1)
+
+        return available_days
+
+
+
+
+
+
+    def __len__(self):
+        SQL = """
+            SELECT count(*)
+            FFROM reservations
+            WHERE item_id = %s AND is_calendared = %s;
+            """
+
+        data = (self.id, True)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            result = cursor.fetchone()
+
+        return result[0]

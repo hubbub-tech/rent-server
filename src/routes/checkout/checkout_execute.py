@@ -1,6 +1,6 @@
 import pytz
 from datetime import datetime, timedelta
-from flask import Blueprint, make_response, request, g
+from flask import Blueprint, make_response, request, g, redirect
 
 from src.models import Carts
 from src.models import Items
@@ -14,7 +14,7 @@ from src.utils import verify_token
 from src.utils import create_order
 from src.utils import login_required
 
-from src.utils import get_charge_from_stripe
+from src.utils import get_stripe_checkout_session
 from src.utils import send_async_email, set_async_timeout
 from src.utils import get_lister_receipt_email, get_renter_receipt_email
 
@@ -29,12 +29,14 @@ bp = Blueprint("execute", __name__)
 # 5. server verifies using the token that the goods were paid for--then reserves items and unlocks
 # 6. confetti
 
-@bp.get("/checkout/validate")
+@bp.post("/checkout/validate")
 @login_required
 def validate_checkout():
 
     user_cart = Carts.get({"id": g.user_id})
-    checkout_session_key = request.args.get("session", "Failed")
+
+    checkout_session_key = request.json["checkoutSession"]
+    txn_method = request.json["txnMethod"]
 
     if user_cart.checkout_session_key != checkout_session_key:
         errors = ["Your cart is not prepared for checkout."]
@@ -53,16 +55,20 @@ def validate_checkout():
         response = make_response({"messages": errors}, 401)
         return response
 
-
     timeout_clock = datetime.now(tz=pytz.UTC) + timedelta(minutes=30)
     set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": user_cart.id})
 
-    messages = ["Thank you! Now waiting on next steps to complete your order..."]
-    response = make_response({ "messages": messages }, 200)
-    return response
+    if txn_method == "in-person":
+        messages = ["Thank you! Now waiting on next steps to complete your order..."]
+        response = make_response({ "messages": messages }, 200)
+        return response
+    else:
+        checkout_session = get_stripe_checkout_session(user_cart)
+        response = make_response({ "redirect_url": checkout_session.url }, 200)
+        return response
 
 
-@bp.post("/checkout")
+@bp.get("/checkout")
 @login_required
 def checkout():
 
@@ -72,27 +78,7 @@ def checkout():
 
     user_cart =  Carts.get({ "id": g.user_id })
 
-    # hand wavy~
-    txn_token = request.json["txnToken"]
-    txn_method = request.json["txnMethod"]
-
     # NOTE: test that the amount paid is accurate
-    if txn_method == 'online':
-        total_paid = get_charge_from_stripe(txn_token)
-
-        est_total_paid = user_cart.total()
-        if total_paid != est_total_paid:
-            unlock_cart(user_cart)
-            errors = [
-                "It seems that you paid the wrong amount.",
-                f"You paid ${total_paid} instead of ${round(est_total_paid, 2)}."
-            ]
-            response = make_response({"messages": errors}, 401)
-            return response
-    else:
-        pass
-        # NOTE: queue up an email that notifies user that they are paying in person
-
 
     item_ids = user_cart.get_item_ids()
 
@@ -133,9 +119,19 @@ def checkout():
     email_data = get_renter_receipt_email(orders)
     send_async_email.apply_async(kwargs=email_data.to_dict())
 
-    messages = [
-        "Successfully rented all items!",
-        "Now, just let us know when we can drop them off."
-    ]
-    response = make_response({"messages": messages}, 200)
+    response = make_response({ "messages": ["Success!"] }, 200)
+    return response
+
+
+@bp.get("/checkout/cancel")
+@login_required
+def cancel_checkout():
+
+    user_cart = Carts.get({ "id": g.user_id })
+
+    item_ids = user_cart.get_item_ids()
+
+    unlock_cart(user_cart)
+
+    response = make_response({ "messages": ["Your order was cancel."] }, 200)
     return response

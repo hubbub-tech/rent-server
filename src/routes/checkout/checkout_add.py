@@ -4,6 +4,7 @@ from flask import Blueprint, make_response, request, g
 from src.models import Carts
 from src.models import Items
 from src.models import Calendars
+from src.models import Reservations
 
 from src.utils import validate_rental
 from src.utils import login_required
@@ -91,12 +92,12 @@ def add():
     if user_cart.contains(item):
         reserved_item_ids = user_cart.get_item_ids(reserved_only=True)
         if item.id in reserved_item_ids:
-            messages = [
-                "Your cart already contains this item.",
-                "Go to your cart to edit your last reservation."
-            ]
-            response = make_response({"messages": messages}, 200)
-            return response
+            reservation = Reservations.unique({
+                "is_in_cart": True,
+                "item_id": item.id,
+                "renter_id": g.user_id
+            })
+            user_cart.remove(reservation)
         else:
             user_cart.remove_without_reservation(item)
 

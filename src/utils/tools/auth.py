@@ -1,6 +1,3 @@
-import os
-import json
-import pytz
 import string
 import random
 import functools
@@ -17,14 +14,21 @@ from src.utils.settings import COOKIE_KEY_SESSION, COOKIE_KEY_USER
 def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
+        user_id = request.cookies.get("userId")
+        session_key_hashed = request.cookies.get("sessionToken")
 
-        headers = request.headers
+        user = Users.get({"id": user_id})
 
-        print(headers)
-        g.user_id = 1
+        is_authorized = verify_token(session_key_hashed, user.session_key)
 
+        if is_authorized == False:
+            errors = ["Sorry, you're not authorized for this page."]
+            response = make_response({ "messages": errors }, 403)
+            return response
+
+        g.user_id = user_id
+        g.session_key = user.session_key
         return view(**kwargs)
-
     return wrapped_view
 
 
