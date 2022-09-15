@@ -63,7 +63,7 @@ def validate_checkout():
         response = make_response({ "messages": messages }, 200)
         return response
     else:
-        checkout_session = get_stripe_checkout_session(user_cart)
+        checkout_session = get_stripe_checkout_session(user_cart, g.user_email)
         response = make_response({ "redirect_url": checkout_session.url }, 200)
         return response
 

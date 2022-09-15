@@ -27,7 +27,8 @@ def login_required(view):
             return response
 
         g.user_id = user_id
-        g.session_key = user.session_key
+        g.user_email = user.email
+        g.user_session_key = user.session_key
         return view(**kwargs)
     return wrapped_view
 

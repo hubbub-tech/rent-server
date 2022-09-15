@@ -97,3 +97,7 @@ def create_order(insert_data):
 def create_logistics(insert_data):
     logistics = Logistics.insert(insert_data)
     return logistics
+
+
+def create_charge(charge_data):
+    return None

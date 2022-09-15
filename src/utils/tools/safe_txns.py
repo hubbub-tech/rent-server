@@ -11,6 +11,7 @@ from src.models import Extensions
 from src.models import Reservations
 
 from src.utils.classes import Status
+from src.utils.settings import SERVER_DOMAIN, CLIENT_DOMAIN, STRIPE_API_KEY
 
 
 def unlock_cart(cart: Carts, specified_items=None):
@@ -80,7 +81,7 @@ def _get_line_items(cart):
             "is_in_cart": True
         })
 
-        unit_amount = round(reservation.total(), 2) * 100
+        unit_amount = int(round(reservation.total(), 2) * 100)
         line_item = {
             "price_data": {
                 "currency": "usd",
@@ -98,23 +99,26 @@ def _get_line_items(cart):
 
     return line_items
 
-def get_stripe_checkout_session(cart):
-    stripe.api_key = os.getenv("STRIPE_API_KEY")
+def get_stripe_checkout_session(cart, email):
+    stripe.api_key = STRIPE_API_KEY
 
     line_items = _get_line_items(cart)
 
     try:
         checkout_session = stripe.checkout.Session.create(
+            client_reference_id=cart.checkout_session_key,
+            # customer=cart.id,
+            customer_email=email,
             line_items=line_items,
             mode='payment',
-            success_url=os.getenv("SERVER_DOMAIN") + '/checkout?status=success',
-            cancel_url=os.getenv("SERVER_DOMAIN") + '/checkout?status=cancel',
+            success_url=CLIENT_DOMAIN + '/checkout/success',
+            cancel_url=CLIENT_DOMAIN + '/checkout/cancel',
             automatic_tax={'enabled': True},
         )
     except Exception as e:
-        return str(e)
-
-    return checkout_session
+        return print(e)
+    else:
+        return checkout_session
 
 
 

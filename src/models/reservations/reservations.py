@@ -54,7 +54,6 @@ class Reservations(Models):
                 Models.db.conn.commit()
 
 
-    @property
     def total(self):
         return self.est_charge + self.est_deposit + self.est_tax
 

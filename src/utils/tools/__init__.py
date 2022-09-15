@@ -6,6 +6,7 @@ from .factories import create_logistics
 from .factories import create_extension
 from .factories import create_order
 from .factories import create_address
+from .factories import create_charge
 
 from .validators import validate_rental
 from .validators import validate_date_range
