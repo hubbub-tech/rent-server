@@ -133,3 +133,79 @@ class Orders(Models):
             cursor.execute(SQL, data)
             promos = cursor.fetchall()
             promos = [promo_title for promo_t in promos for promo_title in promo_t]
+
+
+    def get_total_charge(self):
+        SQL = """
+            SELECT r.est_charge
+            FROM reservations r
+            WHERE r.dt_started = %s AND r.dt_ended = %s AND r.item_id = %s AND r.renter_id = %s;
+            """
+
+        data = (self.res_dt_start, self.res_dt_end, self.item_id, self.renter_id)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            total_charge = cursor.fetchone()
+
+            if total_charge: total_charge = total_charge[0]
+
+        extensions = self.get_extensions()
+
+        if extensions:
+            SQL = """
+                SELECT r.est_charge
+                FROM reservations r
+                INNER JOIN extensions e
+                ON e.res_dt_start = r.dt_started AND e.res_dt_end = r.dt_ended AND e.item_id = r.item_id AND e.renter_id = r.renter_id
+                WHERE e.order_id = %s;
+                """
+
+            data = (self.id,)
+
+            with Models.db.conn.cursor() as cursor:
+                cursor.execute(SQL, data)
+                ext_charges = cursor.fetchall()
+                ext_charges = [charge for charge_t in ext_charges for charge in charge_t]
+
+            total_charge += sum(ext_charges)
+
+        return total_charge
+
+
+    def get_total_deposit(self):
+        SQL = """
+            SELECT r.est_deposit
+            FROM reservations r
+            WHERE r.dt_started = %s AND r.dt_ended = %s AND r.item_id = %s AND r.renter_id = %s;
+            """
+
+        data = (self.res_dt_start, self.res_dt_end, self.item_id, self.renter_id)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            total_deposit = cursor.fetchone()
+
+            if total_deposit: total_deposit = total_deposit[0]
+
+        extensions = self.get_extensions()
+
+        if extensions:
+            SQL = """
+                SELECT r.est_deposit
+                FROM reservations r
+                INNER JOIN extensions e
+                ON e.res_dt_start = r.dt_started AND e.res_dt_end = r.dt_ended AND e.item_id = r.item_id AND e.renter_id = r.renter_id
+                WHERE e.order_id = %s;
+                """
+
+            data = (self.id,)
+
+            with Models.db.conn.cursor() as cursor:
+                cursor.execute(SQL, data)
+                ext_deposits = cursor.fetchall()
+                ext_deposits = [deposit for deposit_t in ext_deposits for deposit in deposit_t]
+
+            total_deposit += sum(ext_deposits)
+
+        return total_deposit

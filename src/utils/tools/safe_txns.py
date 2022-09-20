@@ -69,15 +69,14 @@ def lock_cart(cart: Carts):
     return status
 
 
-def _get_line_items(cart):
-    item_ids = cart.get_item_ids(reserved_only=True)
+def _get_line_items(cart_id, item_ids):
 
     line_items = []
     for item_id in item_ids:
         item = Items.get({ "id": item_id })
         reservation = Reservations.unique({
             "item_id": item_id,
-            "renter_id": cart.id,
+            "renter_id": cart_id,
             "is_in_cart": True
         })
 
@@ -102,7 +101,8 @@ def _get_line_items(cart):
 def get_stripe_checkout_session(cart, email):
     stripe.api_key = STRIPE_API_KEY
 
-    line_items = _get_line_items(cart)
+    item_ids = cart.get_item_ids(reserved_only=True)
+    line_items = _get_line_items(cart.id, item_ids)
 
     try:
         checkout_session = stripe.checkout.Session.create(
@@ -113,6 +113,42 @@ def get_stripe_checkout_session(cart, email):
             mode='payment',
             success_url=CLIENT_DOMAIN + '/checkout/success',
             cancel_url=CLIENT_DOMAIN + '/checkout/cancel',
+            automatic_tax={'enabled': True},
+        )
+    except Exception as e:
+        return print(e)
+    else:
+        return checkout_session
+
+
+def get_stripe_extension_session(reservation, email):
+    stripe.api_key = STRIPE_API_KEY
+
+    item = Items.get({ "id": reservation.item_id })
+    unit_amount = int(round(reservation.total(), 2) * 100)
+    line_item = {
+        "price_data": {
+            "currency": "usd",
+            "product_data": {
+                "name": item.name,
+                "description": item.description
+            },
+            "unit_amount": unit_amount,
+            "tax_behavior": "inclusive"
+        },
+        "quantity": 1,
+    }
+
+    line_items = [line_item]
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            client_reference_id=None,
+            customer_email=email,
+            line_items=line_items,
+            mode='payment',
+            success_url=CLIENT_DOMAIN + '/extend/success',
+            cancel_url=CLIENT_DOMAIN + '/extend/cancel',
             automatic_tax={'enabled': True},
         )
     except Exception as e:
@@ -136,14 +172,14 @@ def return_order_early(order, early_reservation):
 
 
 
-def return_extension_early(extension, early_return_reservation):
+def return_extension_early(extension, early_reservation):
 
-    status = _validate_early_return(extension, early_return_reservation)
+    status = _validate_early_return(extension, early_reservation)
     if status.is_successful == False: return status
 
-    item = Items.get({"id": order.item_id})
-    renter = Users.get({"id": order.renter_id})
-    status = _safe_early_return(order, item, renter, early_reservation)
+    item = Items.get({"id": extension.item_id})
+    renter = Users.get({"id": extension.renter_id})
+    status = _safe_early_return(extension, item, renter, early_reservation)
     return status
 
 
@@ -198,7 +234,7 @@ def _safe_early_return(txn, item, user, early_reservation):
                 "res_dt_end": early_reservation.dt_ended,
             })
 
-            is_extension = True
+            is_extension = False
         else:
             item.unlock()
             raise Exception("Transaction does not match valid object types.")

@@ -14,7 +14,7 @@ from src.utils import login_required
 bp = Blueprint("cancel", __name__)
 
 
-@bp.post("/orders/cancel")
+@bp.get("/orders/cancel")
 @login_required
 def cancel_order():
 
@@ -52,7 +52,7 @@ def cancel_order():
             response = make_response({"messages": messages}, 200)
             return response
         else:
-            dropoff.remove_order_by_id(order.id)
+            dropoff.remove_order(order.id)
             if dropoff.get_order_ids() == []:
                 Logsitics.set({"id": dropoff.id}, {"is_canceled": True})
                 # WARNING: what happens if only one order is on the delivery?
@@ -64,7 +64,7 @@ def cancel_order():
             response = make_response({"messages": messages}, 200)
             return response
         else:
-            pickup.remove_order_by_id(order.id)
+            pickup.remove_order(order.id)
             if pickup.get_order_ids() == []:
                 Logsitics.set({"id": pickup.id}, {"is_canceled": True})
                 # WARNING: what happens if only one order is on the delivery?
@@ -128,7 +128,7 @@ def cancel_extension():
             response = make_response({"messages": messages}, 200)
             return response
         else:
-            pickup.remove_order_by_id(order.id)
+            pickup.remove_order(order.id)
             if pickup.get_order_ids() == []:
                 Logsitics.set({"id": pickup.id}, {"is_canceled": True})
                 # WARNING: what happens if only one order is on the delivery?

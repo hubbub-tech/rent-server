@@ -36,7 +36,7 @@ def get_extension_receipt_email(extension):
             Sales tax: ${res.est_tax:.2f}.
         </p>
         <p>
-            <bold>Total: ${res.total:.2f}</bold>
+            <bold>Total: ${res.total():.2f}</bold>
         </p>
         """
 

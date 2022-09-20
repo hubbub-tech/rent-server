@@ -46,6 +46,9 @@ def orders_history():
 
         order_to_dict = order.to_dict()
 
+        order_to_dict["total_charge"] = order.get_total_charge()
+        order_to_dict["total_deposit"] = order.get_total_deposit()
+
         order_to_dict["dropoff_id"] = order.get_dropoff_id()
         order_to_dict["pickup_id"] = order.get_pickup_id()
 

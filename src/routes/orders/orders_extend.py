@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from flask import Blueprint, make_response, request, g
 
 from src.models import Users
-from src.models import Orders
 from src.models import Items
+from src.models import Orders
 from src.models import Calendars
 from src.models import Reservations
 
@@ -15,7 +15,7 @@ from src.utils import create_extension
 
 from src.utils import get_lister_receipt_email, get_extension_receipt_email
 from src.utils import send_async_email, set_async_timeout
-from src.utils import login_required
+from src.utils import login_required, get_stripe_extension_session
 
 from src.utils import JSON_DT_FORMAT
 
@@ -43,8 +43,6 @@ def validate_extend_order():
         errors = ["You're not authorized to extend this rental."]
         response = make_response({"messages": errors}, 403)
         return response
-
-
 
     item = Items.get({"id": order.item_id})
     item_calendar = Calendars.get({"id": item.id})
@@ -74,10 +72,22 @@ def validate_extend_order():
         response = make_response({"messages": errors}, 403)
         return response
 
+    Reservations.set(reservation_data, {"is_extension": True})
+    reservation.is_extension = True
+
+    checkout_session = get_stripe_extension_session(reservation, g.user_email)
+
+    print("preflight check~~")
     res_to_dict = reservation.to_dict()
-    messages = ["Thank you! Now waiting on next steps to complete your order..."]
-    response = make_response({ "messages": messages, "reservation": res_to_dict }, 200)
-    # NOTE: user must pay? through processor
+
+    data = {
+        "messages": ["Thank you! Now waiting on next steps to complete your order..."],
+        "order_id": order_id,
+        "ext_dt_end": new_ext_dt_end_json,
+        "redirect_url": checkout_session.url
+    }
+
+    response = make_response(data, 200)
     return response
 
 
@@ -85,17 +95,12 @@ def validate_extend_order():
 @login_required
 def extend_order():
 
-    # NOTE: make sure that these are all NOT NULL
     order_id = request.json["orderId"]
-    txn_token = request.json["txnToken"]
-    txn_method = request.json["txnMethod"]
-    new_ext_dt_end_json = request.json["dtEnded"]
+    ext_dt_end_json = request.json["dtEnded"]
 
-    new_ext_dt_end = datetime.strptime(new_ext_dt_end_json, "%Y-%m-%d %H:%M:%S.%f")
+    ext_dt_end = datetime.strptime(ext_dt_end_json, JSON_DT_FORMAT)
 
     order = Orders.get({"id": order_id})
-    user = Users.get({"id": g.user_id})
-
     if order is None:
         errors = ["We could not find the rental you're looking for."]
         response = make_response({"messages": errors}, 404)
@@ -108,41 +113,37 @@ def extend_order():
 
     reservation = Reservations.get({
         "dt_started": order.ext_dt_end,
-        "dt_ended": new_ext_dt_end,
-        "renter_id": user.id,
+        "dt_ended": ext_dt_end,
+        "renter_id": g.user_id,
         "item_id": order.item_id
     })
 
-    if txn_method == "online":
-        # test that the amount paid is accurate
-        total_paid = get_charge_from_stripe(txn_token)
-
-        est_total_paid = reservation.total()
-        if total_paid != est_total_paid:
-            errors = [
-                "It seems that you paid the wrong amount.",
-                f"You paid ${total_paid} instead of ${est_total_paid}."
-            ]
-            response = make_response({"messages": errors}, 401)
-            return response
-    else:
-        pass
-        # NOTE: queue up an email that notifies user that they are paying in person
-
     item = Items.get({"id": order.item_id})
     item_calendar = Calendars.get({ "id": item.id })
-    item_calendar.add(reservation)
 
-    extension_data = {
-        "res_dt_start": reservation.dt_started,
-        "res_dt_end": reservation.dt_ended,
-        "renter_id": reservation.renter_id,
-        "item_id": reservation.item_id,
-        "order_id": order.id
-    }
-    extension = create_extension(extension_data)
+    if reservation is None:
+        if item.locker_id == g.user_id:
+            item.unlock()
+        errors = [f"Could not find the requested extension. Please contact us at {'hello@hubbub.shop'}."]
+        response = make_response({"messages": errors}, 404)
+        return response
 
-    item.unlock()
+    if item.is_locked and item.locker_id == g.user_id:
+        item_calendar.add(reservation)
+
+        extension_data = {
+            "res_dt_start": reservation.dt_started,
+            "res_dt_end": reservation.dt_ended,
+            "renter_id": reservation.renter_id,
+            "item_id": reservation.item_id,
+            "order_id": order.id
+        }
+        extension = create_extension(extension_data)
+        item.unlock()
+    else:
+        errors = ["Looks like someone else got to this one before you."]
+        response = make_response({"messages": errors}, 403)
+        return response
 
     email_data = get_lister_receipt_email(extension) # WARNING
     send_async_email.apply_async(kwargs=email_data.to_dict())
@@ -152,4 +153,16 @@ def extend_order():
 
     messages = ["Successfully extended your order!"]
     response = make_response({"messages": messages}, 200)
+    return response
+
+
+@bp.get("/orders/extend/cancel")
+@login_required
+def cancel_extend_order():
+
+    items = Items.filter({ "is_locked": True, "locker_id": g.user_id })
+    for item in items:
+        item.unlock()
+
+    response = make_response({ "messages": ["Your extension was canceled."] }, 200)
     return response

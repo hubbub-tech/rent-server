@@ -65,13 +65,10 @@ def orders_early_return():
 @login_required
 def extensions_early_return():
 
-    order_id = request.args.get("order_id")
-    res_dt_start = request.args.get("res_dt_start")
-
-    extension = Extensions.get({"id": order_id, "res_dt_start": res_dt_start})
-
     try:
-        early_dt_end = request.json["dtEnded"]
+        order_id = request.json["orderId"]
+        res_dt_start_json = request.json["dtStarted"]
+        early_dt_end_json = request.json["dtEnded"]
     except KeyError:
         errors = ["Please submit an early return date for your order."]
         response = make_response({"messages": errors}, 401)
@@ -81,6 +78,12 @@ def extensions_early_return():
         # NOTE: Log error here.
         response = make_response({ "messages": errors }, 500)
         return response
+
+    print(res_dt_start_json)
+    res_dt_start = datetime.strptime(res_dt_start_json, '%Y-%m-%d %H:%M:%S.%f')
+    early_dt_end = datetime.strptime(early_dt_end_json, JSON_DT_FORMAT)
+
+    extension = Extensions.get({"order_id": order_id, "res_dt_start": res_dt_start})
 
     early_reservation_keys = {
         "renter_id": g.user_id,

@@ -26,7 +26,7 @@ def login_required(view):
             response = make_response({ "messages": errors }, 403)
             return response
 
-        g.user_id = user_id
+        g.user_id = user.id
         g.user_email = user.email
         g.user_session_key = user.session_key
         return view(**kwargs)

@@ -27,11 +27,3 @@ class Extensions(Models):
         }
 
         return query_res
-
-
-    @classmethod
-    def set(cls, extension_keys, changes):
-        raise Exception("""
-            Extensions are not directly editable.
-            Edit reservations or orders relations instead.
-        """)
