@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, make_response, request
 
 from src.models import Items, Calendars
@@ -32,8 +33,8 @@ def item_feed():
         next_start, next_end  = item_calendar.next_availability()
 
         item_to_dict = item.to_dict()
-        item_to_dict["next_available_start"] = next_start.strftime("%Y-%m-%d")
-        item_to_dict["next_available_end"] = next_end.strftime("%Y-%m-%d")
+        item_to_dict["next_available_start"] = datetime.timestamp(next_start)
+        item_to_dict["next_available_end"] = datetime.timestamp(next_end)
         item_to_dict["tags"] = tags
 
         items_to_dict.append(item_to_dict)

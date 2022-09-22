@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, make_response, request, g
 
 from src.models import Users
@@ -50,8 +51,8 @@ def view_order(order_id):
 
     order_to_dict["item"] = item.to_dict()
     order_to_dict["item"]["calendar"] = item_calendar.to_dict()
-    order_to_dict["ext_dt_start"] = order.ext_dt_start.strftime("%Y-%m-%d")
-    order_to_dict["ext_dt_end"] = order.ext_dt_end.strftime("%Y-%m-%d")
+    order_to_dict["ext_dt_start"] = datetime.timestamp(order.ext_dt_start)
+    order_to_dict["ext_dt_end"] = datetime.timestamp(order.ext_dt_end)
     order_to_dict["reservation"] = res.to_dict()
 
     data = { "order": order_to_dict }

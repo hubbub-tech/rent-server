@@ -37,8 +37,8 @@ def set_async_timeout(user_id):
             user_cart = Carts.get({"id": user_id})
             unlock_cart(user_cart)
 
-        timestamp = datetime.now()
-        print(f"[{timestamp.strftime('%Y-%m-%d')}] All items in cart with id: {user_cart.id} have been unlocked.") # TODO: log this
+        dt_now = datetime.now()
+        print(f"[Epoch: {datetime.timestamp(dt_now)}] All items in cart with id: {user_cart.id} have been unlocked.") # TODO: log this
         return True
 
     except:

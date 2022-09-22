@@ -46,13 +46,15 @@ def get_orders_by_date():
     dt_ended_json = request.args.get("dt_ended")
     dt_ended = None
 
+    if dt_started_json:
+        dt_started = datetime.fromtimestamp(int(dt_started_json))
+    elif dt_ended_json:
+        dt_ended = datetime.fromtimestamp(int(dt_ended_json))
+    else:
+        raise Exception("Invalid date entry.")
+
     try:
-        if dt_started_json:
-            dt_started = datetime.strptime(dt_started_json, JSON_DT_FORMAT)
-        elif dt_ended_json:
-            dt_ended = datetime.strptime(dt_ended_json, JSON_DT_FORMAT)
-        else:
-            raise Exception("Invalid date entry.")
+        pass
     except:
         errors = ["No start or end date was provided to look up orders."]
         response = make_response({"messages": errors}, 401)
@@ -67,6 +69,7 @@ def get_orders_by_date():
 
             order_to_dict = order.to_dict()
             order_to_dict["item_name"] = item.name
+            order_to_dict["item_description"] = item.description
             orders_to_dict.append(order_to_dict)
 
     elif dt_ended:

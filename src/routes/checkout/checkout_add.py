@@ -73,8 +73,8 @@ def add():
         response = make_response({ "messages": errors }, 500)
         return response
 
-    dt_started = datetime.strptime(dt_started_json, JSON_DT_FORMAT)
-    dt_ended = datetime.strptime(dt_ended_json, JSON_DT_FORMAT)
+    dt_started = datetime.fromtimestamp(float(dt_started_json))
+    dt_ended = datetime.fromtimestamp(float(dt_ended_json))
 
     item = Items.get({"id": item_id})
     user_cart = Carts.get({"id": g.user_id})

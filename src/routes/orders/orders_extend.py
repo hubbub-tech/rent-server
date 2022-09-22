@@ -29,7 +29,7 @@ def validate_extend_order():
     order_id = request.json["orderId"]
     new_ext_dt_end_json = request.json["dtEnded"]
 
-    new_ext_dt_end = datetime.strptime(new_ext_dt_end_json, JSON_DT_FORMAT)
+    new_ext_dt_end = datetime.fromtimestamp(new_ext_dt_end_json)
 
     order = Orders.get({"id": order_id})
     user = Users.get({"id": g.user_id})
@@ -98,7 +98,7 @@ def extend_order():
     order_id = request.json["orderId"]
     ext_dt_end_json = request.json["dtEnded"]
 
-    ext_dt_end = datetime.strptime(ext_dt_end_json, JSON_DT_FORMAT)
+    ext_dt_end = datetime.fromtimestamp(ext_dt_end_json)
 
     order = Orders.get({"id": order_id})
     if order is None:

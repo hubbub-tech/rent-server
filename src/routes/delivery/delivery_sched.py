@@ -18,6 +18,8 @@ bp = Blueprint("schedule", __name__)
 @login_required
 def schedule_delivery():
 
+    print("address: ", request.json["address"])
+    print("timeslots: ", request.json["timeslots"])
     try:
         orders = request.json["orders"]
         timeslots = request.json["timeslots"]

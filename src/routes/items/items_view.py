@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, make_response
 
 from src.models import Users
@@ -35,8 +36,8 @@ def view_item(item_id):
     item_to_dict["lister_name"] = lister.name
     item_to_dict["address"] = item_address.to_dict()
     item_to_dict["calendar"] = item_calendar.to_dict()
-    item_to_dict["calendar"]["next_avail_date_start"] = next_start.strftime("%Y-%m-%d")
-    item_to_dict["calendar"]["next_avail_date_end"] = next_end.strftime("%Y-%m-%d")
+    item_to_dict["calendar"]["next_avail_date_start"] = datetime.timestamp(next_start)
+    item_to_dict["calendar"]["next_avail_date_end"] = datetime.timestamp(next_end)
 
     item_to_dict["calendar"]["available_days_in_next_90"] = item_calendar.available_days_in_next(90)
 
@@ -57,8 +58,8 @@ def view_item(item_id):
 
         rec_to_dict = rec.to_dict()
         rec_to_dict["calendar"] = rec_calendar.to_dict()
-        rec_to_dict["calendar"]["next_avail_date_start"] = next_start.strftime("%Y-%m-%d")
-        rec_to_dict["calendar"]["next_avail_date_end"] = next_end.strftime("%Y-%m-%d")
+        rec_to_dict["calendar"]["next_avail_date_start"] = datetime.timestamp(next_start)
+        rec_to_dict["calendar"]["next_avail_date_end"] = datetime.timestamp(next_end)
 
         recs_to_dict.append(rec_to_dict)
 

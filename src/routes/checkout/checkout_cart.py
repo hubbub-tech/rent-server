@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, make_response, request, g
 
 from src.models import Users
@@ -50,8 +51,8 @@ def cart():
 
                 item_to_dict = item.to_dict()
                 item_to_dict["calendar"] = item_calendar.to_dict()
-                item_to_dict["calendar"]["next_available_start"] = next_start.strftime("%Y-%m-%d")
-                item_to_dict["calendar"]["next_available_end"] = next_end.strftime("%Y-%m-%d")
+                item_to_dict["calendar"]["next_available_start"] = datetime.timestamp(next_start)
+                item_to_dict["calendar"]["next_available_end"] = datetime.timestamp(next_end)
                 unreserved_items_to_dict.append(item_to_dict)
 
             elif res.is_calendared == False:
@@ -64,16 +65,16 @@ def cart():
                     item_to_dict = item.to_dict()
                     item_to_dict["calendar"] = item_calendar.to_dict()
                     item_to_dict["reservation"] = res.to_dict()
-                    item_to_dict["calendar"]["next_available_start"] = next_start.strftime("%Y-%m-%d")
-                    item_to_dict["calendar"]["next_available_end"] = next_end.strftime("%Y-%m-%d")
+                    item_to_dict["calendar"]["next_available_start"] = datetime.timestamp(next_start)
+                    item_to_dict["calendar"]["next_available_end"] = datetime.timestamp(next_end)
                     reserved_items_to_dict.append(item_to_dict)
         else:
             next_start, next_end = item_calendar.next_availability()
 
             item_to_dict = item.to_dict()
             item_to_dict["calendar"] = item_calendar.to_dict()
-            item_to_dict["calendar"]["next_available_start"] = next_start.strftime("%Y-%m-%d")
-            item_to_dict["calendar"]["next_available_end"] = next_end.strftime("%Y-%m-%d")
+            item_to_dict["calendar"]["next_available_start"] = datetime.timestamp(next_start)
+            item_to_dict["calendar"]["next_available_end"] = datetime.timestamp(next_end)
             unreserved_items_to_dict.append(item_to_dict)
 
     if len(unreserved_items_to_dict) == 0:

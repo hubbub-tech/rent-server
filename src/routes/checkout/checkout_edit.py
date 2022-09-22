@@ -52,8 +52,8 @@ def edit():
     else:
         user_cart.remove_without_reservation(item)
 
-    new_dt_started = datetime.strptime(new_dt_started_json, JSON_DT_FORMAT)
-    new_dt_ended = datetime.strptime(new_dt_ended_json, JSON_DT_FORMAT)
+    new_dt_started = datetime.fromtimestamp(float(new_dt_started_json))
+    new_dt_ended = datetime.fromtimestamp(float(new_dt_ended_json))
 
     item_calendar = Calendars.get({"id": item.id})
     status = validate_rental(item_calendar, new_dt_started, new_dt_ended)

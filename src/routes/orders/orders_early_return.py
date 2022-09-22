@@ -36,7 +36,7 @@ def orders_early_return():
 
     order = Orders.get({"id": order_id})
 
-    early_dt_end = datetime.strptime(early_dt_end_json, JSON_DT_FORMAT)
+    early_dt_end = datetime.fromtimestamp(early_dt_end_json)
 
     early_reservation_keys = {
         "renter_id": g.user_id,
@@ -80,8 +80,8 @@ def extensions_early_return():
         return response
 
     print(res_dt_start_json)
-    res_dt_start = datetime.strptime(res_dt_start_json, '%Y-%m-%d %H:%M:%S.%f')
-    early_dt_end = datetime.strptime(early_dt_end_json, JSON_DT_FORMAT)
+    res_dt_start = datetime.fromtimestamp(res_dt_start_json)
+    early_dt_end = datetime.fromtimestamp(early_dt_end_json)
 
     extension = Extensions.get({"order_id": order_id, "res_dt_start": res_dt_start})
 

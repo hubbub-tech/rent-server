@@ -23,7 +23,7 @@ class Calendars(Models):
         SQL = """
             UPDATE reservations
             SET is_calendared = %s
-            WHERE item_id = %s AND renter_id = %s AND date_started = %s AND date_ended = %s;
+            WHERE item_id = %s AND renter_id = %s AND dt_started = %s AND dt_ended = %s;
             """
 
         data = (
