@@ -14,7 +14,12 @@ class Users(Models):
 
     def __init__(self, attrs: dict):
         self.id = attrs["id"]
-        self.name = attrs["name"]
+
+        self._unformatted_name = attrs["name"]
+        self.name = self.get_name()
+        self.first_name = self.get_first_name()
+        self.last_name = self.get_last_name()
+
         self.phone = attrs["phone"]
         self.email = attrs["email"]
         self.password = attrs["password"]
@@ -25,16 +30,23 @@ class Users(Models):
         self.is_blocked = attrs["is_blocked"]
         self.session_key = attrs["session_key"]
 
-        self.address_line_1 = attrs["address_line_1"]
-        self.address_line_2 = attrs["address_line_2"]
-        self.address_country = attrs["address_country"]
-        self.address_zip = attrs["address_zip"]
+        self.address_lat = attrs["address_lat"]
+        self.address_lng = attrs["address_lng"]
 
         self._password = attrs.get("password")
 
 
     def get_name(self):
-        return self.name.replace(",", " ")
+        return self._unformatted_name.replace("+", " ")
+
+
+    def get_first_name(self):
+        return self._unformatted_name.split("+")[0]
+
+
+    def get_last_name(self):
+        return self._unformatted_name.split("+")[1]
+
 
     @classmethod
     def get_valid_roles(cls):
@@ -68,10 +80,8 @@ class Users(Models):
 
     def to_query_address(self):
         query_address = {
-            "line_1": self.address_line_1,
-            "line_2": self.address_line_2,
-            "country": self.address_country,
-            "zip": self.address_zip
+            "lat": self.address_lat,
+            "lng": self.address_lng
         }
 
         return query_address

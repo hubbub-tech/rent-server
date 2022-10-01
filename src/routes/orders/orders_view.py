@@ -22,13 +22,13 @@ def view_order(order_id):
     order = Orders.get({"id": order_id})
 
     if order is None:
-        errors = ["This order does not exist."]
-        response = make_response({"messages": errors}, 200)
+        error = "This order does not exist."
+        response = make_response({"message": error}, 200)
         return response
 
     if order.renter_id != g.user_id:
-        errors = ["You're not authorized to view this order."]
-        response = make_response({"messages": errors}, 403)
+        error = "You're not authorized to view this order."
+        response = make_response({"message": error}, 403)
         return response
 
     order_to_dict = order.to_dict()

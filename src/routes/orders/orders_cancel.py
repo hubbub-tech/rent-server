@@ -22,23 +22,23 @@ def cancel_order():
     order = Orders.get({"id": order_id})
 
     if order is None:
-        errors = ["Sorry, we could not find this order. Please, try again."]
-        response = make_response({ "messages": errors }, 404)
+        error = "Sorry, we could not find this order. Please, try again."
+        response = make_response({ "message": error }, 404)
         return response
 
     if order.renter_id != g.user_id:
-        errors = ["Sorry, you are not authorized to cancel this order. Contact us if this seems wrong."]
-        response = make_response({ "messages": errors }, 403)
+        error = "Sorry, you are not authorized to cancel this order. Contact us if this seems wrong."
+        response = make_response({ "message": error }, 403)
         return response
 
     if order.res_dt_start <= datetime.now():
-        errors = ["Sorry, your rental has already started. If this seems wrong, contact us."]
-        response = make_response({ "messages": errors }, 401)
+        error = "Sorry, your rental has already started. If this seems wrong, contact us."
+        response = make_response({ "message": error }, 401)
         return response
 
     if order.is_canceled:
-        errors = ["Your order has been cancelled!"]
-        response = make_response({ "messages": errors }, 200)
+        error = "Your order has been cancelled!"
+        response = make_response({ "message": error }, 200)
         return response
 
     dropoff_id = order.get_dropoff_id()
@@ -48,8 +48,8 @@ def cancel_order():
     if dropoff_id:
         dropoff = Logistics.get({"id": dropoff_id})
         if dropoff.dt_sent and dropoff.dt_received is None:
-            messages = ["It seems like your order is being delivered already. If this sounds wrong please contact us."]
-            response = make_response({"messages": messages}, 200)
+            message = "It seems like your order is being delivered already. If this sounds wrong please contact us."
+            response = make_response({"message": message}, 200)
             return response
         else:
             dropoff.remove_order(order.id)
@@ -60,8 +60,8 @@ def cancel_order():
     if pickup_id:
         pickup = Logistics.get({"id": pickup_id})
         if dropoff.dt_sent and dropoff.dt_received is None:
-            messages = ["It seems like your order is being delivered already. If this sounds wrong please contact us."]
-            response = make_response({"messages": messages}, 200)
+            message = "It seems like your order is being delivered already. If this sounds wrong please contact us."
+            response = make_response({"message": message}, 200)
             return response
         else:
             pickup.remove_order(order.id)
@@ -80,8 +80,8 @@ def cancel_order():
     email_data = get_cancellation_email(order)
     send_async_email.apply_async(kwargs=email_data.to_dict())
 
-    messages = ["Your order was successfully cancelled!"]
-    response = make_response({"messages": messages}, 200)
+    message = "Your order was successfully cancelled!"
+    response = make_response({"message": message}, 200)
     return response
 
 
@@ -95,26 +95,26 @@ def cancel_extension():
     extension = Extensions.get({"id": order_id, "res_dt_start": res_dt_start})
 
     if extension is None:
-        errors = ["Sorry, we could not find this order. Please, try again."]
-        response = make_response({ "messages": errors }, 404)
+        error = "Sorry, we could not find this order. Please, try again."
+        response = make_response({ "message": error }, 404)
         return response
 
     if extension.renter_id != g.user_id:
-        errors = ["Sorry, you are not authorized to cancel this order. Contact us if this seems wrong."]
-        response = make_response({ "messages": errors }, 403)
+        error = "Sorry, you are not authorized to cancel this order. Contact us if this seems wrong."
+        response = make_response({ "message": error }, 403)
         return response
 
     if extension.res_dt_start <= datetime.now():
-        errors = ["Sorry, your rental has already started. If this seems wrong, contact us."]
-        response = make_response({ "messages": errors }, 401)
+        error = "Sorry, your rental has already started. If this seems wrong, contact us."
+        response = make_response({ "message": error }, 401)
         return response
 
     res_pkeys = extension.to_query_reservation()
 
     reservation = Reservations.get(res_pkeys)
     if reservation.is_calendared == False:
-        errors = ["Your order has been cancelled!"]
-        response = make_response({ "messages": errors }, 200)
+        error = "Your order has been cancelled!"
+        response = make_response({ "message": error }, 200)
         return response
 
     order = Orders.get({"id": extension.order_id})
@@ -124,8 +124,8 @@ def cancel_extension():
     if pickup_id:
         pickup = Logistics.get({"id": pickup_id})
         if dropoff.dt_sent and dropoff.dt_received is None:
-            messages = ["It seems like your order is being delivered already. If this sounds wrong please contact us."]
-            response = make_response({"messages": messages}, 200)
+            message = "It seems like your order is being delivered already. If this sounds wrong please contact us."
+            response = make_response({"message": message}, 200)
             return response
         else:
             pickup.remove_order(order.id)
@@ -140,6 +140,6 @@ def cancel_extension():
     email_data = get_cancellation_email(extension)
     send_async_email.apply_async(kwargs=email_data.to_dict())
 
-    messages = ["Your extension was successfully cancelled!"]
-    response = make_response({"messages": messages}, 200)
+    message = "Your extension was successfully cancelled!"
+    response = make_response({"message": message}, 200)
     return response

@@ -9,38 +9,33 @@ class Addresses(Models):
     """
 
     table_name = "addresses"
-    table_primaries = ["line_1", "line_2", "country", "zip"]
+    table_primaries = ["lat", "lng"]
     sensitive_attributes = []
 
     def __init__(self, attrs):
-        self.line_1 = attrs["line_1"]
-        self.line_2 = attrs["line_2"]
-        self.city = attrs["city"]
-        self.state = attrs["state"]
-        self.country = attrs["country"]
-        self.zip = attrs["zip"]
         self.lat = attrs["lat"]
         self.lng = attrs["lng"]
+        self.formatted = attrs["formatted"]
+        self.description = attrs["description"]
 
 
     def to_str(self):
-        return f"{self.line_1} {self.line_2} {self.city} {self.state} {self.country} {self.zip}"
+        return self.formatted
 
 
     def to_http_format(self):
         address_str = self.to_str()
         address_http_formatted = address_str.replace(' ', '+')
-        address_http_formatted = address_str.replace(',', '')
         return address_http_formatted
 
     def set_as_origin(self):
         SQL = """
-            SELECT line_1, line_2, country, zip
+            SELECT lat, lng
             FROM from_addresses
-            WHERE line_1 = %s AND line_2 = %s AND country = %s AND zip = %s;
+            WHERE lat = %s AND lng = %s;
             """
 
-        data = (self.line_1, self.line_2, self.country, self.zip)
+        data = (self.lat, self.lng)
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
@@ -50,11 +45,11 @@ class Addresses(Models):
 
         SQL = f"""
             INSERT
-            INTO from_addresses (line_1, line_2, country, zip)
-            VALUES (%s, %s, %s, %s);
+            INTO from_addresses (lat, lng)
+            VALUES (%s, %s);
             """
 
-        data = (self.line_1, self.line_2, self.country, self.zip)
+        data = (self.lat, self.lng)
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
@@ -63,12 +58,12 @@ class Addresses(Models):
 
     def set_as_destination(self):
         SQL = """
-            SELECT line_1, line_2, country, zip
+            SELECT lat, lng
             FROM to_addresses
-            WHERE line_1 = %s AND line_2 = %s AND country = %s AND zip = %s;
+            WHERE lat = %s AND lng = %s;
             """
 
-        data = (self.line_1, self.line_2, self.country, self.zip)
+        data = (self.lat, self.lng)
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
@@ -78,11 +73,11 @@ class Addresses(Models):
 
         SQL = f"""
             INSERT
-            INTO to_addresses (line_1, line_2, country, zip)
-            VALUES (%s, %s, %s, %s);
+            INTO to_addresses (lat, lng)
+            VALUES (%s, %s);
             """
 
-        data = (self.line_1, self.line_2, self.country, self.zip)
+        data = (self.lat, self.lng)
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)

@@ -20,15 +20,11 @@ class Logistics(Models):
         self.sender_id = attrs["sender_id"]
         self.receiver_id = attrs["receiver_id"]
 
-        self.from_addr_line_1 = attrs["from_addr_line_1"]
-        self.from_addr_line_2 = attrs["from_addr_line_2"]
-        self.from_addr_country = attrs["from_addr_country"]
-        self.from_addr_zip = attrs["from_addr_zip"]
+        self.from_addr_lat = attrs["from_addr_lat"]
+        self.from_addr_lng = attrs["from_addr_lng"]
 
-        self.to_addr_line_1 = attrs["to_addr_line_1"]
-        self.to_addr_line_2 = attrs["to_addr_line_2"]
-        self.to_addr_country = attrs["to_addr_country"]
-        self.to_addr_zip = attrs["to_addr_zip"]
+        self.to_addr_lat = attrs["to_addr_lat"]
+        self.to_addr_lng = attrs["to_addr_lng"]
 
 
     def to_query_address(self, direction):
@@ -37,17 +33,13 @@ class Logistics(Models):
 
         if direction == "from":
             query_address = {
-                "line_1": self.from_addr_line_1,
-                "line_2": self.from_addr_line_2,
-                "country": self.from_addr_country,
-                "zip": self.from_addr_zip
+                "lat": self.from_addr_lat,
+                "lng": self.from_addr_lng
             }
         elif direction == "to":
             query_address = {
-                "line_1": self.to_addr_line_1,
-                "line_2": self.to_addr_line_2,
-                "country": self.to_addr_country,
-                "zip": self.to_addr_zip
+                "lat": self.to_addr_lat,
+                "lng": self.to_addr_lng
             }
         else: raise Exception("Error: Invalid logistics direction.")
 

@@ -74,3 +74,26 @@ def get_dropoff_request_email(logistics):
     email_data.to = (renter.email, SMTP.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data
+
+
+def get_dropoff_error_email(logistics):
+
+    email_data = EmailData()
+    email_body_formatter = EmailBodyFormatter()
+
+    renter = Users.get({"id": logistics.receiver_id})
+
+    email_body_formatter.preview = f"There was a problem scheduling timeslots for user_id:{renter.id} - "
+
+    email_body_formatter.user = "Team Hubbub"
+
+    email_body_formatter.introduction = f"Please, manually confirm dropoff timeslots with user, {renter.name} ({renter.id})."
+    email_body_formatter.content = "<p>Timeslot attachment failed, likely do to input error.</p>"
+    email_body_formatter.conclusion = ""
+
+    body = email_body_formatter.build()
+
+    email_data.subject = "[Internal Error] Failed Silently while Recording Dropoff Timeslots"
+    email_data.to = (SMTP.DEFAULT_RECEIVER,)
+    email_data.body = body
+    return email_data

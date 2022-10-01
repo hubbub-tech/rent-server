@@ -4,94 +4,167 @@ from src.models import Orders
 
 from src.utils import create_address
 from src.utils import create_logistics
-from src.utils import schedule_deliveries
+from src.utils import get_nearest_storage
+from src.utils import attach_timeslots
 
 from src.utils import login_required
 from src.utils import send_async_email
 from src.utils import get_dropoff_request_email
+from src.utils import get_dropoff_error_email
 from src.utils import get_pickup_request_email
+from src.utils import get_pickup_error_email
 
 bp = Blueprint("schedule", __name__)
 
 
-@bp.post("/delivery/schedule")
+@bp.post("/dropoff/schedule")
 @login_required
-def schedule_delivery():
+def schedule_dropoff():
 
-    print("address: ", request.json["address"])
-    print("timeslots: ", request.json["timeslots"])
     try:
-        orders = request.json["orders"]
+        order_ids = request.json["orderIds"]
         timeslots = request.json["timeslots"]
+
         to_address_data = {
-            "line_1": request.json["toAddress"]["lineOne"],
-            "line_2": request.json["toAddress"]["lineTwo"],
-            "city": request.json["toAddress"]["city"],
-            "state": request.json["toAddress"]["state"],
-            "country": "USA", # request.json["toAddress"]["country"],
-            "zip": request.json["toAddress"]["zip"],
-        }
-        from_address_data = {
-            "line_1": request.json["fromAddress"]["lineOne"],
-            "line_2": request.json["fromAddress"]["lineTwo"],
-            "city": request.json["fromAddress"]["city"],
-            "state": request.json["fromAddress"]["state"],
-            "country": "USA", # request.json["fromAddress"]["country"],
-            "zip": request.json["fromAddress"]["zip"],
+            "lat": request.json["address"]["lat"],
+            "lng": request.json["address"]["lng"],
+            "formatted": request.json["address"]["formatted"]
         }
 
-        notes = request.json["notes"]
+        notes = request.json.get("notes")
         referral = request.json.get("referral")
-        sender_id = request.json.get("senderId", g.user_id)
-        receiver_id = request.json.get("receiverId", g.user_id)
     except KeyError:
-        errors = ["Sorry, you didn't send anything in the form, try again."]
-        response = make_response({ "messages": errors }, 406)
+        error = "Sorry, you didn't send anything in the form, try again."
+        response = make_response({ "message": error }, 406)
         return response
     except Exception as e:
-        errors = ["Something went wrong. Please, try again."]
+        errors = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "messages": errors }, 500)
+        response = make_response({ "message": error }, 500)
         return response
 
-    order_ids = []
-    for order in orders:
-        order_ids.append(order["id"])
-
-        if referral:
-            Orders.set({"id": order["id"]}, {"referral": referral})
-
-    logistics_data = {
-        "sender_id": sender_id,
-        "receiver_id": receiver_id,
-        "notes": notes,
-        "to_addr_line_1": to_address_data["line_1"],
-        "to_addr_line_2": to_address_data["line_2"],
-        "to_addr_country": "USA", # to_address_data["country"],
-        "to_addr_zip": to_address_data["zip"],
-        "from_addr_line_1": from_address_data["line_1"],
-        "from_addr_line_2": from_address_data["line_2"],
-        "from_addr_country": "USA", # from_address_data["country"],
-        "from_addr_zip": from_address_data["zip"],
-    } # FILL WITH DATA FOR OBJ CREATION
-
     to_address = create_address(to_address_data)
-    from_address = create_address(from_address_data)
-
     to_address.set_as_destination()
+
+    for order_id in order_ids:
+        order = Orders.get({ "id": order_id })
+        item = Items.get({ "id": order.item_id })
+        from_address = Addresses.get(item.to_query_address())
+        from_address.set_as_origin()
+
+        logistics = Logistics.unique({
+            "sender_id": item.lister_id,
+            "receiver_id": g.user_id,
+            "to_addr_lat": to_address.lat,
+            "to_addr_lng": to_address.lng,
+            "from_addr_lat": from_address.lat,
+            "from_addr_lng": from_address.lng,
+            "dt_sent": None
+        })
+
+        if logistics is None:
+            logistics_data = {
+                "sender_id": item.lister_id,
+                "receiver_id": g.user_id,
+                "notes": notes,
+                "to_addr_lat": to_address.lat,
+                "to_addr_lng": to_address.lng,
+                "from_addr_lat": from_address.lat,
+                "from_addr_lng": from_address.lng,
+            }
+
+            logistics = create_logistics(logistics_data)
+            date_event = order.res_dt_start.date()
+
+            status = attach_timeslots(logistics, timeslots, date_event)
+
+            if status.is_successful:
+                email_data = get_dropoff_request_email(logistics)
+            else:
+                email_data = get_dropoff_error_email(logistics)
+            send_async_email.apply_async(kwargs=email_data.to_dict())
+
+        attached_order_ids = logistics.get_order_ids()
+        if order.id not in attached_order_ids:
+            logistics.add_order(order.id)
+
+    response = make_response({ "message": "Thanks for scheduling!" }, 200)
+    return response
+
+
+@bp.post("/pickup/schedule")
+@login_required
+def schedule_pickup():
+
+    try:
+        order_ids = request.json["orderIds"]
+        timeslots = request.json["timeslots"]
+
+        from_address_data = {
+            "lat": request.json["address"]["lat"],
+            "lng": request.json["address"]["lng"],
+            "formatted": request.json["address"]["formatted"]
+        }
+
+        notes = request.json.get("notes")
+    except KeyError:
+        error = "Sorry, you didn't send anything in the form, try again."
+        response = make_response({ "message": error }, 406)
+        return response
+    except Exception as e:
+        error = "Something went wrong. Please, try again."
+        # NOTE: Log error here.
+        response = make_response({ "message": error }, 500)
+        return response
+
+    from_address = create_address(from_address_data)
+    from_addr_coords = (from_address.lat, from_address.lng)
+
+    storage_lat, storage_lng = get_nearest_storage(from_addr_coords)
+    to_storage_address = create_address({ "lat": storage_lat, "lng": storage_lng })
+
+    to_storage_address.set_as_destination()
     from_address.set_as_origin()
 
-    logistics = create_logistics(logistics_data)
-    status = schedule_deliveries(logistics, order_ids, timeslots)
+    for order_id in order_ids:
+        order = Orders.get({ "id": order_id })
+        item = Items.get({ "id": order.item_id })
 
-    if logistics.receiver_id == g.user_id:
-        email_data = get_dropoff_request_email(logistics)
-        send_async_email.apply_async(kwargs=email_data.to_dict())
+        logistics = Logistics.unique({
+            "sender_id": g.user_id,
+            "receiver_id": item.lister_id,
+            "to_addr_lat": to_storage_address.lat,
+            "to_addr_lng": to_storage_address.lng,
+            "from_addr_lat": from_address.lat,
+            "from_addr_lng": from_address.lng,
+            "dt_sent": None
+        })
 
-    if logistics.sender_id == g.user_id:
-        email_data = get_pickup_request_email(logistics)
-        send_async_email.apply_async(kwargs=email_data.to_dict())
+        if logistics is None:
+            logistics_data = {
+                "sender_id": g.user_id,
+                "receiver_id": item.lister_id,
+                "notes": notes,
+                "to_addr_lat": to_storage_address.lat,
+                "to_addr_lng": to_storage_address.lng,
+                "from_addr_lat": from_address.lat,
+                "from_addr_lng": from_address.lng,
+            }
 
-    messages = status.messages
-    response = make_response({"messages": messages}, 200)
+            logistics = create_logistics(logistics_data)
+            date_event = order.res_dt_start.date()
+
+            status = attach_timeslots(logistics, timeslots, date_event)
+
+            if status.is_successful:
+                email_data = get_pickup_request_email(logistics)
+            else:
+                email_data = get_pickup_error_email(logistics)
+            send_async_email.apply_async(kwargs=email_data.to_dict())
+
+        attached_order_ids = logistics.get_order_ids()
+        if order.id not in attached_order_ids:
+            logistics.add_order(order.id)
+
+    response = make_response({ "message": "Thanks for scheduling!" }, 200)
     return response

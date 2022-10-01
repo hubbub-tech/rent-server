@@ -17,37 +17,39 @@ def edit_item():
     item = Items.get({"id": item_id})
 
     if item is None:
-        errors = ["We can't seem to find the item that you're looking for."]
-        response = make_response({"messages": errors}, 404)
+        error = "We can't seem to find the item that you're looking for."
+        response = make_response({"message": error}, 404)
         return response
 
     if item.lister_id != g.user_id:
-        errors = ["You are not authorized to edit this item."]
-        response = make_response({"messages": errors}, 403)
+        error = "You are not authorized to edit this item."
+        response = make_response({"message": error}, 403)
         return response
 
     try:
         new_name = request.json["name"]
-        new_address = request.json["address"]
+
+        new_address_formatted = request.json["address"]["formatted"]
+        new_address_lat = request.json["address"]["lat"]
+        new_address_lng = request.json["address"]["lng"]
     except KeyError:
-        errors = ["Missing data in your attempt to edit. Try again."]
-        response = make_response({"messages": errors}, 401)
+        error = "Missing data in your attempt to edit. Try again."
+        response = make_response({"message": error}, 401)
     except Exception as e:
-        errors = ["Something went wrong. Please, try again."]
+        error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "messages": errors }, 500)
+        response = make_response({ "message": error }, 500)
         return response
 
+    # NOTE: parse for address data
     address = create_address(new_address)
 
     Items.set({"id": item.id}, {
         "name": new_name,
-        "address_line_1": address.line_1,
-        "address_line_2": address.line_2,
-        "address_country": address.country,
-        "address_zip": address.zip,
+        "address_lat": address.lat,
+        "address_lng": address.lng
     })
 
-    messages = ["Your edit requests have been received. Thanks!"]
-    response = make_response({"messages": messages}, 200)
+    message = "Your edit requests have been received. Thanks!"
+    response = make_response({"message": message}, 200)
     return response

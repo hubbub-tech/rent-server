@@ -26,22 +26,18 @@ def register():
             "password": request.json["user"]["password"],
             "name": f"{last_name}+{first_name}",
             "phone": request.json["user"]["phone"],
-            "address_line_1": request.json["address"]["lineOne"],
-            "address_line_2": request.json["address"]["lineTwo"],
-            "address_country": request.json["address"]["country"],
-            "address_zip": request.json["address"]["zip"],
+            "address_lat": request.json["address"]["lat"],
+            "address_lng": request.json["address"]["lng"],
             "bio": "I love Hubbub!",
             "profile_pic": False,
             "is_blocked": False
         }
 
+        formatted_address = request.json["address"]["formatted"]
+
         address_data = {
-            "line_1": request.json["address"]["lineOne"],
-            "line_2": request.json["address"]["lineTwo"],
-            "city": request.json["address"]["city"],
-            "state": request.json["address"]["state"],
-            "country": request.json["address"]["country"],
-            "zip": request.json["address"]["zip"]
+            "lat": request.json["address"]["lat"],
+            "lng": request.json["address"]["lng"]
         }
     except KeyError:
         errors = ["Missing data to complete your sign up! Please, try again."]

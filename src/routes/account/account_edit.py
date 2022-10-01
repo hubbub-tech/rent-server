@@ -51,13 +51,11 @@ def edit_password():
 def edit_address():
 
     try:
+        formatted_address = request.json["formatted"]
+
         new_address_data = {
-            "line_1": request.json["newLineOne"],
-            "line_2": request.json["newLineTwo"],
-            "city": request.json["newCity"],
-            "state": request.json["newState"],
-            "country": request.json["newCountry"],
-            "zip": request.json["newZip"]
+            "lat": request.json["lat"],
+            "lng": request.json["lng"]
         }
     except KeyError:
         errors = ["Sorry, did not receive your new address updates. Please, try again."]
@@ -69,13 +67,12 @@ def edit_address():
         response = make_response({ "messages": errors }, 500)
         return response
 
+    # NOTE: parse address before creation...
     new_address = create_address(new_address_data)
 
     Users.set({"id": g.user_id}, {
-        "address_line_1": new_address.line_1,
-        "address_line_2": new_address.line_2,
-        "address_country": new_address.country,
-        "address_zip": new_address.zip,
+        "address_lat": new_address.lat,
+        "address_lng": new_address.lng
     })
 
     messages = ["Successfully changed your address!"]

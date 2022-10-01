@@ -134,7 +134,7 @@ def get_task_update_table(task, chosen_time):
             </tr>
             <tr>
                 <td>{task['type'].capitalize()} Address</td>
-                <td>{task['address']['line_1']} {task['address']['line_2']}, {task['address']['city']} {task['address']['state']}, {task['address']['zip']}</td>
+                <td>{task['address']['formatted']}</td>
             </tr>
             <tr>
                 <td>Item(s)</td>

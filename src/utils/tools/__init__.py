@@ -28,4 +28,5 @@ from .worker_tasks import set_async_timeout
 from .auth import login_required, login_user
 from .auth import gen_token, verify_token
 
-from .deliveries import schedule_deliveries
+from .deliveries import attach_timeslots
+from .deliveries import get_nearest_storage

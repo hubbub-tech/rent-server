@@ -20,8 +20,8 @@ def view_item(item_id):
     item = Items.get({"id": item_id})
 
     if item is None:
-        errors = ["This item does not exist at the moment."]
-        response = make_response({"messages": errors}, 404)
+        error = "This item does not exist at the moment."
+        response = make_response({"message": error}, 404)
         return response
 
     lister = Users.get({"id": item.lister_id})

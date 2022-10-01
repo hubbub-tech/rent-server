@@ -31,10 +31,8 @@ class Items(Models):
         self.dim_unit = attrs["dim_unit"]
         self.lister_id = attrs["lister_id"]
 
-        self.address_line_1 = attrs["address_line_1"]
-        self.address_line_2 = attrs["address_line_2"]
-        self.address_country = attrs["address_country"]
-        self.address_zip = attrs["address_zip"]
+        self.address_lat = attrs["address_lat"]
+        self.address_lng = attrs["address_lng"]
 
 
     def lock(self, user):
@@ -116,10 +114,8 @@ class Items(Models):
 
     def to_query_address(self):
         query_address = {
-            "line_1": self.address_line_1,
-            "line_2": self.address_line_2,
-            "country": self.address_country,
-            "zip": self.address_zip
+            "lat": self.address_lat,
+            "lng": self.address_lng
         }
 
         return query_address

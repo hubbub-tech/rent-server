@@ -22,8 +22,8 @@ def login_required(view):
         is_authorized = verify_token(session_key_hashed, user.session_key)
 
         if is_authorized == False:
-            errors = ["Sorry, you're not authorized for this page."]
-            response = make_response({ "messages": errors }, 403)
+            error = "Sorry, you're not authorized for this page."
+            response = make_response({ "message": error }, 403)
             return response
 
         g.user_id = user.id
@@ -37,7 +37,7 @@ def login_user(user):
 
     status = Status()
     status.is_successful = True
-    status.messages.append("Welcome back!")
+    status.message = "Welcome back!"
     return status
 
 

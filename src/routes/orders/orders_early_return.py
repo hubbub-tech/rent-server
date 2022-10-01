@@ -25,13 +25,13 @@ def orders_early_return():
         order_id = request.json["orderId"]
         early_dt_end_json = request.json["dtEnded"]
     except KeyError:
-        errors = ["Please submit an early return date for your order."]
-        response = make_response({"messages": errors}, 401)
+        error = "Please submit an early return date for your order."
+        response = make_response({"message": error}, 401)
         return response
     except Exception as e:
-        errors = ["Something went wrong. Please, try again."]
+        error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "messages": errors }, 500)
+        response = make_response({ "message": error }, 500)
         return response
 
     order = Orders.get({"id": order_id})
@@ -53,10 +53,10 @@ def orders_early_return():
         email_data = get_early_return_email(order, early_reservation)
         send_async_email.apply_async(kwargs=email_data.to_dict())
 
-        response = make_response({ "messages": status.messages }, 200)
+        response = make_response({ "messag": status.messag }, 200)
         return response
     else:
-        response = make_response({ "messages": status.messages }, 401)
+        response = make_response({ "messag": status.messag }, 401)
         return response
 
 
@@ -70,13 +70,13 @@ def extensions_early_return():
         res_dt_start_json = request.json["dtStarted"]
         early_dt_end_json = request.json["dtEnded"]
     except KeyError:
-        errors = ["Please submit an early return date for your order."]
-        response = make_response({"messages": errors}, 401)
+        error = "Please submit an early return date for your order."
+        response = make_response({"message": error}, 401)
         return response
     except Exception as e:
-        errors = ["Something went wrong. Please, try again."]
+        error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "messages": errors }, 500)
+        response = make_response({ "message": error }, 500)
         return response
 
     print(res_dt_start_json)
@@ -100,8 +100,8 @@ def extensions_early_return():
         email_data = get_early_return_email(extension, early_reservation)
         send_async_email.apply_async(kwargs=email_data.to_dict())
 
-        response = make_response({ "messages": status.messages }, 200)
+        response = make_response({ "message": status.message }, 200)
         return response
     else:
-        response = make_response({ "messages": status.messages }, 200)
+        response = make_response({ "message": status.message }, 200)
         return response

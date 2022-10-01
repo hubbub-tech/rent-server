@@ -46,7 +46,7 @@ def lock_cart(cart: Carts):
 
             status = Status()
             status.is_successful = False
-            status.messages.append(f"Your {item.name} was not ready for checkout.")
+            status.message = f"Your {item.name} was not ready for checkout."
             return status
 
         item_calendar = Calendars.get({"id": item.id})
@@ -60,12 +60,12 @@ def lock_cart(cart: Carts):
 
             status = Status()
             status.is_successful = False
-            status.messages.append(f"Seems like someone got to the {item.name} before you. Check your rental period.")
+            status.message = f"Seems like someone got to the {item.name} before you. Check your rental period."
             return status
 
     status = Status()
     status.is_successful = True
-    status.messages.append("All items in cart have been locked successfully.")
+    status.message = "All items in cart have been locked successfully."
     return status
 
 
@@ -187,19 +187,19 @@ def _validate_early_return(txn, early_reservation):
     if early_reservation.dt_ended > txn.res_dt_end:
         status = Status()
         status.is_successful = False
-        status.messages.append("Early returns must be earlier than the current return date.")
+        status.message = "Early returns must be earlier than the current return date."
         return status
 
     if early_reservation.item_id != txn.item_id:
         status = Status()
         status.is_successful = False
-        status.messages.append("The reservation is not tied to the same item as the original order.")
+        status.message = "The reservation is not tied to the same item as the original order."
         return status
 
     if early_reservation.renter_id != txn.renter_id:
         status = Status()
         status.is_successful = False
-        status.messages.append("The reservation is not tied to the same renter.")
+        status.message = "The reservation is not tied to the same renter."
         return status
 
     status = Status()
@@ -256,11 +256,11 @@ def _safe_early_return(txn, item, user, early_reservation):
 
         status = Status()
         status.is_successful = True
-        status.messages.append("The early return process succeeded!")
+        status.message = "The early return process succeeded!"
         return status
 
     else:
         status = Status()
         status.is_successful = False
-        status.messages.append("Someone else is processing the item right now. Try again in a few minutes.")
+        status.message = "Someone else is processing the item right now. Try again in a few minutes."
         return status

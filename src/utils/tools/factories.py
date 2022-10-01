@@ -89,7 +89,7 @@ def create_extension(insert_data):
 def create_order(insert_data):
     new_order = Orders.insert(insert_data)
 
-    renter = Users.get({"id": new_order.renter_id})
+    renter = Users.get({ "id": new_order.renter_id })
     renter.add_role(role="renters")
     return new_order
 

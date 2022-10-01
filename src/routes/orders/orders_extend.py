@@ -35,13 +35,13 @@ def validate_extend_order():
     user = Users.get({"id": g.user_id})
 
     if order is None:
-        errors = ["We could not find the rental you're looking for."]
-        response = make_response({"messages": errors}, 404)
+        error = "We could not find the rental you're looking for."
+        response = make_response({"message": error}, 404)
         return response
 
     if order.renter_id != g.user_id:
-        errors = ["You're not authorized to extend this rental."]
-        response = make_response({"messages": errors}, 403)
+        error = "You're not authorized to extend this rental."
+        response = make_response({"message": error}, 403)
         return response
 
     item = Items.get({"id": order.item_id})
@@ -58,8 +58,8 @@ def validate_extend_order():
     reservation = create_reservation(reservation_data)
 
     if status.is_successful == False:
-        errors = status.messages
-        response = make_response({ "messages": errors }, 401)
+        error = status.message
+        response = make_response({ "message": error }, 401)
         return response
 
     if item.is_locked == False:
@@ -68,8 +68,8 @@ def validate_extend_order():
         timeout_clock = datetime.now(tz=pytz.UTC) + timedelta(minutes=30)
         set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": user.id})
     else:
-        errors = ["Sorry seems like someone else is ordering this item. Try again in a few minutes."]
-        response = make_response({"messages": errors}, 403)
+        error = "Sorry seems like someone else is ordering this item. Try again in a few minutes."
+        response = make_response({"message": error}, 403)
         return response
 
     Reservations.set(reservation_data, {"is_extension": True})
@@ -77,11 +77,10 @@ def validate_extend_order():
 
     checkout_session = get_stripe_extension_session(reservation, g.user_email)
 
-    print("preflight check~~")
     res_to_dict = reservation.to_dict()
 
     data = {
-        "messages": ["Thank you! Now waiting on next steps to complete your order..."],
+        "message": "Thank you! Now waiting on next steps to complete your order...",
         "order_id": order_id,
         "ext_dt_end": new_ext_dt_end_json,
         "redirect_url": checkout_session.url
@@ -102,13 +101,13 @@ def extend_order():
 
     order = Orders.get({"id": order_id})
     if order is None:
-        errors = ["We could not find the rental you're looking for."]
-        response = make_response({"messages": errors}, 404)
+        error = "We could not find the rental you're looking for."
+        response = make_response({"message": error}, 404)
         return response
 
     if order.renter_id != g.user_id:
-        errors = ["You're not authorized to view this receipt."]
-        response = make_response({"messages": errors}, 403)
+        error = "You're not authorized to view this receipt."
+        response = make_response({"message": error}, 403)
         return response
 
     reservation = Reservations.get({
@@ -124,8 +123,8 @@ def extend_order():
     if reservation is None:
         if item.locker_id == g.user_id:
             item.unlock()
-        errors = [f"Could not find the requested extension. Please contact us at {'hello@hubbub.shop'}."]
-        response = make_response({"messages": errors}, 404)
+        error = f"Could not find the requested extension. Please contact us at {'hello@hubbub.shop'}."
+        response = make_response({"message": error}, 404)
         return response
 
     if item.is_locked and item.locker_id == g.user_id:
@@ -141,8 +140,8 @@ def extend_order():
         extension = create_extension(extension_data)
         item.unlock()
     else:
-        errors = ["Looks like someone else got to this one before you."]
-        response = make_response({"messages": errors}, 403)
+        error = "Looks like someone else got to this one before you."
+        response = make_response({"message": error}, 403)
         return response
 
     email_data = get_lister_receipt_email(extension) # WARNING
@@ -151,8 +150,8 @@ def extend_order():
     email_data = get_extension_receipt_email(extension)
     send_async_email.apply_async(kwargs=email_data.to_dict())
 
-    messages = ["Successfully extended your order!"]
-    response = make_response({"messages": messages}, 200)
+    message = "Successfully extended your order!"
+    response = make_response({"message": message}, 200)
     return response
 
 
@@ -164,5 +163,5 @@ def cancel_extend_order():
     for item in items:
         item.unlock()
 
-    response = make_response({ "messages": ["Your extension was canceled."] }, 200)
+    response = make_response({ "message": "Your extension was canceled." }, 200)
     return response

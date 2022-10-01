@@ -22,13 +22,13 @@ def download_receipt():
     order = Orders.get({"id": order_id})
 
     if order is None:
-        errors = ["We could not find the rental you're looking for."]
-        response = make_response({"messages": errors}, 404)
+        error = "We could not find the rental you're looking for."
+        response = make_response({"message": error}, 404)
         return response
 
     if order.renter_id != g.user_id:
-        errors = ["You're not authorized to view this receipt."]
-        response = make_response({"messages": errors}, 403)
+        error = "You're not authorized to view this receipt."
+        response = make_response({"message": error}, 403)
         return response
 
     receipt = get_receipt(order)
@@ -56,8 +56,8 @@ def get_orders_by_date():
     try:
         pass
     except:
-        errors = ["No start or end date was provided to look up orders."]
-        response = make_response({"messages": errors}, 401)
+        error = "No start or end date was provided to look up orders."
+        response = make_response({"message": error}, 401)
         return response
 
     orders_to_dict = []

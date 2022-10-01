@@ -26,19 +26,15 @@ def list_item():
             "dim_width": request.json["item"].get("width"),
             "manufacturer_id": request.json["item"].get("manufacturerId"),
             "lister_id": g.user_id,
-            "address_line_1": None,
-            "address_line_2": None,
-            "address_country": None,
-            "address_zip": None
+            "address_lat": None,
+            "address_lng": None
         }
 
+        address_formatted = request.json["address"]["formatted"]
+
         address_data = {
-            "line_1": request.json["address"]["lineOne"],
-            "line_2": request.json["address"]["lineTwo"],
-            "city": request.json["address"]["city"],
-            "state": request.json["address"]["state"],
-            "country": request.json["address"]["country"],
-            "zip": request.json["address"]["zip"]
+            "lat": request.json["address"]["lat"],
+            "lng": request.json["address"]["lng"]
         }
 
         calendar_data = {
@@ -50,13 +46,13 @@ def list_item():
         is_from_lister_address = strtobool(request.json["isDefaultAddress"])
 
     except KeyError:
-        errors = ["Missing data to complete your listing! Please, try again."]
-        response = make_response({ "messages": errors }, 401)
+        error = "Missing data to complete your listing! Please, try again."
+        response = make_response({ "message": error }, 401)
         return response
     except Exception as e:
-        errors = ["Something went wrong. Please, try again."]
+        error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "messages": errors }, 500)
+        response = make_response({ "message": error }, 500)
         return response
 
     status = validate_date_range(
@@ -65,8 +61,8 @@ def list_item():
     )
 
     if not status.is_successful:
-        errors = status.messages
-        response = make_response({ "messages": errors }, 403)
+        errors = status.message
+        response = make_response({ "message": error }, 403)
         return response
 
     address = create_address(address_data)
@@ -74,7 +70,7 @@ def list_item():
     email_data = get_successful_listing_email(new_item)
     send_async_email.apply_async(kwargs=email_data.to_dict())
 
-    messages = ["Thanks for listing on Hubbub!"]
+    message = "Thanks for listing on Hubbub!"
 
-    response = make_response({ "messages": messages }, 200)
+    response = make_response({ "message": message }, 200)
     return response

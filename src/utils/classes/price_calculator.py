@@ -3,7 +3,7 @@ from math import log
 class PriceCalculator:
 
     def __init__(self, discount_rate=.50, days_to_floor=28):
-        self.base_percent = .10
+        self.base_percent = 10
         self.discount_rate = discount_rate
         self.days_to_floor = days_to_floor
 
@@ -27,8 +27,8 @@ class PriceCalculator:
 
         """
 
-        base_price = retail_price * self.base_percent
-        compound_price = retail_price * (1 - self.base_percent)
+        base_price = retail_price / self.base_percent
+        compound_price = retail_price / (100 - self.base_percent)
 
         if duration > 180: self.days_to_floor *= 2
 

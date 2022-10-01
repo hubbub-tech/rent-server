@@ -28,5 +28,5 @@ def checkout_webhook():
     if event['type'] == 'checkout.session.completed':
       checkout_session = event['data']['object']
 
-    response = make_response({ 'messages': ["Created charge."] }, 200)
+    response = make_response({ 'message': "Created a charge." }, 200)
     return response

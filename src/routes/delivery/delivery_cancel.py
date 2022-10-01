@@ -17,18 +17,18 @@ def cancel_delivery():
     logsitics = Logistics.get({"id": logistics_id})
 
     if logsitics is None:
-        errors = ["Sorry, we could not find this delivery. Please, try again."]
-        response = make_response({ "messages": errors }, 404)
+        error = "Sorry, we could not find this delivery. Please, try again."
+        response = make_response({ "message": error }, 404)
         return response
 
     if logsitics.receiver_id != g.user_id and logsitics.sender_id != g.user_id:
-        errors = ["Sorry, you are not authorized to delete this delivery. Contact us if this seems wrong."]
-        response = make_response({ "messages": errors }, 403)
+        error = "Sorry, you are not authorized to delete this delivery. Contact us if this seems wrong."
+        response = make_response({ "message": error }, 403)
         return response
 
     if logsitics.is_canceled:
-        errors = ["Your delivery has been cancelled!"]
-        response = make_response({ "messages": errors }, 403)
+        error = "Your delivery has been cancelled!"
+        response = make_response({ "message": error }, 403)
         return response
 
     courier_ids = logsitics.get_courier_ids()
@@ -54,6 +54,6 @@ def cancel_delivery():
     to_addr = Addresses.get(to_addr_pkeys)
     from_addr = Addresses.get(from_addr_pkeys)
 
-    messages = [f"Your delivery from {from_addr.to_str()} to {to_addr.to_str()} has been cancelled."]
-    response = make_response({"messages": messages}, 200)
+    message = f"Your delivery from {from_addr.to_str()} to {to_addr.to_str()} has been cancelled."
+    response = make_response({"message": message}, 200)
     return response

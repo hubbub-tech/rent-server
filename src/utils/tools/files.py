@@ -48,7 +48,7 @@ def get_receipt(order):
             dropoff_text = f"""
                 \n
                 * Dropoff date: {dropoff.dt_received.strftime('%Y-%m-%d')}\n
-                * Dropoff address: {to_address.display()}\n
+                * Dropoff address: {to_address.formatted}\n
                 """
         else:
             dropoff_text = "* Dropoff has been scheduled.\n"
@@ -65,7 +65,7 @@ def get_receipt(order):
             pickup_text = f"""
                 \n
                 * Pickup date: {pickup.dt_sent.strftime('%Y-%m-%d')}\n
-                * Pickup address: {from_address.display()}\n
+                * Pickup address: {from_address.formatted}\n
                 """
         else:
             pickup_text = "* Pickup has been scheduled.\n"

@@ -39,28 +39,28 @@ def validate_checkout():
     txn_method = request.json["txnMethod"]
 
     if user_cart.checkout_session_key != checkout_session_key:
-        errors = ["Your cart is not prepared for checkout."]
-        response = make_response({"messages": errors}, 401)
+        error = "Your cart is not prepared for checkout."
+        response = make_response({ "message": error }, 401)
         return response
 
     reserved_items = user_cart.get_item_ids(reserved_only=True)
     if len(reserved_items) != len(user_cart):
-        errors = ["Your cart is not prepared for checkout."]
-        response = make_response({"messages": errors}, 401)
+        error = "Your cart is not prepared for checkout."
+        response = make_response({ "message": error }, 401)
         return response
 
     status = lock_cart(user_cart)
     if status.is_successful == False:
-        errors = status.messages
-        response = make_response({"messages": errors}, 401)
+        errors = status.message
+        response = make_response({ "message": error }, 401)
         return response
 
     timeout_clock = datetime.now(tz=pytz.UTC) + timedelta(minutes=30)
     set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": user_cart.id})
 
     if txn_method == "in-person":
-        messages = ["Thank you! Now waiting on next steps to complete your order..."]
-        response = make_response({ "messages": messages }, 200)
+        message = "Thank you! Now waiting on next steps to complete your order..."
+        response = make_response({ "message": message }, 200)
         return response
     else:
         checkout_session = get_stripe_checkout_session(user_cart, g.user_email)
@@ -119,7 +119,7 @@ def checkout():
     email_data = get_renter_receipt_email(orders)
     send_async_email.apply_async(kwargs=email_data.to_dict())
 
-    response = make_response({ "messages": ["Success!"] }, 200)
+    response = make_response({ "message": "Success!" }, 200)
     return response
 
 
@@ -133,5 +133,5 @@ def cancel_checkout():
 
     unlock_cart(user_cart)
 
-    response = make_response({ "messages": ["Your order was cancel."] }, 200)
+    response = make_response({ "message": "Your order was cancelled." }, 200)
     return response

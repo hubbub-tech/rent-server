@@ -33,8 +33,8 @@ def orders_history():
 
 
     if orders == []:
-        errors = ["No orders yet. Check out our shop and rent!"]
-        response = make_response({"messages": errors}, 200)
+        error = "No orders yet. Check out our shop and rent!"
+        response = make_response({"message": error}, 200)
         return response
 
     orders_to_dict = []
