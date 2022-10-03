@@ -1,6 +1,9 @@
 from flask import Blueprint, make_response, request, g
 
 from src.models import Orders
+from src.models import Items
+from src.models import Addresses
+from src.models import Logistics
 
 from src.utils import create_address
 from src.utils import create_logistics
@@ -76,7 +79,7 @@ def schedule_dropoff():
             logistics = create_logistics(logistics_data)
             date_event = order.res_dt_start.date()
 
-            status = attach_timeslots(logistics, timeslots, date_event)
+            status = attach_timeslots(order_ids, logistics, timeslots, date_event)
 
             if status.is_successful:
                 email_data = get_dropoff_request_email(logistics)
@@ -154,7 +157,7 @@ def schedule_pickup():
             logistics = create_logistics(logistics_data)
             date_event = order.res_dt_start.date()
 
-            status = attach_timeslots(logistics, timeslots, date_event)
+            status = attach_timeslots(order_ids, logistics, timeslots, date_event)
 
             if status.is_successful:
                 email_data = get_pickup_request_email(logistics)

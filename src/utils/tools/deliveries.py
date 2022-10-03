@@ -9,7 +9,7 @@ STORAGES = [
     (40.7274061, -74.00605), # 175 Varick St, New York, NY 10014
 ]
 
-def attach_timeslots(logistics: Logistics, timeslots: list, date_event: date):
+def attach_timeslots(order_ids: list, logistics: Logistics, timeslots: list, date_event: date):
 
     for order_id in order_ids:
         logistics.add_order(order_id)

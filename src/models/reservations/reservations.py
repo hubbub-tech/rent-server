@@ -39,6 +39,8 @@ class Reservations(Models):
                 cursor.execute(SQL, data)
                 order_id = cursor.fetchone()
 
+                if order_id: order_id = order_id[0]
+
             assert order_id, "Reservation is not pointing to an order."
 
             SQL = """

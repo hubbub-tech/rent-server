@@ -4,6 +4,7 @@ from flask import Blueprint, make_response, request, g
 from src.models import Users
 from src.models import Items
 from src.models import Orders
+from src.models import Extensions
 from src.models import Addresses
 
 from src.utils import get_receipt
@@ -76,18 +77,25 @@ def get_orders_by_date():
         orders = Orders.filter({"renter_id": g.user_id, "res_dt_end": dt_ended})
 
         for order in orders:
-            item = Items.get({"id": order.item_id})
+            if order.res_dt_end == order.ext_dt_end:
+                item = Items.get({"id": order.item_id})
 
-            order_to_dict = order.to_dict()
-            order_to_dict["item_name"] = item.name
-            orders_to_dict.append(order_to_dict)
+                order_to_dict = order.to_dict()
+                order_to_dict["item_name"] = item.name
+                order_to_dict["item_description"] = item.description
+                orders_to_dict.append(order_to_dict)
 
-    user = Users.get({"id": g.user_id})
-    address_pkeys = user.to_query_address()
+        extensions = Extensions.filter({ "renter_id": g.user_id, "res_dt_end": dt_ended })
+        for extension in extensions:
+            order = Orders.get({ "id": extension.order_id })
+            if order.ext_dt_end == extension.res_dt_end:
+                item = Items.get({"id": order.item_id})
 
-    address = Addresses.get(address_pkeys)
-    address_to_dict = address.to_dict()
+                order_to_dict = order.to_dict()
+                order_to_dict["item_name"] = item.name
+                order_to_dict["item_description"] = item.description
+                orders_to_dict.append(order_to_dict)
 
-    data = { "orders": orders_to_dict, "address": address_to_dict }
+    data = { "orders": orders_to_dict }
     response = make_response(data, 200)
     return response

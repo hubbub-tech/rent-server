@@ -101,8 +101,11 @@ class Orders(Models):
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            return cursor.fetchone()
+            dropoff_id = cursor.fetchone()
 
+            if dropoff_id: dropoff_id = dropoff_id[0]
+
+        return dropoff_id
 
     def get_pickup_id(self):
         SQL = """
@@ -117,7 +120,11 @@ class Orders(Models):
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            return cursor.fetchone()
+            pickup_id = cursor.fetchone()
+
+            if pickup_id: pickup_id = pickup_id[0]
+
+        return pickup_id
 
 
     def get_promos(self):

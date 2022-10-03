@@ -60,6 +60,8 @@ class Logistics(Models):
             order_ids = cursor.fetchall()
             order_ids = [order_id for order_t in order_ids for order_id in order_t]
 
+        return order_ids
+
 
     def get_courier_ids(self):
         SQL = """
@@ -72,7 +74,10 @@ class Logistics(Models):
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            return cursor.fetchall()
+            courier_ids = cursor.fetchall()
+            courier_ids = [courier_id for courier_t in courier_ids for courier_id in courier_t]
+
+        return courier_ids
 
 
     def confirm_sent(self):
@@ -112,10 +117,16 @@ class Logistics(Models):
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            return cursor.fetchone()
+            dt_eta = cursor.fetchone()
+
+            if dt_eta: dt_eta = dt_eta[0]
+
+        return dt_eta
 
 
     def add_order(self, order_id: int):
+        order_ids = self.get_order_ids()
+        if order_id in order_ids: return
 
         SQL = """
             INSERT
@@ -132,6 +143,9 @@ class Logistics(Models):
 
     def remove_order(self, order_id: int):
         # We want both of these commands to succeed or fail together
+        order_ids = self.get_order_ids()
+        if order_id not in order_ids: return
+
         SQL = """
             DELETE
             FROM order_logistics
@@ -145,6 +159,8 @@ class Logistics(Models):
 
 
     def add_courier(self, courier_id: int):
+        courier_ids = self.get_courier_ids()
+        if courier_id in courier_ids: return
 
         SQL = """
             INSERT
@@ -161,6 +177,9 @@ class Logistics(Models):
 
     def remove_courier(self, courier_id: int):
         # We want both of these commands to succeed or fail together
+        courier_ids = self.get_courier_ids()
+        if courier_id not in courier_ids: return
+
         SQL = """
             DELETE
             FROM logistics_couriers

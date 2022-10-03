@@ -15,7 +15,10 @@ from src.utils.settings import DEPOSIT, TAX, DISCOUNT
 
 
 def create_address(insert_data):
-    address = Addresses.unique(insert_data)
+    address = Addresses.get({
+        "lat": insert_data["lat"],
+        "lng": insert_data["lng"]
+    })
     if address is None:
         address = Addresses.insert(insert_data)
 
@@ -95,7 +98,11 @@ def create_order(insert_data):
 
 
 def create_logistics(insert_data):
-    logistics = Logistics.insert(insert_data)
+    logistics = Logistics.unique(insert_data)
+    print(insert_data)
+    if logistics is None:
+        logistics = Logistics.insert(insert_data)
+    print(logistics)
     return logistics
 
 

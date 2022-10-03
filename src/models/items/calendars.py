@@ -235,4 +235,6 @@ class Calendars(Models):
             cursor.execute(SQL, data)
             result = cursor.fetchone()
 
-        return result[0]
+            count = result[0]
+
+        return count
