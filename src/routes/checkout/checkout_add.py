@@ -121,7 +121,7 @@ def add():
         user_cart.add_without_reservation(item)
 
         error = status.message
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, 402)
         return response
 
     user_cart.add(reservation)

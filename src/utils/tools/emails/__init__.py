@@ -6,6 +6,7 @@ from .delivery_dropoff_request import get_dropoff_request_email, get_dropoff_err
 from .delivery_pickup_request import get_pickup_request_email, get_pickup_error_email
 from .edit_dropoff_request import get_edit_dropoff_request_email
 from .edit_pickup_request import get_edit_pickup_request_email
+from .items_expiration_notice import get_item_expiration_email
 from .list_new_item import get_new_listing_email
 from .main_newsletter_signup import get_newsletter_welcome
 from .orders_cancel_confirm import get_cancellation_email

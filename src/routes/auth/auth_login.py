@@ -5,7 +5,6 @@ from src.models import Users
 from src.utils import validate_login
 from src.utils import gen_token
 from src.utils import login_user
-from src.utils import login_required
 
 bp = Blueprint('login', __name__)
 
@@ -16,21 +15,21 @@ def login():
         email = request.json["email"].lower()
         password = request.json["password"]
     except KeyError:
-        errors = ["Please submit a username and password to log in."]
-        response = make_response({ "messages": errors }, 401)
+        error = "Please submit a username and password to log in."
+        response = make_response({ "message": error }, 401)
         return response
     except Exception as e:
-        errors = ["Something went wrong. Please, try again."]
+        error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "messages": errors }, 500)
+        response = make_response({ "message": error }, 500)
         return response
 
     form_data = { "email": email, "password": password }
     status = validate_login(form_data)
 
     if status.is_successful == False:
-        errors = form_check["messages"]
-        response = make_response({ "messages": errors }, 403)
+        error = status.message
+        response = make_response({ "message": error }, 403)
         return response
 
     user = Users.unique({"email": email})
@@ -41,15 +40,15 @@ def login():
         Users.set({"id": user.id}, {"session_key": session_key["unhashed"]})
 
         data = {
-            "userId": user.id,
-            "messages": ["Welcome back!"],
-            "sessionToken": session_key["hashed"]
+            "user_id": user.id,
+            "message": "Welcome back!",
+            "session_token": session_key["hashed"]
         }
         response = make_response(data, 200)
         return response
     else:
-        errors = login_status["messages"]
-        response = make_response({ "messages": errors }, 403)
+        error = status.message
+        response = make_response({ "message": error }, 403)
         return response
 
 

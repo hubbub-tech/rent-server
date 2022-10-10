@@ -52,6 +52,35 @@ class AWSS3Config:
         url = "/".join([AWSS3Config.S3_LINK, dir])
         return url
 
+
+class GCloudConfig:
+    _instance = None
+
+    def __init__(self):
+        if GCloudConfig._instance:
+            raise Exception("GCloud has already been created in this session.")
+        else:
+            GCloudConfig.STORAGE_BUCKETS = {
+                "items": "shop-items"
+            }
+            GCloudConfig.PROJECT = "hubbub-assets"
+            GCloudConfig.ACCESS_CREDENTIALS = os.getenv("GCLOUD_ACCESS_CREDENTIALS")
+            GCloudConfig._instance = self
+
+
+    @staticmethod
+    def get_instance():
+        if GCloudConfig._instance is None:
+            GCloudConfig()
+        return GCloudConfig._instance
+
+
+class CaptchaConfig:
+    #ReCaptcha
+    ReCAPTCHA_SERVER_API_KEY = os.environ['ReCAPTCHA_SERVER_API_KEY']
+    ReCAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
+
+
 class SMTPConfig:
     _instance = None
     DEFAULT_SENDER = None
@@ -89,8 +118,6 @@ class FlaskConfig:
     CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
     BROKER_POOL_LIMIT = 1
 
-    #ReCaptcha
-    ReCAPTCHA_SERVER_API_KEY= os.environ['ReCAPTCHA_SERVER_API_KEY']
 
 class TestFlaskConfig:
 

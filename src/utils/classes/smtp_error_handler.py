@@ -4,7 +4,7 @@ from logging.handlers import SMTPHandler
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
 
 class SGSMTPHandler(SMTPHandler):
 
@@ -17,7 +17,7 @@ class SGSMTPHandler(SMTPHandler):
             html_content=self.format(record)
         )
         try:
-            sg = SendGridAPIClient(SMTP.SENDGRID_API_KEY)
+            sg = SendGridAPIClient(smtp_config.SENDGRID_API_KEY)
             response = sg.send(msg)
         except (KeyboardInterrupt, SystemExit):
             raise
@@ -27,8 +27,8 @@ class SGSMTPHandler(SMTPHandler):
 def build_mail_handler():
     mail_handler = SGSMTPHandler(
         mailhost='smtp.sendgrid.net',
-        fromaddr=SMTP.DEFAULT_SENDER,
-        toaddrs=[SMTP.DEFAULT_RECEIVER, SMTP.DEFAULT_ADMIN],
+        fromaddr=smtp_config.DEFAULT_SENDER,
+        toaddrs=[smtp_config.DEFAULT_RECEIVER, smtp_config.DEFAULT_ADMIN],
         subject='Hubbub Server Error'
     )
     mail_handler.setLevel(logging.WARNING)

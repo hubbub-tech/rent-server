@@ -1,5 +1,6 @@
 from flask import Blueprint, make_response, request, g
 
+from src.models import Users
 from src.models import Orders
 from src.models import Items
 from src.models import Addresses
@@ -90,6 +91,11 @@ def schedule_dropoff():
         attached_order_ids = logistics.get_order_ids()
         if order.id not in attached_order_ids:
             logistics.add_order(order.id)
+
+    Users.set({ "id": g.user_id }, {
+        "address_lat": to_address.lat,
+        "address_lng": to_address.lng
+    })
 
     response = make_response({ "message": "Thanks for scheduling!" }, 200)
     return response

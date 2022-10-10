@@ -19,13 +19,13 @@ def pass_recover():
     try:
         email = request.json["email"].lower()
     except KeyError:
-        errors = ["Sorry, you didn't send anything in the form, try again."]
-        response = make_response({ "messages": errors }, 406)
+        error = "Sorry, you didn't send anything in the form, try again."
+        response = make_response({ "message": error }, 406)
         return response
     except Exception as e:
-        errors = ["Something went wrong. Please, try again."]
+        error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "messages": errors }, 500)
+        response = make_response({ "message": error }, 500)
         return response
 
     user = Users.unique({"email": email})
@@ -42,8 +42,8 @@ def pass_recover():
         email_data = get_password_reset_email(user, reset_link)
         send_async_email.apply_async(kwargs=email_data.to_dict())
 
-    messages = ["If this email has an account, we have sent the recovery link there."]
-    response = make_response({ "messages": messages }, 200)
+    message = "If this email has an account, we have sent the recovery link there."
+    response = make_response({ "message": message }, 200)
     return response
 
 
@@ -56,13 +56,13 @@ def pass_reset():
         email = request.json["email"].lower()
         new_pass = request.json["newPassword"]
     except KeyError:
-        errors = ["Did not receive your charges. Please, try again."]
-        response = make_response({ "messages": errors }, 401)
+        error = "Did not receive your charges. Please, try again."
+        response = make_response({ "message": error }, 401)
         return response
     except Exception:
-        errors = ["Something went wrong. Please, try again."]
+        error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "messages": errors }, 500)
+        response = make_response({ "message": error }, 500)
         return response
 
 
@@ -73,10 +73,10 @@ def pass_reset():
             hashed_pass = generate_password_hash(new_pass)
             Users.set({"id": user.id}, {"password": hashed_pass})
 
-            messages = ["You've successfully reset your password!"]
-            response = make_response({ "messages": messages }, 200)
+            message = "You've successfully reset your password!"
+            response = make_response({ "message": message }, 200)
             return response
 
-    errors = ["Reset attempt failed. Try again."]
-    response = make_response({ "messages": errors}, 403)
+    error = "Reset attempt failed. Try again."
+    response = make_response({ "message": error }, 403)
     return response

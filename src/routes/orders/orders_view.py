@@ -10,7 +10,6 @@ from src.models import Reservations
 
 from src.utils import login_required
 
-from src.utils.settings import AWS
 from src.utils.classes import Recommender
 
 bp = Blueprint("view", __name__)

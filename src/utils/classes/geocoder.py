@@ -36,3 +36,23 @@ class Geocoder:
 
         formatted_address = data["results"][0]["formatted_address"]
         return formatted_address
+
+
+    def get_zip_code(self, lat, lng):
+        params = {
+            "apikey": self.apikey,
+            "latlng": f"{lat},{lng}"
+        }
+        res = requests.get(self.geocode_url, params=params)
+        data = res.json()
+
+        results = data.get("results")
+        if results:
+            try:
+                zip_code = results[0]["components"]["postal_code"]
+            except:
+                # LOGGING: record error
+                zip_code = None
+        else:
+            zip_code = None
+        return zip_code

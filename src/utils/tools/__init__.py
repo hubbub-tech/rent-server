@@ -24,9 +24,15 @@ from .files import get_receipt
 
 from .worker_tasks import send_async_email
 from .worker_tasks import set_async_timeout
+from .worker_tasks import upload_file_async
 
-from .auth import login_required, login_user
+from .auth import login_required, login_optional, login_user
 from .auth import gen_token, verify_token
 
 from .deliveries import attach_timeslots
 from .deliveries import get_nearest_storage
+
+
+def strip_non_numericals(value: str):
+    assert value, "Must be of type string."
+    return ''.join(e for e in value if e.isalnum())

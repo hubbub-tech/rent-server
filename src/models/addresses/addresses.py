@@ -1,5 +1,8 @@
 from blubber_orm import Models
 
+from src.utils.classes import Geocoder
+from src.utils.settings import GOOGLE_MAPS_API
+
 
 class Addresses(Models):
     """
@@ -17,6 +20,9 @@ class Addresses(Models):
         self.lng = attrs["lng"]
         self.formatted = attrs["formatted"]
         self.description = attrs["description"]
+
+        # Cached attributes
+        self._zip_code = None
 
 
     def to_str(self):
@@ -82,3 +88,10 @@ class Addresses(Models):
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             Models.db.conn.commit()
+
+
+    def get_zip_code(self):
+        if self._zip_code is None:
+            geocoder = Geocoder(apikey=GOOGLE_MAPS_API)
+            self._zip_code = geocoder.get_zip_code(lat=self.lat, lng=self.lng)
+        return self._zip_code

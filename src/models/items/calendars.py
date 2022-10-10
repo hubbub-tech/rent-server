@@ -1,6 +1,8 @@
 from blubber_orm import Models
 from datetime import datetime, timedelta
 
+from src.utils.settings import DAYS_SERVICE_BUFFER
+
 class Calendars(Models):
     """
     A class to define the use of the Calendars type from Hubbub Shop's relational database.
@@ -109,7 +111,7 @@ class Calendars(Models):
                 if res_dt_end <= avail[dt_ended_index]:
                     return True
 
-        if self.dt_ended == datetime.now(): return None
+        if self.dt_ended <= datetime.now(): return None
         else: return False
 
 
@@ -185,16 +187,25 @@ class Calendars(Models):
         dt_started_index = -2
         dt_ended_index = -1
 
-        closest_operating_datetime = datetime.now()
+        dt_closest_operating = datetime.now() + timedelta(days=DAYS_SERVICE_BUFFER)
 
         availabilities = self.get_availabilities(days_buffer=days_buffer, hours_buffer=hours_buffer)
+
+        if availabilities == []: return (None, None)
+
         availabilities.sort(key = lambda res: res[dt_ended_index])
 
         for avail in availabilities:
-            if closest_operating_datetime <= avail[dt_started_index]:
+            if dt_closest_operating <= avail[dt_started_index]:
                 return avail
-        # return (None, None)
-        return availabilities[-1]
+
+        last_avail_index = -1
+        dt_next_avail_end = availabilities[last_avail_index][dt_ended_index]
+
+        if dt_closest_operating < dt_next_avail_end:
+            return (dt_closest_operating, dt_next_avail_end)
+        else:
+            return (None, None)
 
 
     def available_days_in_next(self, days):

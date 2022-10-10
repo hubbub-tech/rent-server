@@ -114,9 +114,6 @@ class Carts(Models):
         cart_items = self.get_item_ids()
         if reservation.item_id in cart_items: return
 
-        print(reservation.item_id)
-        print(cart_items)
-
         SQL = """
             INSERT
             INTO item_carts (cart_id, item_id)

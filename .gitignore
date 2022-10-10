@@ -7,6 +7,7 @@
 .env.test
 
 # python
+keys
 env
 .DS_Store
 __pycache__

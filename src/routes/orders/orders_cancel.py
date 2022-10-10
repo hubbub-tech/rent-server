@@ -54,7 +54,7 @@ def cancel_order():
         else:
             dropoff.remove_order(order.id)
             if dropoff.get_order_ids() == []:
-                Logsitics.set({"id": dropoff.id}, {"is_canceled": True})
+                Logistics.set({"id": dropoff.id}, {"is_canceled": True})
                 # WARNING: what happens if only one order is on the delivery?
 
     if pickup_id:
@@ -66,7 +66,7 @@ def cancel_order():
         else:
             pickup.remove_order(order.id)
             if pickup.get_order_ids() == []:
-                Logsitics.set({"id": pickup.id}, {"is_canceled": True})
+                Logistics.set({"id": pickup.id}, {"is_canceled": True})
                 # WARNING: what happens if only one order is on the delivery?
 
     res_pkeys = order.to_query_reservation()
@@ -130,7 +130,7 @@ def cancel_extension():
         else:
             pickup.remove_order(order.id)
             if pickup.get_order_ids() == []:
-                Logsitics.set({"id": pickup.id}, {"is_canceled": True})
+                Logistics.set({"id": pickup.id}, {"is_canceled": True})
                 # WARNING: what happens if only one order is on the delivery?
 
     reservation.archive(notes="Extension Canceled.")

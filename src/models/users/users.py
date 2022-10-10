@@ -107,3 +107,25 @@ class Users(Models):
             cursor.execute(SQL, data)
 
             Models.db.conn.commit()
+
+
+    def check_role(self, role: str):
+        role = role.lower()
+        valid_roles = Users.get_valid_roles()
+        assert role in valid_roles, f"This is not a valid role. Try: [{', '.join(valid_roles)}]"
+
+        role_id = f"{role[:-1]}_id"
+
+        SQL = f"""
+            SELECT {role_id}
+            FROM {role}
+            WHERE {role_id} = %s;
+            """
+
+        data = (self.id,)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            result = cursor.fetchone()
+
+            return result is not None

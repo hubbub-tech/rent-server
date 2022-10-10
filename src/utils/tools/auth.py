@@ -8,7 +8,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from src.models import Users, Items, Tags
 
 from src.utils.classes import Status
-from src.utils.settings import COOKIE_KEY_SESSION, COOKIE_KEY_USER
 
 
 def login_required(view):
@@ -19,7 +18,10 @@ def login_required(view):
 
         user = Users.get({"id": user_id})
 
-        is_authorized = verify_token(session_key_hashed, user.session_key)
+        if user:
+            is_authorized = verify_token(session_key_hashed, user.session_key)
+        else:
+            is_authorized = False
 
         if is_authorized == False:
             error = "Sorry, you're not authorized for this page."
@@ -33,11 +35,41 @@ def login_required(view):
     return wrapped_view
 
 
+def login_optional(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        user_id = request.cookies.get("userId")
+        session_key_hashed = request.cookies.get("sessionToken")
+
+        user = Users.get({"id": user_id})
+
+        if user:
+            is_authorized = verify_token(session_key_hashed, user.session_key)
+        else:
+            is_authorized = False
+
+        if is_authorized == False:
+            g.user_id = None
+            g.user_email = None
+            g.user_session_key = None
+        else:
+            g.user_id = user.id
+            g.user_email = user.email
+            g.user_session_key = user.session_key
+        return view(**kwargs)
+    return wrapped_view
+
+
 def login_user(user):
 
     status = Status()
-    status.is_successful = True
-    status.message = "Welcome back!"
+
+    if user.is_blocked:
+        status.is_successful = False
+        status.message = "Sorry, your account has been blocked. Contact us at hello@hubbub.shop if this seems wrong."
+    else:
+        status.is_successful = True
+        status.message = "Welcome back!"
     return status
 
 
