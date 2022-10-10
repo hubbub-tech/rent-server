@@ -1,46 +1,31 @@
-from blubber_orm.dev.tools import date_range_generator
+TEST_EMAIL = "jtest@hubbub.shop"
+TEST_PASSWORD = "passw0rd"
 
-MAX_ITEM_ID = 500
+ReCAPTCHA_TEST_TOKEN = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
 
-test_res_date_start, test_res_date_end = date_range_generator()
-TEST_RES_DATE_START = test_res_date_start.strftime("%Y-%m-%d")
-TEST_RES_DATE_END = test_res_date_end.strftime("%Y-%m-%d")
 
-TEST_EMAIL = 'johnny.test@hubbub.shop'
-TEST_PASSWORD = 'HubbubRulez1!'
-TEST_PASSWORD2 = 'HubbubRulez1!'
+class TestAuth:
 
-ReCAPTCHA_TEST_TOKEN = ' 6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
+    def __init__(self):
+        pass
 
-TEST_LOGIN_DATA = {
-    'user': {
-        'email': TEST_EMAIL,
-        'password': TEST_PASSWORD
-    }
-}
+    @staticmethod
+    def get_registration_data():
+        return {
+            "user": {
+                "firstName": "Johnny",
+                "lastName": "Test",
+                "phone": "+1 (111) 111-1111",
+                "email": TEST_EMAIL,
+                "password": TEST_PASSWORD
+            },
+            "recaptchaToken": ReCAPTCHA_TEST_TOKEN
+        }
 
-TEST_REGISTER_DATA = {
-    'user': {
-        'email': 'johnny.to.delete@hubbub.shop',
-        'password': TEST_PASSWORD,
-        'payment': 'NA',
-        'firstName': 'Johnny',
-        'lastName': 'Test'
-    },
-    'profile': {
-        'phone': '1111111111'
-    },
-    'address': {
-        'line_1': '2020 Cherry Hill Way',
-        'line_2': '',
-        'zip': '10000',
-        'city': 'New York',
-        'state': 'NY'
-    },
-    'token': ReCAPTCHA_TEST_TOKEN
-}
 
-TEST_PASS_RESET_DATA = {
-    'email': TEST_EMAIL,
-    'newPassword': TEST_PASSWORD2
-}
+    @staticmethod
+    def get_login_data():
+        return {
+            "email": TEST_EMAIL,
+            "password": TEST_PASSWORD
+        }

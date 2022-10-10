@@ -52,7 +52,7 @@ class AuthActions:
         return response
 
     def logout(self):
-        """No logout server-side; user must prove themselves with cookies"""
+        """No logout server-side; user must prove themselves with each request."""
 
 
 @pytest.fixture
