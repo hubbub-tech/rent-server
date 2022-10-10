@@ -1,11 +1,17 @@
+from datetime import datetime
 from flask import Blueprint, make_response, request, g
 
+from src.models import Users
 
 from src.utils import create_item
 from src.utils import create_address
 
 from src.utils import validate_date_range
 from src.utils import login_required
+
+from src.utils import get_new_listing_email
+from src.utils import send_async_email
+from src.utils import upload_file_async
 
 bp = Blueprint("list", __name__)
 
@@ -19,31 +25,22 @@ def list_item():
             "name": request.json["item"]["name"],
             "retail_price": request.json["item"]["retailPrice"],
             "description": request.json["item"]["description"],
-            "weight": request.json["item"].get("weight"),
-            "weight_unit": request.json["item"].get("weightUnit"),
-            "dim_height": request.json["item"].get("height"),
-            "dim_length": request.json["item"].get("length"),
-            "dim_width": request.json["item"].get("width"),
-            "manufacturer_id": request.json["item"].get("manufacturerId"),
             "lister_id": g.user_id,
             "address_lat": None,
-            "address_lng": None
+            "address_lng": None,
         }
-
-        address_formatted = request.json["address"]["formatted"]
 
         address_data = {
             "lat": request.json["address"]["lat"],
-            "lng": request.json["address"]["lng"]
+            "lng": request.json["address"]["lng"],
+            "formatted": request.json["address"]["formatted"],
         }
 
-        calendar_data = {
-            "dt_started": request.json["calendar"]["dtStarted"],
-            "dt_ended": request.json["calendar"]["dtEnded"]
-        }
+        dt_started_json = request.json["calendar"]["dtStarted"]
+        dt_ended_json = request.json["calendar"]["dtEnded"]
 
-        tags = ["all"] + request.json.get("tags").split()
-        is_from_lister_address = strtobool(request.json["isDefaultAddress"])
+        image_base64s = request.json["imageBase64s"]
+        tags = ["all"]
 
     except KeyError:
         error = "Missing data to complete your listing! Please, try again."
@@ -53,6 +50,17 @@ def list_item():
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
         response = make_response({ "message": error }, 500)
+        return response
+
+    dt_started = datetime.fromtimestamp(float(dt_started_json))
+    dt_ended = datetime.fromtimestamp(float(dt_ended_json))
+
+    calendar_data = { "dt_started": dt_started, "dt_ended": dt_ended }
+
+    user = Users.get({ "id": g.user_id })
+    if user.check_role(role="listers") == False:
+        error = "Sorry, you don't have authorization to list on the platform."
+        response = make_response({ "message": error }, 403)
         return response
 
     status = validate_date_range(
@@ -66,9 +74,23 @@ def list_item():
         return response
 
     address = create_address(address_data)
-    new_item = create_item(item_data, calandar_data)
-    email_data = get_successful_listing_email(new_item)
+
+    item_data["address_lat"] = address.lat
+    item_data["address_lng"] = address.lng
+
+    new_item = create_item(item_data, calendar_data, tags)
+
+    email_data = get_new_listing_email(new_item)
     send_async_email.apply_async(kwargs=email_data.to_dict())
+
+    i = 0
+    for image_base64 in image_base64s:
+        uid = f"{new_item.id}-{i}"
+        upload_file_async.apply_async(kwargs={
+            "uid": uid,
+            "file_base64": image_base64
+        })
+        i += 1
 
     message = "Thanks for listing on Hubbub!"
 

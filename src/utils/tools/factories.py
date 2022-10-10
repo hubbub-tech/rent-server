@@ -25,25 +25,20 @@ def create_address(insert_data):
     return address
 
 def create_user(insert_data):
-    new_user = Users.insert(insert_data["user"])
+    new_user = Users.insert(insert_data)
+    Carts.insert({ "id": new_user.id })
 
-    insert_data["cart"]["id"] = new_user.id
-
-    Carts.insert(insert_data["cart"])
+    new_user.add_role(role="renters")
     return new_user
 
 
-def create_item(insert_data):
-    new_item = Items.insert(insert_data["item"])
+def create_item(insert_data, calendar_data, tags):
+    new_item = Items.insert(insert_data)
 
-    lister = Users.get({"id": new_item.lister_id})
-    lister.add_role(role="listers")
+    calendar_data["id"] = new_item.id
+    Calendars.insert(calendar_data)
 
-    insert_data["calendar"]["id"] = new_item.id
-
-    Calendars.insert(insert_data["calendar"])
-
-    for tag_title in insert_data["tags"]:
+    for tag_title in tags:
         tag = Tags.get({"title": tag_title})
         if tag is None:
             tag = Tags.insert({"title": tag_title})
@@ -93,14 +88,18 @@ def create_order(insert_data):
     new_order = Orders.insert(insert_data)
 
     renter = Users.get({ "id": new_order.renter_id })
-    renter.add_role(role="renters")
     return new_order
 
 
 def create_logistics(insert_data):
     logistics = Logistics.unique(insert_data)
-    print(insert_data)
     if logistics is None:
+        receiver = Users.get({ "id": insert_data["receiver_id"] })
+        sender = Users.get({ "id": insert_data["sender_id"] })
+
+        receiver.add_role(role="receivers")
+        sender.add_role(role="senders")
+
         logistics = Logistics.insert(insert_data)
     print(logistics)
     return logistics
