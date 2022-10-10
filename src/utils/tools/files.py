@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime, date
 
 from src.models import Items
@@ -6,7 +7,14 @@ from src.models import Addresses
 from src.models import Logistics
 from src.models import Reservations
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
+
+
+def base64_to_file(file_base64):
+    file_format, file_base64_stripped = file_base64.split("base64")
+    file = base64.b64decode(file_base64_stripped)
+    return file, file_format
+
 
 def get_receipt(order):
     item = Items.get({"id": order.item_id})
@@ -19,7 +27,7 @@ def get_receipt(order):
         Rental Invoice for {item.name}\n
         \n
         Hubbub Technologies, Inc\n
-        {SMTP.DEFAULT_RECEIVER}\n\n
+        {smtp_config.DEFAULT_RECEIVER}\n\n
         \n
         Downloaded on {date.today().strftime('%Y-%m-%d')}\n
         Order Placed on {order.dt_placed.strftime('%Y-%m-%d')}\n

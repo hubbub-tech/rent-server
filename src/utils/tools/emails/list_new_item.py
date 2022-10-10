@@ -1,7 +1,8 @@
 from datetime import datetime
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
 
+from src.models import Users
 from src.models import Items
 from src.models import Calendars
 from src.models import Orders
@@ -32,12 +33,12 @@ def get_new_listing_email(item):
     email_body_formatter.conclusion = f"""
         No need to list your item on other platforms! If it is listed somewhere
         else, take it down and leave the magic to us B-). If you have any
-        questions, please contact us at {SMTP.DEFAULT_RECEIVER}.
+        questions, please contact us at {smtp_config.DEFAULT_RECEIVER}.
         """
 
     body = email_body_formatter.build()
 
     email_data.subject = f"[Hubbub] Listing Confirmation for your {item.name}"
-    email_data.to = (lister.email, SMTP.DEFAULT_RECEIVER)
+    email_data.to = (lister.email, smtp_config.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data
