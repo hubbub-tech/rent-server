@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
 
 from ._email_data import EmailData
 from ._email_body_formatter import EmailBodyFormatter
@@ -37,12 +37,12 @@ def get_welcome_email(user):
     email_body_formatter.conclusion = f"""
         You can also go to your account portal on the website to view items you
         are renting with other features coming soon! If you have any questions, please
-        contact us at {SMTP.DEFAULT_RECEIVER}.
+        contact us at {smtp_config.DEFAULT_RECEIVER}.
         """
 
     body = email_body_formatter.build()
 
     email_data.subject = f"[Hubbub] Welcome, {user.name}!"
-    email_data.to = (user.email, SMTP.DEFAULT_RECEIVER)
+    email_data.to = (user.email, smtp_config.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data

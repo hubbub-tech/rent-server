@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
 
 from ._email_data import EmailData
 from ._email_body_formatter import EmailBodyFormatter
@@ -21,12 +21,12 @@ def get_password_reset_email(user, reset_link):
 
     email_body_formatter.content = ""
 
-    email_body_formatter.conclusion = f"I service, please report to admins at {SMTP.DEFAULT_RECEIVER} if you did not place this request. Thanks!"
+    email_body_formatter.conclusion = f"I service, please report to admins at {smtp_config.DEFAULT_RECEIVER} if you did not place this request. Thanks!"
 
     body = email_formatter.build()
 
     email_data.subject = "[Hubbub] Recover Your Password"
-    email_data.to = (user.email, SMTP.DEFAULT_RECEIVER)
+    email_data.to = (user.email, smtp_config.DEFAULT_RECEIVER)
     email_data.body = body
 
     return email_data

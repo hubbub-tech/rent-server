@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
 
 from src.models import Items
 from src.models import Users
@@ -36,11 +36,11 @@ def get_early_return_email(txn, early_reservation):
     pickup_request_link = "https://www.hubbub.shop/accounts/u/orders"
     email_body_formatter.conclusion = f"""
         You can schedule a new end of rental pickup (<a href='{pickup_request_link}'>here</a>)!
-        If you have any questions, please contact us at {SMTP.DEFAULT_RECEIVER}.
+        If you have any questions, please contact us at {smtp_config.DEFAULT_RECEIVER}.
         """
 
     body = email_body_formatter.build()
     email_data.subject = f"[Hubbub] Your Early Return Request on {item.name}"
-    email_data.to = (user.email, SMTP.DEFAULT_RECEIVER)
+    email_data.to = (user.email, smtp_config.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
 
 from ._email_data import EmailData
 from ._email_body_formatter import EmailBodyFormatter
@@ -27,6 +27,6 @@ def get_newsletter_welcome(newsletter_data):
     body = email_body_formatter.build()
 
     email_data.subject = "[Internal] New Newsletter Signup"
-    email_data.to = (SMTP.DEFAULT_RECEIVER,)
+    email_data.to = (smtp_config.DEFAULT_RECEIVER,)
     email_data.body = body
     return email_data

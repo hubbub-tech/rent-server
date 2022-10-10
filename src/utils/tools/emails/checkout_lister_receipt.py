@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
 
 from src.models import Items
 from src.models import Users
@@ -41,6 +41,6 @@ def get_lister_receipt_email(order):
     body = email_body_formatter.build()
 
     email_data.subject = f"[Hubbub][Action Required] Lister Receipt for {item.name}"
-    email_data.to = (lister.email, SMTP.DEFAULT_RECEIVER)
+    email_data.to = (lister.email, smtp_config.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data

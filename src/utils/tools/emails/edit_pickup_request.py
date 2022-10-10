@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
 
 from src.models import Items
 from src.models import Users
@@ -44,12 +44,12 @@ def get_edit_pickup_request_email(order, address_formatted, date_pickup, timeslo
     email_body_formatter.conclusion = f"""
         We'll see if we can update the pick-up time. If possible, we'll email you
         with next steps if we can make it happen. If you have any questions, please contact
-        us at {SMTP.DEFAULT_RECEIVER}.
+        us at {smtp_config.DEFAULT_RECEIVER}.
         """
 
     body = email_body_formatter.build()
 
     email_data.subject = "[Hubbub] Updating your Pick-up"
-    email_data.to = (renter.email, SMTP.DEFAULT_RECEIVER)
+    email_data.to = (renter.email, smtp_config.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
 
 from src.models import Items
 from src.models import Users
@@ -81,12 +81,12 @@ def get_renter_receipt_email(orders):
             (<a href='{schedule_dropoff_link}'>here</a>)!
         </p>
         <p>
-            If you have any questions, please contact us at {SMTP.DEFAULT_RECEIVER}. Thanks!
+            If you have any questions, please contact us at {smtp_config.DEFAULT_RECEIVER}. Thanks!
         """
 
     body = email_body_formatter.build()
 
     email_data.subject = "[Hubbub] Order Receipt"
-    email_data.to = (renter.email, SMTP.DEFAULT_RECEIVER)
+    email_data.to = (renter.email, smtp_config.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data

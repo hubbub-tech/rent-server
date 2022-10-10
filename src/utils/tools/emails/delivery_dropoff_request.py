@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from src.utils.settings import SMTP
+from src.utils.settings import smtp_config
 
 from src.models import Items
 from src.models import Users
@@ -65,13 +65,13 @@ def get_dropoff_request_email(logistics):
     email_body_formatter.conclusion = f"""
         We’ll respond confirming a precise drop off time that fits the dates/times
         you indicated within 48 hours. If you have any questions, please contact
-        us at {SMTP.DEFAULT_RECEIVER}.
+        us at {smtp_config.DEFAULT_RECEIVER}.
         """
 
     body = email_body_formatter.build()
 
     email_data.subject = "[Hubbub] Scheduling your Drop-off"
-    email_data.to = (renter.email, SMTP.DEFAULT_RECEIVER)
+    email_data.to = (renter.email, smtp_config.DEFAULT_RECEIVER)
     email_data.body = body
     return email_data
 
@@ -94,6 +94,6 @@ def get_dropoff_error_email(logistics):
     body = email_body_formatter.build()
 
     email_data.subject = "[Internal Error] Failed Silently while Recording Dropoff Timeslots"
-    email_data.to = (SMTP.DEFAULT_RECEIVER,)
+    email_data.to = (smtp_config.DEFAULT_RECEIVER,)
     email_data.body = body
     return email_data
