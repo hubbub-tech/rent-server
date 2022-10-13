@@ -16,10 +16,12 @@ def login_required(view):
         user_id = request.cookies.get("userId")
         session_key_hashed = request.cookies.get("sessionToken")
 
-        user = Users.get({"id": user_id})
-
-        if user:
-            is_authorized = verify_token(session_key_hashed, user.session_key)
+        if user_id:
+            user = Users.get({"id": user_id})
+            if user:
+                is_authorized = verify_token(session_key_hashed, user.session_key)
+            else:
+                is_authorized = False
         else:
             is_authorized = False
 
@@ -31,6 +33,7 @@ def login_required(view):
         g.user_id = user.id
         g.user_email = user.email
         g.user_session_key = user.session_key
+
         return view(**kwargs)
     return wrapped_view
 
@@ -41,10 +44,12 @@ def login_optional(view):
         user_id = request.cookies.get("userId")
         session_key_hashed = request.cookies.get("sessionToken")
 
-        user = Users.get({"id": user_id})
-
-        if user:
-            is_authorized = verify_token(session_key_hashed, user.session_key)
+        if user_id:
+            user = Users.get({"id": user_id})
+            if user:
+                is_authorized = verify_token(session_key_hashed, user.session_key)
+            else:
+                is_authorized = False
         else:
             is_authorized = False
 
@@ -56,8 +61,36 @@ def login_optional(view):
             g.user_id = user.id
             g.user_email = user.email
             g.user_session_key = user.session_key
+
         return view(**kwargs)
     return wrapped_view
+
+
+def handle_preflight_only(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        print("Request Method", request.method)
+        is_preflight_request = check_for_preflight(request)
+        if is_preflight_request:
+            response = make_response(204)
+            # response.access_control_allow_origin = FlaskConfig.CORS_ALLOW_ORIGIN
+            # response.access_control_allow_methods = ["GET", "POST", "HEAD"]
+            print("Preflight path")
+            return response
+        else:
+            return view(**kwargs)
+    return wrapped_view
+
+
+
+def check_for_preflight(req):
+    is_options_method = req.method == "OPTIONS"
+    has_origin_header = req.origin is not None
+    has_request_method = req.access_control_request_method is not None
+
+    is_preflight_request = is_options_method and has_origin_header and has_request_method
+
+    return is_preflight_request
 
 
 def login_user(user):

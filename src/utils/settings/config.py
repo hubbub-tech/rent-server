@@ -1,4 +1,5 @@
 import os
+import json
 import boto3
 
 #SUPPORTING CONFIGS------------------------------
@@ -64,8 +65,20 @@ class GCloudConfig:
                 "items": "shop-items"
             }
             GCloudConfig.PROJECT = "hubbub-assets"
-            GCloudConfig.ACCESS_CREDENTIALS = os.getenv("GCLOUD_ACCESS_CREDENTIALS")
+            GCloudConfig.ACCESS_CREDENTIALS_PRIVATE_JSON = os.getenv("GCLOUD_ACCESS_CREDENTIALS_PRIVATE_JSON")
+            GCloudConfig.ACCESS_CREDENTIALS_PRIVATE_KEY = os.getenv("GCLOUD_ACCESS_CREDENTIALS_PRIVATE_KEY")
+            GCloudConfig.ACCESS_CREDENTIALS_PRIVATE_KEY_ID = os.getenv("GCLOUD_ACCESS_CREDENTIALS_PRIVATE_KEY_ID")
             GCloudConfig._instance = self
+
+
+    def inject_private_key_into_json(self):
+        with open(self.ACCESS_CREDENTIALS_PRIVATE_JSON, "w") as gcloud_auth_file:
+            gcloud_auth_data = json.load(gcloud_auth_file)
+            gcloud_auth_data["private_key_id"] = self.ACCESS_CREDENTIALS_PRIVATE_KEY_ID
+            gcloud_auth_data["private_key"] = self.ACCESS_CREDENTIALS_PRIVATE_KEY
+
+            json.dump(gcloud_auth_data, gcloud_auth_file)
+
 
 
     @staticmethod

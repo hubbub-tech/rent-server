@@ -15,7 +15,7 @@ from .validators import validate_registration
 
 from .emails import *
 
-from .safe_txns import lock_cart, unlock_cart
+from .safe_txns import lock_cart, unlock_cart, check_lock_access
 from .safe_txns import get_stripe_checkout_session
 from .safe_txns import get_stripe_extension_session
 from .safe_txns import return_order_early, return_extension_early
@@ -25,7 +25,9 @@ from .files import get_receipt
 from .worker_tasks import send_async_email
 from .worker_tasks import set_async_timeout
 from .worker_tasks import upload_file_async
+from .worker_tasks import get_available_workers
 
+from .auth import handle_preflight_only
 from .auth import login_required, login_optional, login_user
 from .auth import gen_token, verify_token
 

@@ -77,6 +77,7 @@ def register():
         return response
 
     new_user = create_user(user_data)
+
     email_data = get_welcome_email(new_user)
     send_async_email.apply_async(kwargs=email_data.to_dict())
 

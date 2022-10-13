@@ -69,6 +69,15 @@ def lock_cart(cart: Carts):
     return status
 
 
+def check_lock_access(accessor_id, item_ids):
+    for item_id in item_ids:
+        item = Items.get({ "id": item_id })
+        if item.locker_id != accessor_id:
+            return False
+
+    return True
+
+
 def _get_line_items(cart_id, item_ids):
 
     line_items = []

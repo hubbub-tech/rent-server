@@ -59,8 +59,8 @@ def cancel_order():
 
     if pickup_id:
         pickup = Logistics.get({"id": pickup_id})
-        if dropoff.dt_sent and dropoff.dt_received is None:
-            message = "It seems like your order is being delivered already. If this sounds wrong please contact us."
+        if pickup.dt_sent and pickup.dt_received is None:
+            message = "It seems like your order has been delivered already. If this sounds wrong please contact us."
             response = make_response({"message": message}, 200)
             return response
         else:
@@ -123,8 +123,8 @@ def cancel_extension():
     # START EXTENSION CANCELLATION SEQUENCE
     if pickup_id:
         pickup = Logistics.get({"id": pickup_id})
-        if dropoff.dt_sent and dropoff.dt_received is None:
-            message = "It seems like your order is being delivered already. If this sounds wrong please contact us."
+        if pickup.dt_sent and pickup.dt_received is None:
+            message = "It seems like your order has been delivered already. If this sounds wrong please contact us."
             response = make_response({"message": message}, 200)
             return response
         else:

@@ -10,6 +10,14 @@ from src.utils.settings import celery, smtp_config, gcloud_config
 
 from .safe_txns import unlock_cart
 
+
+# NOTE: not in use
+def get_available_workers():
+    i = celery.control.inspect()
+    available_workers = i.ping()
+    return available_workers
+
+
 @celery.task
 def send_async_email(subject, to, body, error=None):
     msg = Mail(

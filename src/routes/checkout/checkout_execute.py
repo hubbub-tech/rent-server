@@ -10,6 +10,7 @@ from src.models import Reservations
 
 from src.utils import lock_cart
 from src.utils import unlock_cart
+from src.utils import check_lock_access
 from src.utils import verify_token
 from src.utils import create_order
 from src.utils import login_required
@@ -51,7 +52,7 @@ def validate_checkout():
 
     status = lock_cart(user_cart)
     if status.is_successful == False:
-        errors = status.message
+        error = status.message
         response = make_response({ "message": error }, 401)
         return response
 
@@ -81,6 +82,12 @@ def checkout():
     # NOTE: test that the amount paid is accurate
 
     item_ids = user_cart.get_item_ids()
+    has_checkout_authorization = check_lock_access(g.user_id, item_ids)
+
+    if has_checkout_authorization == False:
+        error = "You don't have permission to checkout your cart."
+        response = make_response({ "message": error }, 403)
+        return response
 
     for item_id in item_ids:
         item = Items.get({"id": item_id})

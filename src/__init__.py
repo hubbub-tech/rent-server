@@ -21,6 +21,7 @@ def create_app(config_object=FlaskConfig()):
     for logger in (
         app.logger,
         logging.getLogger('werkzeug'),
+        logging.getLogger('flask_cors'),
         logging.getLogger('blubber-orm'),
     ):
         logger.addHandler(mail_handler)

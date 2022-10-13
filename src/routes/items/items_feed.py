@@ -53,14 +53,12 @@ def item_feed():
 
     if g.user_id:
         user = Users.get({ "id": g.user_id })
-        if user.address_lat:
-            address = Addresses.get({ "lat": user.address_lat, "lng": user.address_lng })
-            zip_code = address.get_zip_code()
-        else:
-            zip_code = None
+        lat = user.address_lat
+        lng = user.address_lng
     else:
-        zip_code = None
+        lat = None
+        lng = None
 
-    data = { "items": items_to_dict_sorted, "zip_code": zip_code }
+    data = { "items": items_to_dict_sorted, "user_address_lat": lat, "user_address_lng": lng }
     response = make_response(data, 200)
     return response
