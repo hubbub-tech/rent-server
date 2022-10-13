@@ -24,7 +24,7 @@ def newsletter_sign_up():
         return response
 
     recaptcha_data = {
-        "secret": FlaskConfig.ReCAPTCHA_SERVER_API_KEY,
+        "secret": FlaskConfig.ReCAPTCHA_SERVER_APIKEY,
         "response": token
     }
     captcha_response = requests.post(ReCAPTCHA_VERIFY_URL, data=recaptcha_data)

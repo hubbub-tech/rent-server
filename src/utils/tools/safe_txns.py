@@ -11,7 +11,7 @@ from src.models import Extensions
 from src.models import Reservations
 
 from src.utils.classes import Status
-from src.utils.settings import SERVER_DOMAIN, CLIENT_DOMAIN, STRIPE_API_KEY
+from src.utils.settings import SERVER_DOMAIN, CLIENT_DOMAIN, STRIPE_APIKEY
 
 
 def unlock_cart(cart: Carts, specified_items=None):
@@ -108,7 +108,7 @@ def _get_line_items(cart_id, item_ids):
     return line_items
 
 def get_stripe_checkout_session(cart, email):
-    stripe.api_key = STRIPE_API_KEY
+    stripe.APIKEY = STRIPE_APIKEY
 
     item_ids = cart.get_item_ids(reserved_only=True)
     line_items = _get_line_items(cart.id, item_ids)
@@ -131,7 +131,7 @@ def get_stripe_checkout_session(cart, email):
 
 
 def get_stripe_extension_session(reservation, email):
-    stripe.api_key = STRIPE_API_KEY
+    stripe.APIKEY = STRIPE_APIKEY
 
     item = Items.get({ "id": reservation.item_id })
     unit_amount = int(round(reservation.total(), 2) * 100)

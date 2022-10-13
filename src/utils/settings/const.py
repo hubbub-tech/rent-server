@@ -14,4 +14,4 @@ COOKIE_KEY_USER_ID = "userId"
 COOKIE_KEY_SESSION = "sessionToken"
 ReCAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
 
-GOOGLE_MAPS_API = os.getenv("GOOGLE_MAPS_API")
+GOOGLE_MAPS_APIKEY = os.getenv("GOOGLE_MAPS_APIKEY")

@@ -16,10 +16,10 @@ class AWSS3Config:
             #TODO: log that this problem happened
             raise Exception("AWS Connection should only be created once in the app.")
         else:
-            AWSS3Config.S3_LINK = "https://{}.s3.amazonaws.com".format(os.environ['S3_BUCKET'])
+            AWSS3Config.S3_LINK = "https://hubbub-marketplace-dev.s3.amazonaws.com"
             AWSS3Config.AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
             AWSS3Config.AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
-            AWSS3Config.S3_BUCKET = os.environ['S3_BUCKET']
+            AWSS3Config.S3_BUCKET = "hubbub-marketplace-dev"
             AWSS3Config.set_s3()
 
             AWSS3Config._instance = self
@@ -90,14 +90,14 @@ class GCloudConfig:
 
 class CaptchaConfig:
     #ReCaptcha
-    ReCAPTCHA_SERVER_API_KEY = os.environ['ReCAPTCHA_SERVER_API_KEY']
+    ReCAPTCHA_SERVER_APIKEY = os.environ['ReCAPTCHA_SERVER_APIKEY']
     ReCAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
 
 
 class SMTPConfig:
     _instance = None
     DEFAULT_SENDER = None
-    SENDGRID_API_KEY = None
+    SENDGRID_APIKEY = None
 
     def __init__(self):
         if SMTPConfig._instance:
@@ -107,7 +107,7 @@ class SMTPConfig:
             SMTPConfig.DEFAULT_RECEIVER = os.environ["MAIL_DEFAULT_RECEIVER"]
             SMTPConfig.DEFAULT_SENDER = os.environ["MAIL_DEFAULT_SENDER"]
             SMTPConfig.DEFAULT_ADMIN = os.environ["MAIL_DEFAULT_ADMIN"]
-            SMTPConfig.SENDGRID_API_KEY = os.environ["SENDGRID_API_KEY"]
+            SMTPConfig.SENDGRID_APIKEY = os.environ["SENDGRID_APIKEY"]
             SMTPConfig._instance = self
 
     @staticmethod
@@ -127,9 +127,26 @@ class FlaskConfig:
     CORS_SUPPORTS_CREDENTIALS = True
     CORS_ALLOW_ORIGIN = os.environ['CORS_ALLOW_ORIGIN']
 
+    CELERY_BROKER_URL = os.environ['CLOUDAMQP_CYAN_URL']
+    CELERY_BROKER_APIKEY = os.environ['CLOUDAMQP_CYAN_APIKEY']
+    CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
+    BROKER_POOL_LIMIT = 1
+
+
+
+class DevelopmentFlaskConfig:
+
+    SECRET_KEY = os.environ['SECRET_KEY']
+    TESTING = False
+
+    #Celery
+    CORS_SUPPORTS_CREDENTIALS = True
+    CORS_ALLOW_ORIGIN = os.environ['CORS_ALLOW_ORIGIN']
+
     CELERY_BROKER_URL = os.environ['CLOUDAMQP_URL']
     CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
     BROKER_POOL_LIMIT = 1
+
 
 
 class TestFlaskConfig:

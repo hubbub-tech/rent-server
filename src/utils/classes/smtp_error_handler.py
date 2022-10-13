@@ -17,7 +17,7 @@ class SGSMTPHandler(SMTPHandler):
             html_content=self.format(record)
         )
         try:
-            sg = SendGridAPIClient(smtp_config.SENDGRID_API_KEY)
+            sg = SendGridAPIClient(smtp_config.SENDGRID_APIKEY)
             response = sg.send(msg)
         except (KeyboardInterrupt, SystemExit):
             raise

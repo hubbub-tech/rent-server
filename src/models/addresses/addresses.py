@@ -1,7 +1,7 @@
 from blubber_orm import Models
 
 from src.utils.classes import Geocoder
-from src.utils.settings import GOOGLE_MAPS_API
+from src.utils.settings import GOOGLE_MAPS_APIKEY
 
 
 class Addresses(Models):
@@ -92,6 +92,6 @@ class Addresses(Models):
 
     def get_zip_code(self):
         if self._zip_code is None:
-            geocoder = Geocoder(apikey=GOOGLE_MAPS_API)
+            geocoder = Geocoder(apikey=GOOGLE_MAPS_APIKEY)
             self._zip_code = geocoder.get_zip_code(lat=self.lat, lng=self.lng)
         return self._zip_code

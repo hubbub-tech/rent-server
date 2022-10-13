@@ -27,7 +27,7 @@ def send_async_email(subject, to, body, error=None):
         html_content=body
     )
     try:
-        sg = SendGridAPIClient(smtp_config.SENDGRID_API_KEY)
+        sg = SendGridAPIClient(smtp_config.SENDGRID_APIKEY)
         response = sg.send(msg)
         print(response.status_code)
         print(response.body)

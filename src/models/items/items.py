@@ -14,7 +14,6 @@ class Items(Models):
     def __init__(self, attrs: dict):
         self.id = attrs["id"]
         self.name = attrs["name"]
-        self.manufacturer_id = attrs["manufacturer_id"]
         self.retail_price = attrs["retail_price"]
         self.is_visible = attrs["is_visible"]
         self.is_transactable = attrs["is_transactable"]

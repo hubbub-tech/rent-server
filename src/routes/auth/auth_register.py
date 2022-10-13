@@ -55,7 +55,7 @@ def register():
         return response
 
     recaptcha_data = {
-        "secret": CaptchaConfig.ReCAPTCHA_SERVER_API_KEY,
+        "secret": CaptchaConfig.ReCAPTCHA_SERVER_APIKEY,
         "response": recaptcha_token
     }
 
