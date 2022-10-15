@@ -53,10 +53,10 @@ def orders_early_return():
         email_data = get_early_return_email(order, early_reservation)
         send_async_email.apply_async(kwargs=email_data.to_dict())
 
-        response = make_response({ "messag": status.messag }, 200)
+        response = make_response({ "message": status.message }, 200)
         return response
     else:
-        response = make_response({ "messag": status.messag }, 401)
+        response = make_response({ "message": status.message }, 401)
         return response
 
 
