@@ -108,7 +108,7 @@ def _get_line_items(cart_id, item_ids):
     return line_items
 
 def get_stripe_checkout_session(cart, email):
-    stripe.APIKEY = STRIPE_APIKEY
+    stripe.api_key = STRIPE_APIKEY
 
     item_ids = cart.get_item_ids(reserved_only=True)
     line_items = _get_line_items(cart.id, item_ids)
@@ -131,7 +131,7 @@ def get_stripe_checkout_session(cart, email):
 
 
 def get_stripe_extension_session(reservation, email):
-    stripe.APIKEY = STRIPE_APIKEY
+    stripe.api_key = STRIPE_APIKEY
 
     item = Items.get({ "id": reservation.item_id })
     unit_amount = int(round(reservation.total(), 2) * 100)
