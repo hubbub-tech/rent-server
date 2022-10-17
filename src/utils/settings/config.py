@@ -29,6 +29,12 @@ class AWSConfig:
         return AWSConfig._instance
 
 
+    def get_base_url(self, bucket=None):
+        if bucket:
+            return f"https://{bucket}.s3.amazonaws.com"
+        return self.S3_BASE_URL
+
+
     def get_s3(self):
         if AWSConfig.S3_OBJECT is None:
             try:

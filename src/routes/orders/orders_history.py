@@ -6,7 +6,8 @@ from src.models import Items
 from src.models import Reservations
 
 from src.utils import login_required
-from src.utils import JSON_DT_FORMAT
+
+from src.utils.settings import aws_config
 
 bp = Blueprint("history", __name__)
 
@@ -53,6 +54,7 @@ def orders_history():
         order_to_dict["pickup_id"] = order.get_pickup_id()
 
         order_to_dict["item_name"] = item.name
+        order_to_dict["item_image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
         order_to_dict["ext_dt_start"] = datetime.timestamp(order.ext_dt_start)
         order_to_dict["ext_dt_end"] = datetime.timestamp(order.ext_dt_end)
         order_to_dict["reservation"] = res.to_dict()

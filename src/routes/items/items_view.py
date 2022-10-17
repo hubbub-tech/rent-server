@@ -42,6 +42,8 @@ def view_item(item_id):
 
     item_to_dict["tags"] = item.get_tags()
 
+    item_to_dict["image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
+
     recommender = Recommender()
     recommendations = recommender.on(item)
 
@@ -59,6 +61,8 @@ def view_item(item_id):
         rec_to_dict["calendar"] = rec_calendar.to_dict()
         rec_to_dict["calendar"]["next_avail_date_start"] = datetime.timestamp(next_start)
         rec_to_dict["calendar"]["next_avail_date_end"] = datetime.timestamp(next_end)
+
+        rec_to_dict["image_url"] = aws_config.get_base_url() + f"/items/{rec.id}.jpg"
 
         recs_to_dict.append(rec_to_dict)
 

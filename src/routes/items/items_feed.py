@@ -12,6 +12,8 @@ from src.utils.classes import Recommender
 from src.utils import send_async_email
 from src.utils import get_item_expiration_email
 
+from src.utils.settings import aws_config
+
 bp = Blueprint('feed', __name__)
 
 
@@ -40,6 +42,8 @@ def item_feed():
             item_to_dict["next_available_start"] = datetime.timestamp(next_start)
             item_to_dict["next_available_end"] = datetime.timestamp(next_end)
             item_to_dict["tags"] = tags
+
+            item_to_dict["image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
 
             items_to_dict.append(item_to_dict)
         else:

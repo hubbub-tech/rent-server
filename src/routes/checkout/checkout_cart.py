@@ -10,6 +10,8 @@ from src.models import Reservations
 from src.utils import gen_token
 from src.utils import login_required
 
+from src.utils.settings import aws_config
+
 bp = Blueprint("cart", __name__)
 
 
@@ -53,6 +55,8 @@ def cart():
                 item_to_dict["calendar"] = item_calendar.to_dict()
                 item_to_dict["calendar"]["next_available_start"] = datetime.timestamp(next_start)
                 item_to_dict["calendar"]["next_available_end"] = datetime.timestamp(next_end)
+
+                item_to_dict["image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
                 unreserved_items_to_dict.append(item_to_dict)
 
             elif res.is_calendared == False:
@@ -67,6 +71,8 @@ def cart():
                     item_to_dict["reservation"] = res.to_dict()
                     item_to_dict["calendar"]["next_available_start"] = datetime.timestamp(next_start)
                     item_to_dict["calendar"]["next_available_end"] = datetime.timestamp(next_end)
+
+                    item_to_dict["image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
                     reserved_items_to_dict.append(item_to_dict)
         else:
             next_start, next_end = item_calendar.next_availability()
@@ -75,6 +81,8 @@ def cart():
             item_to_dict["calendar"] = item_calendar.to_dict()
             item_to_dict["calendar"]["next_available_start"] = datetime.timestamp(next_start)
             item_to_dict["calendar"]["next_available_end"] = datetime.timestamp(next_end)
+
+            item_to_dict["image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
             unreserved_items_to_dict.append(item_to_dict)
 
     if len(unreserved_items_to_dict) == 0:
