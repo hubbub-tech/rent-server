@@ -2,21 +2,11 @@ import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-from google.oauth2 import service_account
-from google.cloud import storage
-
 from .files import base64_to_file
-from src.utils.settings import celery, smtp_config, gcloud_config
+from .files import upload_to_gcloud
+from src.utils.settings import celery, smtp_config
 
 from .safe_txns import unlock_cart
-
-
-# NOTE: not in use
-def get_available_workers():
-    i = celery.control.inspect()
-    available_workers = i.ping()
-    return available_workers
-
 
 @celery.task
 def send_async_email(subject, to, body, error=None):
@@ -68,31 +58,11 @@ def upload_file_async(uid, file_base64):
     try:
         with app.app_context():
 
-            credentials = service_account.Credentials.from_service_account_file(
-                gcloud_config.ACCESS_CREDENTIALS)
-
-            scoped_credentials = credentials.with_scopes(
-                ['https://www.googleapis.com/auth/cloud-platform'])
-
-            bucket_name = gcloud_config.STORAGE_BUCKETS["items"]
-
             file, file_format = base64_to_file(file_base64)
 
-            source_file_name = file
-            destination_blob_name = f"/test/item-{uid}.jpg"
+            filename = f"/tests/item-{uid}.jpg"
+            # upload_to_gcloud(file, filename, file_format)
+            upload_to_awss3(file, filename, file_format)
 
-            storage_client = storage.Client(
-                project=gcloud_config.PROJECT,
-                credentials=scoped_credentials,
-            )
-            bucket = storage_client.bucket(bucket_name)
-            print(bucket.name)
-
-            blob = bucket.blob(destination_blob_name)
-
-            blob.upload_from_string(file, content_type=file_format)
     except Exception as e:
         print(e)
-
-    # print(file)
-    return 'done!'

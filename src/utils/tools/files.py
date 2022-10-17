@@ -1,19 +1,66 @@
 import base64
 from datetime import datetime, date
 
+from google.oauth2 import service_account
+from google.cloud import storage
+
+from botocore.exceptions import NoCredentialsError
+
 from src.models import Items
 from src.models import Users
 from src.models import Addresses
 from src.models import Logistics
 from src.models import Reservations
 
-from src.utils.settings import smtp_config
+from src.utils.settings import smtp_config, gcloud_config, aws_config
 
 
 def base64_to_file(file_base64):
     file_format, file_base64_stripped = file_base64.split("base64")
     file = base64.b64decode(file_base64_stripped)
     return file, file_format
+
+
+
+def upload_to_gcloud(file, filename, file_format):
+    credentials = service_account.Credentials.from_service_account_file(
+        gcloud_config.ACCESS_CREDENTIALS_PRIVATE_JSON)
+
+    scoped_credentials = credentials.with_scopes(
+        ['https://www.googleapis.com/auth/cloud-platform'])
+
+    bucket_name = gcloud_config.STORAGE_BUCKET
+
+    source_file_name = file
+    destination_blob_name = filename
+
+    storage_client = storage.Client(
+        project=gcloud_config.PROJECT,
+        credentials=scoped_credentials,
+    )
+    bucket = storage_client.bucket(bucket_name)
+
+    blob = bucket.blob(destination_blob_name)
+
+    blob.upload_from_string(file, content_type=file_format)
+
+
+
+def upload_to_awss3(file, filename, file_format):
+
+    s3_resource = aws_config.get_s3_resource()
+
+    try:
+        s3_resource.Bucket(aws_config.S3_BUCKET).put_object(
+            Key=filename,
+            Body=file,
+            ACL='public-read'
+        )
+    except FileNotFoundError as fnf_e:
+        print(fnf_e)
+    except NoCredentialsError as nce_e:
+        print(nce_e)
+
 
 
 def get_receipt(order):
