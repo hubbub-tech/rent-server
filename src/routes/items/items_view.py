@@ -10,6 +10,8 @@ from src.utils import login_required
 
 from src.utils.classes import Recommender
 
+from src.utils.settings import aws_config
+
 bp = Blueprint("view", __name__)
 
 
