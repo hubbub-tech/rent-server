@@ -6,6 +6,7 @@ import boto3
 
 class AWSConfig:
     _instance = None
+    S3_OBJECT = None
 
     def __init__(self):
         if AWSConfig._instance:
@@ -13,12 +14,11 @@ class AWSConfig:
             raise Exception("AWS Connection should only be created once in the app.")
         else:
             self.S3_BUCKET = os.getenv('AWS_S3_BUCKET')
-            self.S3_BASE_URL = f"https://{AWSConfig.S3_BUCKET}.s3.amazonaws.com"
+            self.S3_BASE_URL = f"https://{self.S3_BUCKET}.s3.amazonaws.com"
 
             self.ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
             self.SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
-            AWSConfig.S3_OBJECT = None
             AWSConfig._instance = self
 
 
@@ -72,11 +72,12 @@ class GCloudConfig:
 
 
     def inject_private_key_into_json(self):
-        with open(self.ACCESS_CREDENTIALS_PRIVATE_JSON, "w") as gcloud_auth_file:
+        with open(self.ACCESS_CREDENTIALS_PRIVATE_JSON, "r") as gcloud_auth_file:
             gcloud_auth_data = json.load(gcloud_auth_file)
             gcloud_auth_data["private_key_id"] = self.ACCESS_CREDENTIALS_PRIVATE_KEY_ID
             gcloud_auth_data["private_key"] = self.ACCESS_CREDENTIALS_PRIVATE_KEY
 
+        with open(self.ACCESS_CREDENTIALS_PRIVATE_JSON, "w") as gcloud_auth_file:
             json.dump(gcloud_auth_data, gcloud_auth_file)
 
 

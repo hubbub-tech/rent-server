@@ -25,7 +25,6 @@ from .files import get_receipt
 from .worker_tasks import send_async_email
 from .worker_tasks import set_async_timeout
 from .worker_tasks import upload_file_async
-from .worker_tasks import get_available_workers
 
 from .auth import handle_preflight_only
 from .auth import login_required, login_optional, login_user
