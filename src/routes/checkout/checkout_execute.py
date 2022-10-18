@@ -89,6 +89,8 @@ def checkout():
         response = make_response({ "message": error }, 403)
         return response
 
+    dt_now = datetime.now()
+
     for item_id in item_ids:
         item = Items.get({"id": item_id})
         item_calendar = Calendars.get({ "id": item.id })
@@ -101,12 +103,16 @@ def checkout():
 
         item_calendar.add(reservation)
 
+        ts_placed = datetime.timestamp(dt_now)
+        checkout_session_key = f"{user_cart.checkout_session_key}-{ts_placed}"
+
         order_data = {
+            "dt_placed": dt_now,
             "res_dt_start": reservation.dt_started,
             "res_dt_end": reservation.dt_ended,
             "renter_id": reservation.renter_id,
             "item_id": reservation.item_id,
-            "checkout_session_key": user_cart.checkout_session_key
+            "checkout_session_key": checkout_session_key
         }
         order = create_order(order_data)
 

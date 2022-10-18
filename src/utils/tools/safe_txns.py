@@ -113,10 +113,11 @@ def get_stripe_checkout_session(cart, email):
     item_ids = cart.get_item_ids(reserved_only=True)
     line_items = _get_line_items(cart.id, item_ids)
 
+    client_reference_id = f"orders_checkout_session_key:{cart.checkout_session_key}"
+
     try:
         checkout_session = stripe.checkout.Session.create(
-            client_reference_id=cart.checkout_session_key,
-            # customer=cart.id,
+            client_reference_id=client_reference_id,
             customer_email=email,
             line_items=line_items,
             mode='payment',
@@ -130,7 +131,7 @@ def get_stripe_checkout_session(cart, email):
         return checkout_session
 
 
-def get_stripe_extension_session(reservation, email):
+def get_stripe_extension_session(order, reservation, email):
     stripe.api_key = STRIPE_APIKEY
 
     item = Items.get({ "id": reservation.item_id })
@@ -149,10 +150,11 @@ def get_stripe_extension_session(reservation, email):
     }
 
     line_items = [line_item]
+    client_reference_id = f"orders_id:{order.id}"
 
     try:
         checkout_session = stripe.checkout.Session.create(
-            client_reference_id=None,
+            client_reference_id=client_reference_id,
             customer_email=email,
             line_items=line_items,
             mode='payment',

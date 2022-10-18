@@ -75,7 +75,7 @@ def validate_extend_order():
     Reservations.set(reservation_data, {"is_extension": True})
     reservation.is_extension = True
 
-    checkout_session = get_stripe_extension_session(reservation, g.user_email)
+    checkout_session = get_stripe_extension_session(order, reservation, g.user_email)
 
     res_to_dict = reservation.to_dict()
 

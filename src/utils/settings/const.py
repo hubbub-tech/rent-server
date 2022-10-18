@@ -6,6 +6,7 @@ DISCOUNT = 0.35
 GRACE_LIMIT = 2
 PENALTY_LIMIT = 14
 
+PAYEE_ID = 32
 DAYS_SERVICE_BUFFER = 2 # from datetime.now()
 JSON_DT_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 FLASK_SERVER = "http://localhost:5000"
