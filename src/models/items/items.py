@@ -34,7 +34,10 @@ class Items(Models):
         self.address_lng = attrs["address_lng"]
 
 
-    def lock(self, user):
+    def lock(self, user: Models):
+        assert isinstance(user, Models), "user must be a child of Models"
+        assert user.table_name == "users", "Model must be type Users."
+
         SQL = """
             UPDATE items
             SET is_locked = %s, locker_id = %s
@@ -48,7 +51,8 @@ class Items(Models):
             Models.db.conn.commit()
 
         self.is_locked = True
-        self.last_locked = user.id
+        self.locker_id = user.id
+
 
     def unlock(self):
         SQL = """
@@ -64,7 +68,7 @@ class Items(Models):
             Models.db.conn.commit()
 
         self.is_locked = False
-        self.last_locked = None
+        self.locker_id = None
 
 
     def get_tags(self):
@@ -84,7 +88,13 @@ class Items(Models):
         return tags
 
 
-    def add_tag(self, tag):
+    def add_tag(self, tag: Models):
+        assert isinstance(tag, Models), "tag must be a child of Models"
+        assert tag.table_name == "tags", "Model must be type Tags"
+
+        tag_titles = self.get_tags()
+        if tag.title in tag_titles: return
+
         SQL = """
             INSERT
             INTO item_tags (item_id, title)
@@ -97,7 +107,14 @@ class Items(Models):
             cursor.execute(SQL, data)
             Models.db.conn.commit()
 
-    def remove_tag(self, tag):
+
+    def remove_tag(self, tag: Models):
+        assert isinstance(tag, Models), "tag must be a child of Models"
+        assert tag.table_name == "tags", "Model must be type Tags"
+
+        tag_titles = self.get_tags()
+        if tag.title not in tag_titles: return
+
         SQL = """
             DELETE
             FROM item_tags

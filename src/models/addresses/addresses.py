@@ -35,19 +35,9 @@ class Addresses(Models):
         return address_http_formatted
 
     def set_as_origin(self):
-        SQL = """
-            SELECT lat, lng
-            FROM from_addresses
-            WHERE lat = %s AND lng = %s;
-            """
 
-        data = (self.lat, self.lng)
-
-        with Models.db.conn.cursor() as cursor:
-            cursor.execute(SQL, data)
-            address_pkeys = cursor.fetchone()
-
-        if address_pkeys: return
+        is_origin = self.check_if_orgin()
+        if is_origin: return
 
         SQL = f"""
             INSERT
@@ -62,10 +52,10 @@ class Addresses(Models):
             Models.db.conn.commit()
 
 
-    def set_as_destination(self):
+    def check_if_orgin(self):
         SQL = """
             SELECT lat, lng
-            FROM to_addresses
+            FROM from_addresses
             WHERE lat = %s AND lng = %s;
             """
 
@@ -73,9 +63,13 @@ class Addresses(Models):
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
-            address_pkeys = cursor.fetchone()
+            return cursor.fetchone() is not None
 
-        if address_pkeys: return
+
+    def set_as_destination(self):
+
+        is_destination = self.check_if_destination()
+        if is_destination: return
 
         SQL = f"""
             INSERT
@@ -88,6 +82,20 @@ class Addresses(Models):
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             Models.db.conn.commit()
+
+
+    def check_if_destination(self):
+        SQL = """
+            SELECT lat, lng
+            FROM to_addresses
+            WHERE lat = %s AND lng = %s;
+            """
+
+        data = (self.lat, self.lng)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            return cursor.fetchone() is not None
 
 
     def get_zip_code(self):

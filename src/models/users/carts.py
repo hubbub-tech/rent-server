@@ -23,7 +23,7 @@ class Carts(Models):
         return self.total_charge + self.total_deposit + self.total_tax
 
 
-    def get_item_ids(self, reserved_only=False):
+    def get_item_ids(self, reserved_only: bool=False) -> list:
 
         if reserved_only:
             SQL = """
@@ -55,8 +55,9 @@ class Carts(Models):
 
 
     #for remove() and add(), you need to pass the specific res, bc no way to tell otherwise
-    def remove(self, reservation):
-        #ASSERT reservation.item_id is associated with cart_id
+    def remove(self, reservation: Models):
+        assert isinstance(reservation, Models), "reservation must be of type Models"
+        assert reservation.table_name == "reservations", "Invalid Model type."
 
         cart_items = self.get_item_ids()
         if reservation.item_id not in cart_items: return
@@ -108,11 +109,16 @@ class Carts(Models):
 
 
 
-    def add(self, reservation):
-        #ASSERT reservation.item_id is NOT associated with cart_id
+    def add(self, reservation: Models):
+        assert isinstance(reservation, Models), "reservation must be of type Models"
+        assert reservation.table_name == "reservations", "Invalid Model type."
 
-        cart_items = self.get_item_ids()
-        if reservation.item_id in cart_items: return
+        reserved_cart_items = self.get_item_ids(reserved_only=True)
+        assert reservation.item_id not in reserved_cart_items, "You can only have one of these items in cart"
+
+        cart_items = self.get_item_ids(reserved_only=False)
+        if reservation.item_id in cart_items:
+            self.remove_without_reservation(reservation.item_id)
 
         SQL = """
             INSERT
@@ -160,11 +166,17 @@ class Carts(Models):
 
 
 
-    def remove_without_reservation(self, item):
+    def remove_without_reservation(self, item: Models):
         """This resolves the non-commital 'add to cart' where the user didn't reserve."""
 
-        cart_items = self.get_item_ids()
-        if item.id not in cart_items: return
+        assert isinstance(item, Models), "item must be of type Models"
+        assert item.table_name == "items", "Invalid Model type."
+
+        reserved_cart_items = self.get_item_ids(reserved_only=True)
+        assert item.id not in reserved_cart_items, "Please use remove() to remove this item."
+
+        cart_items = self.get_item_ids(reserved_only=False)
+        if item.id not in cart_items: return # Fail silently
 
         SQL = """
             DELETE
@@ -182,6 +194,9 @@ class Carts(Models):
     #NOTE to add a reservation to this later, "remove_without_reservation()" then re-add with "add()"
     def add_without_reservation(self, item):
         """This is a non-commital add to cart where the user doesn't have to reserve immediately."""
+
+        assert isinstance(item, Models), "item must be of type Models"
+        assert item.table_name == "items", "Invalid Model type."
 
         cart_items = self.get_item_ids()
         if item.id in cart_items: return

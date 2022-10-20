@@ -1,4 +1,4 @@
-TEST_EMAIL = "jtest@hubbub.shop"
+TEST_EMAIL = "jtest5000@hubbub.shop"
 TEST_PASSWORD = "passw0rd"
 
 ReCAPTCHA_TEST_TOKEN = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'

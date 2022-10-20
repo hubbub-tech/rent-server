@@ -7,7 +7,8 @@ TRIES = 5
 utils_auth = UtilsAuth()
 
 def test_register(client):
-
+    global TRIES
+    
     while TRIES > 0:
         test_registration_data = utils_auth.get_registration_data()
         response = client.post("/register", json=test_registration_data)

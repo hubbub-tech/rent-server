@@ -24,11 +24,10 @@ class DateGenerator:
         if dt_start is None:
             dt_start = self.dt_lbound
 
-        if dt_end < dt_start or dt_end is None:
-            if dt_start < self.ubound:
-                dt_end = self.ubound
-            else:
-                dt_end = dt_start + timedelta(weeks=TD_WEEKS)
+        if dt_end is None:
+            dt_end = dt_start + timedelta(weeks=self.TD_WEEKS)
+        elif dt_end < dt_start:
+            dt_end = dt_start + timedelta(weeks=self.TD_WEEKS)
 
         td_difference = dt_end - dt_start
         td_days = td_difference.days

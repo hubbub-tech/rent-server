@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 
 from src.utils.settings import DAYS_SERVICE_BUFFER
 
+
+
 class Calendars(Models):
     """
     A class to define the use of the Calendars type from Hubbub Shop's relational database.
@@ -21,7 +23,9 @@ class Calendars(Models):
 
 
     #for remove() and add(), you need to pass the specific res, bc no way to tell otherwise
-    def remove(self, reservation):
+    def remove(self, reservation: Models):
+        assert reservation.table_name == "reservations", "Model must be type Reservations."
+
         SQL = """
             UPDATE reservations
             SET is_calendared = %s
@@ -41,7 +45,9 @@ class Calendars(Models):
             Models.db.conn.commit()
 
 
-    def add(self, reservation):
+    def add(self, reservation: Models):
+        assert reservation.table_name == "reservations", "Model must be type Reservations."
+
         SQL = """
             UPDATE reservations
             SET is_in_cart = %s, is_calendared = %s
@@ -62,7 +68,9 @@ class Calendars(Models):
             Models.db.conn.commit()
 
 
-    def get_reservations(self, dt_lbound=None, dt_ubound=None, descending=True):
+    # Returns list of reservations from small to large (ASC default)
+    def get_reservations(self, dt_lbound: datetime=None, dt_ubound: datetime=None, descending: bool=False) -> list:
+
         """
         Returns an array of tuples.
         Structure:
@@ -99,7 +107,7 @@ class Calendars(Models):
 
 
     #returns true if a reservation if valid, returns false if not, returns none if expired item
-    def check_reservation(self, res_dt_start: datetime, res_dt_end: datetime, days_buffer=0, hours_buffer=0):
+    def check_reservation(self, res_dt_start: datetime, res_dt_end: datetime, days_buffer: int=0, hours_buffer: int=0) -> bool:
         dt_started_index = -2
         dt_ended_index = -1
 
@@ -115,7 +123,7 @@ class Calendars(Models):
         else: return False
 
 
-    def best_match_reservation(self, res_dt_start: datetime, res_dt_end: datetime, days_buffer=0, hours_buffer=0):
+    def best_match_reservation(self, res_dt_start: datetime, res_dt_end: datetime, days_buffer: int=0, hours_buffer: int=0) -> tuple:
         dt_started_index = -2
         dt_ended_index = -1
 
@@ -139,7 +147,7 @@ class Calendars(Models):
 
 
     #determining if an item is available day-by-day
-    def check_datetime(self, dt_comparison: datetime=datetime.now()):
+    def check_datetime(self, dt_comparison: datetime=datetime.now()) -> bool:
         dt_started_index = -2
         dt_ended_index = -1
 
@@ -154,7 +162,7 @@ class Calendars(Models):
         return True
 
 
-    def get_availabilities(self, days_buffer=0, hours_buffer=0):
+    def get_availabilities(self, days_buffer: int=0, hours_buffer: int=0) -> list:
         dt_started_index = -2
         dt_ended_index = -1
 
@@ -183,7 +191,7 @@ class Calendars(Models):
         return availabilities
 
 
-    def next_availability(self, days_buffer=0, hours_buffer=0):
+    def next_availability(self, days_buffer: int=0, hours_buffer: int=0) -> tuple:
         dt_started_index = -2
         dt_ended_index = -1
 
@@ -208,7 +216,7 @@ class Calendars(Models):
             return (None, None)
 
 
-    def available_days_in_next(self, days):
+    def available_days_in_next(self, days: int) -> int:
         dt_started_index = -2
         dt_ended_index = -1
 
@@ -227,10 +235,6 @@ class Calendars(Models):
             dt_current += timedelta(days=1)
 
         return available_days
-
-
-
-
 
 
     def __len__(self):
