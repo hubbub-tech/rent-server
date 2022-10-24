@@ -56,6 +56,21 @@ class Reservations(Models):
                 Models.db.conn.commit()
 
 
+    @property
+    def is_archived(self):
+        SQL = """
+            SELECT *
+            FROM reservations_archived
+            WHERE renter_id = %s AND item_id = %s AND dt_started = %s AND dt_ended = %s;
+            """
+
+        data = (self.renter_id, self.item_id, self.dt_started, self.dt_ended)
+
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            return cursor.fetchone() is not None
+
+
     def total(self):
         return self.est_charge + self.est_deposit + self.est_tax
 
