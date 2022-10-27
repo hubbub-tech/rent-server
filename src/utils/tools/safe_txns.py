@@ -169,48 +169,20 @@ def get_stripe_extension_session(order, reservation, email):
 
 
 
-def return_order_early(order, early_reservation):
+def return_order_early(order, early_res_dt_end):
 
-    status = _validate_early_return(order, early_reservation)
+    status = _validate_early_return(order, early_res_dt_end)
     if status.is_successful == False: return status
 
-    assert order.ext_dt_end >= order.res_dt_end, "This order has already been extended."
-
-    item = Items.get({"id": order.item_id})
-    renter = Users.get({"id": order.renter_id})
-    status = _safe_early_return(order, item, renter, early_reservation)
+    status = _safe_early_return(order, early_res_dt_end)
     return status
 
 
-
-def return_extension_early(extension, early_reservation):
-
-    status = _validate_early_return(extension, early_reservation)
-    if status.is_successful == False: return status
-
-    item = Items.get({"id": extension.item_id})
-    renter = Users.get({"id": extension.renter_id})
-    status = _safe_early_return(extension, item, renter, early_reservation)
-    return status
-
-
-def _validate_early_return(txn, early_reservation):
-    if early_reservation.dt_ended > txn.res_dt_end:
+def _validate_early_return(order, early_res_dt_end):
+    if early_res_dt_end > order.ext_dt_end:
         status = Status()
         status.is_successful = False
         status.message = "Early returns must be earlier than the current return date."
-        return status
-
-    if early_reservation.item_id != txn.item_id:
-        status = Status()
-        status.is_successful = False
-        status.message = "The reservation is not tied to the same item as the original order."
-        return status
-
-    if early_reservation.renter_id != txn.renter_id:
-        status = Status()
-        status.is_successful = False
-        status.message = "The reservation is not tied to the same renter."
         return status
 
     status = Status()
@@ -218,50 +190,83 @@ def _validate_early_return(txn, early_reservation):
     return status
 
 
-def _safe_early_return(txn, item, user, early_reservation):
+def _safe_early_return(order, early_res_dt_end):
+    item = Items.get({ "id": order.item_id })
+    user = Users.get({ "id": order.user_id })
+
     if item.is_locked == False:
         item.lock(user)
 
-        curr_reservation_pkeys = txn.to_query_reservation()
-        Reservations.set(curr_reservation_pkeys, {"is_calendared": False})
+        extensions = order.get_extensions()
+        if extensions:
+            res_dt_start_index = -2
+            res_dt_end_index = -1
+            extensions.sort(key = lambda ext: ext[res_dt_start_index], reverse=True)
 
-        curr_reservation = Reservations.get(curr_reservation_pkeys)
-        curr_reservation.archive(notes="Early Return.")
-        archive_reservation = curr_reservation
+            i = 0
+            est_refund = 0
+            while early_res_dt_end <= extensions[i][res_dt_start_index]:
+                reservation_data = {
+                    "item_id": order.item_id,
+                    "renter_id": order.renter_id,
+                    "dt_started": extensions[i][res_dt_start_index],
+                    "dt_ended": extensions[i][res_dt_end_index]
+                }
 
-        if isinstance(txn, Extensions):
-            Extensions.set({"order_id": txn.order_id, "res_dt_start": txn.res_dt_start}, {
-                "item_id": early_reservation.item_id,
-                "renter_id": early_reservation.renter_id,
-                "res_dt_end": early_reservation.dt_ended,
+                reservation = Reservations.get(reservation_data)
+                est_refund += reservation.est_charge
+
+                Reservations.set(reservation_data, { "is_calendared": False })
+
+                Extensions.delete({
+                    "order_id": order.id,
+                    "res_dt_start": extensions[i][res_dt_start_index]
+                })
+                i += 1
+
+            extensions = order.get_extensions()
+            extensions.sort(key = lambda ext: ext[res_dt_start_index])
+            if extensions:
+                reservation = Reservations.get({
+                    "item_id": item.id,
+                    "renter_id": user.id,
+                    "dt_started": extensions[-1][res_dt_start_index],
+                    "dt_ended": extensions[-1][res_dt_end_index]
+                })
+
+                reservation_data = reservation.to_dict(serializable=False)
+
+                Reservations.set(reservation_data, { "is_calendared": False })
+                reservation.archive(notes="Early Return.")
+
+                reservation_data["dt_ended"] = early_res_dt_end
+                reservation = create_reservation(reservation_data)
+
+                Extensions.set({"order_id": order.id, "res_dt_start": reservation.dt_started }, {
+                    "res_dt_end": early_res_dt_end
+                })
+
+        extensions = order.get_extensions()
+        if extensions == []:
+            reservation = Reservations.get({
+                "item_id": order.item_id,
+                "renter_id": order.renter_id,
+                "dt_started": order.res_dt_start,
+                "dt_ended": order.res_dt_end
             })
 
-            is_extension = True
-        elif isinstance(txn, Orders):
-            Orders.set({"id": txn.id}, {
-                "item_id": early_reservation.item_id,
-                "renter_id": early_reservation.renter_id,
-                "res_dt_start": early_reservation.dt_started,
-                "res_dt_end": early_reservation.dt_ended,
+            reservation_data = reservation.to_dict(serializable=False)
+
+            Reservations.set(reservation_data, { "is_calendared": False })
+            reservation.archive(notes="Early Return.")
+
+            reservation_data["dt_ended"] = early_res_dt_end
+            reservation = create_reservation(reservation_data)
+
+            Orders.set({ "id": order.id }, {
+                "res_dt_start": reservation.dt_started,
+                "res_dt_end": reservation.dt_ended
             })
-
-            is_extension = False
-        else:
-            item.unlock()
-            raise Exception("Transaction does not match valid object types.")
-
-        Reservations.set({
-            "item_id": early_reservation.item_id,
-            "renter_id": early_reservation.renter_id,
-            "dt_started": early_reservation.dt_started,
-            "dt_ended": early_reservation.dt_ended,
-        }, {
-            "is_calendared": True,
-            "is_extension": is_extension,
-            "est_charge": archive_reservation.est_charge,
-            "est_deposit": archive_reservation.est_deposit,
-            "est_tax": archive_reservation.est_tax
-        })
 
         item.unlock()
 

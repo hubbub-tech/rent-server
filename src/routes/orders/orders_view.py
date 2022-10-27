@@ -52,7 +52,7 @@ def view_order(order_id):
 
     order_to_dict["item"] = item.to_dict()
     order_to_dict["item"]["calendar"] = item_calendar.to_dict()
-    item_to_dict["item"]["image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
+    order_to_dict["item"]["image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
 
 
     order_to_dict["ext_dt_start"] = datetime.timestamp(order.ext_dt_start)

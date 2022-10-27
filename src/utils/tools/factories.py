@@ -53,6 +53,8 @@ def create_review(review_data):
 
 
 def create_reservation(insert_data):
+    assert insert_data["dt_started"] < insert_data["dt_ended"]
+    
     item = Items.get({"id": insert_data["item_id"]})
     reservation = Reservations.unique(insert_data)
 
