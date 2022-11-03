@@ -18,7 +18,7 @@ from .emails import *
 from .safe_txns import lock_cart, unlock_cart, check_lock_access
 from .safe_txns import get_stripe_checkout_session
 from .safe_txns import get_stripe_extension_session
-from .safe_txns import return_order_early, return_extension_early
+from .safe_txns import return_order_early
 
 from .files import get_receipt
 

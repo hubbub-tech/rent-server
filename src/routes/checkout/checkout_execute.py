@@ -89,7 +89,7 @@ def checkout():
         response = make_response({ "message": error }, 403)
         return response
 
-    dt_now = datetime.now()
+    dt_placed = datetime.now()
 
     for item_id in item_ids:
         item = Items.get({"id": item_id})
@@ -103,11 +103,11 @@ def checkout():
 
         item_calendar.add(reservation)
 
-        ts_placed = datetime.timestamp(dt_now)
+        ts_placed = datetime.timestamp(dt_placed)
         checkout_session_key = f"{user_cart.checkout_session_key}-{ts_placed}"
 
         order_data = {
-            "dt_placed": dt_now,
+            "dt_placed": dt_placed,
             "res_dt_start": reservation.dt_started,
             "res_dt_end": reservation.dt_ended,
             "renter_id": reservation.renter_id,
@@ -121,8 +121,6 @@ def checkout():
 
         email_data = get_lister_receipt_email(order) # WARNING
         send_async_email.apply_async(kwargs=email_data.to_dict())
-
-    checkout_session_key = user_cart.checkout_session_key
 
     orders = Orders.filter({
         "renter_id": user_cart.id,

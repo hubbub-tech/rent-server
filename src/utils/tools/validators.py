@@ -45,7 +45,7 @@ def validate_date_range(dt_lbound: datetime, dt_ubound: datetime):
 
     status = Status()
     if dt_lbound >= dt_ubound:
-        status.message = "Lower bound date cannot be greater than or equal to upper bound date."
+        status.message = "Your end date must be at least one date after your start date."
         status.is_successful = False
         return status
 

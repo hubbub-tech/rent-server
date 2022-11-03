@@ -26,7 +26,7 @@ def login_required(view):
             is_authorized = False
 
         if is_authorized == False:
-            error = "Sorry, you're not authorized for this page."
+            error = "Login first to continue using this page."
             response = make_response({ "message": error }, 403)
             return response
 
