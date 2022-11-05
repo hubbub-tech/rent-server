@@ -81,7 +81,7 @@ def checkout():
 
     # NOTE: test that the amount paid is accurate
 
-    item_ids = user_cart.get_item_ids()
+    item_ids = user_cart.get_item_ids(reserved_only=True)
     has_checkout_authorization = check_lock_access(g.user_id, item_ids)
 
     if has_checkout_authorization == False:
@@ -89,7 +89,15 @@ def checkout():
         response = make_response({ "message": error }, 403)
         return response
 
+
+    if len(item_ids) == 0:
+        error = "You don't have any items that are ready for checkout."
+        response = make_response({ "message": error }, 403)
+        return response
+
     dt_placed = datetime.now()
+    ts_placed = datetime.timestamp(dt_placed)
+    checkout_session_key = f"{user_cart.checkout_session_key}-{ts_placed}"
 
     for item_id in item_ids:
         item = Items.get({"id": item_id})
@@ -102,9 +110,6 @@ def checkout():
         })
 
         item_calendar.add(reservation)
-
-        ts_placed = datetime.timestamp(dt_placed)
-        checkout_session_key = f"{user_cart.checkout_session_key}-{ts_placed}"
 
         order_data = {
             "dt_placed": dt_placed,

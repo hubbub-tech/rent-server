@@ -13,6 +13,8 @@ from src.models import Reservations
 from src.utils.classes import Status
 from src.utils.settings import SERVER_DOMAIN, CLIENT_DOMAIN, STRIPE_APIKEY
 
+from .factories import create_reservation
+
 
 def unlock_cart(cart: Carts, specified_items=None):
     if specified_items:
@@ -192,7 +194,7 @@ def _validate_early_return(order, early_res_dt_end):
 
 def _safe_early_return(order, early_res_dt_end):
     item = Items.get({ "id": order.item_id })
-    user = Users.get({ "id": order.user_id })
+    user = Users.get({ "id": order.renter_id })
 
     if item.is_locked == False:
         item.lock(user)
@@ -224,6 +226,8 @@ def _safe_early_return(order, early_res_dt_end):
                 })
                 i += 1
 
+                if i >= len(extensions): break
+
             extensions = order.get_extensions()
             extensions.sort(key = lambda ext: ext[res_dt_start_index])
             if extensions:
@@ -239,10 +243,12 @@ def _safe_early_return(order, early_res_dt_end):
                 Reservations.set(reservation_data, { "is_calendared": False })
                 reservation.archive(notes="Early Return.")
 
-                reservation_data["dt_ended"] = early_res_dt_end
-                reservation = create_reservation(reservation_data)
+                early_reservation_data = reservation_data
+                early_reservation_data["dt_ended"] = early_res_dt_end
+                early_reservation = create_reservation(early_reservation_data)
 
-                Extensions.set({"order_id": order.id, "res_dt_start": reservation.dt_started }, {
+                Reservations.set(early_reservation_data, { "is_calendared": True })
+                Extensions.set({"order_id": order.id, "res_dt_start": early_reservation.dt_started }, {
                     "res_dt_end": early_res_dt_end
                 })
 
@@ -260,12 +266,15 @@ def _safe_early_return(order, early_res_dt_end):
             Reservations.set(reservation_data, { "is_calendared": False })
             reservation.archive(notes="Early Return.")
 
-            reservation_data["dt_ended"] = early_res_dt_end
-            reservation = create_reservation(reservation_data)
+            early_reservation_data = reservation_data
+            early_reservation_data["dt_ended"] = early_res_dt_end
+            early_reservation = create_reservation(early_reservation_data)
+
+            Reservations.set(early_reservation_data, { "is_calendared": True })
 
             Orders.set({ "id": order.id }, {
-                "res_dt_start": reservation.dt_started,
-                "res_dt_end": reservation.dt_ended
+                "res_dt_start": early_reservation.dt_started,
+                "res_dt_end": early_reservation.dt_ended
             })
 
         item.unlock()

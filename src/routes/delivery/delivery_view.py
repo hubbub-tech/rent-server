@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, make_response, request, g
 
 from src.models import Addresses
@@ -6,6 +7,7 @@ from src.models import Orders
 from src.models import Items
 
 from src.utils import login_required
+from src.utils.settings import aws_config
 
 bp = Blueprint("view", __name__)
 
@@ -14,7 +16,7 @@ bp = Blueprint("view", __name__)
 @login_required
 def view_dropoffs():
 
-    dropoffs = Logistics.filter({ "receive_id": g.user_id })
+    dropoffs = Logistics.filter({ "receiver_id": g.user_id })
 
     dropoffs_to_dict = []
     for dropoff in dropoffs:
@@ -33,6 +35,8 @@ def view_dropoffs():
 
             order_to_dict = order.to_dict()
             order_to_dict["item_name"] = item.name
+            order_to_dict["item_image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
+            order_to_dict["ext_dt_end"] = datetime.timestamp(order.ext_dt_end)
 
             orders_to_dict.append(order_to_dict)
 
@@ -47,7 +51,6 @@ def view_dropoffs():
     data = { "dropoffs": dropoffs_to_dict }
     response = make_response(data, 200)
     return response
-
 
 
 @bp.get("/pickups")
@@ -73,6 +76,8 @@ def view_pickups():
 
             order_to_dict = order.to_dict()
             order_to_dict["item_name"] = item.name
+            order_to_dict["item_image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
+            order_to_dict["ext_dt_end"] = datetime.timestamp(order.ext_dt_end)
 
             orders_to_dict.append(order_to_dict)
 

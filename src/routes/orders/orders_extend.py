@@ -17,7 +17,7 @@ from src.utils import get_lister_receipt_email, get_extension_receipt_email
 from src.utils import send_async_email, set_async_timeout
 from src.utils import login_required, get_stripe_extension_session
 
-from src.utils import JSON_DT_FORMAT
+from src.utils.settings import aws_config
 
 bp = Blueprint("extend", __name__)
 
@@ -75,6 +75,8 @@ def validate_extend_order():
     Reservations.set(reservation_data, {"is_extension": True})
     reservation.is_extension = True
 
+    item_to_dict = item.to_dict()
+    item_to_dict["image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
     checkout_session = get_stripe_extension_session(order, reservation, g.user_email)
 
     res_to_dict = reservation.to_dict()
@@ -82,6 +84,7 @@ def validate_extend_order():
     data = {
         "message": "Thank you! Now waiting on next steps to complete your order...",
         "order_id": order_id,
+        "item": item_to_dict,
         "ext_dt_end": new_ext_dt_end_json,
         "redirect_url": checkout_session.url
     }

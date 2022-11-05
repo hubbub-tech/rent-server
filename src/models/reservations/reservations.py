@@ -27,11 +27,18 @@ class Reservations(Models):
 
     def archive(self, notes=None):
         if self.is_calendared:
-            SQL = """
-                SELECT id
-                FROM orders
-                WHERE item_id = %s AND renter_id = %s AND res_dt_start = %s AND res_dt_end = %s
-                """
+            if self.is_extension:
+                SQL = """
+                    SELECT order_id
+                    FROM extensions
+                    WHERE item_id = %s AND renter_id = %s AND res_dt_start = %s AND res_dt_end = %s
+                    """
+            else:
+                SQL = """
+                    SELECT id
+                    FROM orders
+                    WHERE item_id = %s AND renter_id = %s AND res_dt_start = %s AND res_dt_end = %s
+                    """
 
             data = (self.item_id, self.renter_id, self.dt_started, self.dt_ended)
 

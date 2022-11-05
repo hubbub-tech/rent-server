@@ -32,7 +32,6 @@ def orders_history():
             "is_canceled": False
         })
 
-
     if orders == []:
         error = "No orders yet. Check out our shop and rent!"
         response = make_response({"message": error}, 200)
@@ -54,6 +53,7 @@ def orders_history():
         order_to_dict["pickup_id"] = order.get_pickup_id()
 
         order_to_dict["item_name"] = item.name
+        order_to_dict["item_description"] = item.description
         order_to_dict["item_image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
         order_to_dict["ext_dt_start"] = datetime.timestamp(order.ext_dt_start)
         order_to_dict["ext_dt_end"] = datetime.timestamp(order.ext_dt_end)
@@ -62,4 +62,35 @@ def orders_history():
         orders_to_dict.append(order_to_dict)
 
     response = make_response({ "orders": orders_to_dict }, 200)
+    return response
+
+
+@bp.get("/orders/unscheduled")
+@login_required
+def orders_unscheduled():
+    unscheduled_dropoff_orders = []
+    unscheduled_pickup_orders = []
+
+    orders = Orders.filter({ "renter_id": g.user_id })
+
+    for order in orders:
+        item = Items.get({ "id": order.item_id })
+
+        dropoff_id = order.get_dropoff_id()
+        pickup_id = order.get_pickup_id()
+
+        order_to_dict = order.to_dict()
+        order_to_dict["item_name"] = item.name
+        order_to_dict["item_description"] = item.description
+        order_to_dict["item_image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
+        order_to_dict["ext_dt_start"] = datetime.timestamp(order.ext_dt_start)
+        order_to_dict["ext_dt_end"] = datetime.timestamp(order.ext_dt_end)
+
+        if dropoff_id is None: unscheduled_dropoff_orders.append(order_to_dict)
+        if pickup_id is None: unscheduled_pickup_orders.append(order_to_dict)
+
+    response = make_response({
+        "unscheduled_dropoff_orders": unscheduled_dropoff_orders,
+        "unscheduled_pickup_orders": unscheduled_pickup_orders
+    }, 200)
     return response

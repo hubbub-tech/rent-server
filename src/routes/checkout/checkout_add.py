@@ -10,8 +10,6 @@ from src.utils import validate_rental
 from src.utils import login_required
 from src.utils import create_reservation
 
-from src.utils import JSON_DT_FORMAT
-
 bp = Blueprint("add", __name__)
 
 
