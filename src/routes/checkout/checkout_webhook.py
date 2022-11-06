@@ -33,8 +33,12 @@ def checkout_webhook():
     if event['type'] == 'checkout.session.completed':
       checkout_session = event['data']['object']
 
-      client_reference_id = checkout_session['client_reference_id']
-      attr_key, attr_value = client_reference_id.split(":")
+      client_reference_id = checkout_session.get('client_reference_id')
+
+      if client_reference_id:
+          attr_key, attr_value = client_reference_id.split(":")
+      else:
+          return 400
 
       if attr_key == "orders_checkout_session_key":
           checkout_session_key = attr_value
