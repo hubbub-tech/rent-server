@@ -1,16 +1,12 @@
 import os
 import pytest
 
-from blubber_orm import get_db
+from blubber_orm import get_blubber
 
-from server import create_app
-from server.tools.settings import TestConfig
+from src import create_app
+from src.utils.settings import TestFlaskConfig
 
 from .const import TEST_EMAIL, TEST_PASSWORD
-
-# read in SQL for populating test data
-with open(os.path.join(os.path.dirname(__file__), "data.sql"), "rb") as f:
-    _data_sql = f.read().decode("utf8")
 
 @pytest.fixture
 def app():
@@ -19,11 +15,11 @@ def app():
     # db_fd, db_path = tempfile.mkstemp()
 
     # create the app with common test config
-    app = create_app(config_object=TestConfig())
+    app = create_app(config_object=TestFlaskConfig())
 
     # create the database and load test data
     # with app.app_context():
-    #     cur, conn = get_db()
+    #     cur, conn = get_blubber()
     #     assert "localhost" in os.environ["DATABASE_URL"]
     #     cur.execute(open("schema.sql", "r").read())
 
@@ -52,7 +48,7 @@ class AuthActions:
         return response
 
     def logout(self):
-        """No logout server-side; user must prove themselves with cookies"""
+        """No logout server-side; user must prove themselves with each request."""
 
 
 @pytest.fixture

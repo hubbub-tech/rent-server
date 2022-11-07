@@ -1,0 +1,68 @@
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
+from .files import base64_to_file
+from .files import upload_to_gcloud
+from src.utils.settings import celery, smtp_config
+
+from .safe_txns import unlock_cart
+
+@celery.task
+def send_async_email(subject, to, body, error=None):
+    msg = Mail(
+        from_email=smtp_config.DEFAULT_SENDER,
+        to_emails=to,
+        subject=subject,
+        html_content=body
+    )
+    try:
+        sg = SendGridAPIClient(smtp_config.SENDGRID_APIKEY)
+        response = sg.send(msg)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+
+    except Exception as e:
+        print(e.message)
+
+
+@celery.task
+def set_async_timeout(user_id):
+    """Background task to unlock items if user does not transact."""
+
+    from src import create_app
+    app = create_app()
+
+    try:
+        with app.app_context():
+            user_cart = Carts.get({"id": user_id})
+            unlock_cart(user_cart)
+
+        dt_now = datetime.now()
+        print(f"[Epoch: {datetime.timestamp(dt_now)}] All items in cart with id: {user_cart.id} have been unlocked.") # TODO: log this
+        return True
+
+    except:
+        #TODO: write a proper exception handling statement here
+        print("The timeout failed.")
+        return False
+
+
+@celery.task
+def upload_file_async(uid, file_base64):
+
+    from src import create_app
+    app = create_app()
+
+    try:
+        with app.app_context():
+
+            file, file_format = base64_to_file(file_base64)
+
+            filename = f"/tests/item-{uid}.jpg"
+            # upload_to_gcloud(file, filename, file_format)
+            upload_to_awss3(file, filename, file_format)
+
+    except Exception as e:
+        print(e)
