@@ -5,6 +5,13 @@ from src.models import Items
 from src.utils import create_review
 from src.utils import login_required
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_FORBIDDEN,
+    CODE_4_NOT_FOUND
+)
+
+
 bp = Blueprint("review", __name__)
 
 # NOTE: Consider only allowing people who have rented to leave reviews.
@@ -17,12 +24,12 @@ def review_item():
 
     if item is None:
         error = "We can't seem to find the item that you're looking for."
-        response = make_response({"message": error}, 404)
+        response = make_response({"message": error}, CODE_4_NOT_FOUND)
         return response
 
     if item.lister_id == g.user_id:
         error = "Listers cannot write reviews on their own items."
-        response = make_response({"message": error}, 403)
+        response = make_response({"message": error}, CODE_4_FORBIDDEN)
         return response
 
     review_body = request.json.get("body", "No review provided.")
@@ -37,5 +44,5 @@ def review_item():
 
     review = create_review(review_data)
     message = f"Your review on the item, '{item.name}' has been received. Thanks!"
-    response = make_response({"message": message}, 200)
+    response = make_response({"message": message}, CODE_2_OK)
     return response

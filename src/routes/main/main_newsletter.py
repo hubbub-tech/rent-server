@@ -3,6 +3,12 @@ from flask import Blueprint, make_response, request
 
 from src.utils.settings import FlaskConfig
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_TIMEOUT,
+    CODE_5_SERVER_ERROR
+)
 
 bp = Blueprint("newsletter", __name__)
 
@@ -16,11 +22,11 @@ def newsletter_sign_up():
         token = request.json["token"]
     except KeyError as e:
         error = "Sorry, seems like there was a problem receiving your sign up request, try again."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Seems like something is wrong."
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     recaptcha_data = {
@@ -34,9 +40,9 @@ def newsletter_sign_up():
         email_data = get_newsletter_welcome({"name": name, "email": email})
         send_async_email.apply_async(kwargs=email_data.to_dict())
         data = {"message": "Thanks for joining our newsletter!" }
-        response = make_response(data, 200)
+        response = make_response(data, CODE_2_OK)
         return response
     else:
         error = "Sorry, try again recaptcha timed out."
-        response = make_response({ "message": error }, 403)
+        response = make_response({ "message": error }, CODE_4_TIMEOUT)
         return response

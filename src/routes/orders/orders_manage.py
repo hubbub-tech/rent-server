@@ -10,7 +10,12 @@ from src.models import Addresses
 from src.utils import get_receipt
 from src.utils import login_required
 
-from src.utils import JSON_DT_FORMAT
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_FORBIDDEN,
+    CODE_4_NOT_FOUND,
+)
 
 bp = Blueprint("manage", __name__)
 
@@ -24,16 +29,16 @@ def download_receipt():
 
     if order is None:
         error = "We could not find the rental you're looking for."
-        response = make_response({"message": error}, 404)
+        response = make_response({"message": error}, CODE_4_NOT_FOUND)
         return response
 
     if order.renter_id != g.user_id:
         error = "You're not authorized to view this receipt."
-        response = make_response({"message": error}, 403)
+        response = make_response({"message": error}, CODE_4_FORBIDDEN)
         return response
 
     receipt = get_receipt(order)
-    response = make_response({ "receipt": receipt }, 200)
+    response = make_response({ "receipt": receipt }, CODE_2_OK)
     return response
 
 
@@ -58,7 +63,7 @@ def get_orders_by_date():
         pass
     except:
         error = "No start or end date was provided to look up orders."
-        response = make_response({"message": error}, 401)
+        response = make_response({"message": error}, CODE_4_BAD_REQUEST)
         return response
 
     orders_to_dict = []
@@ -97,5 +102,5 @@ def get_orders_by_date():
                 orders_to_dict.append(order_to_dict)
 
     data = { "orders": orders_to_dict }
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response

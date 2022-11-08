@@ -12,6 +12,8 @@ from src.utils import login_required
 
 from src.utils.settings import aws_config
 
+from src.utils.settings import CODE_2_OK
+
 bp = Blueprint("cart", __name__)
 
 
@@ -100,5 +102,5 @@ def cart():
         "unreserved_items": unreserved_items_to_dict
     }
 
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response

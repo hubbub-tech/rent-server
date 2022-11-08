@@ -10,6 +10,13 @@ from src.utils import send_async_email
 
 from src.utils.settings import FlaskConfig
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_UNAUTHORIZED,
+    CODE_5_SERVER_ERROR
+)
+
 bp = Blueprint('manage', __name__)
 
 
@@ -20,12 +27,12 @@ def pass_recover():
         email = request.json["email"].lower()
     except KeyError:
         error = "Sorry, you didn't send anything in the form, try again."
-        response = make_response({ "message": error }, 406)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     user = Users.unique({"email": email})
@@ -43,7 +50,7 @@ def pass_recover():
         send_async_email.apply_async(kwargs=email_data.to_dict())
 
     message = "If this email has an account, we have sent the recovery link there."
-    response = make_response({ "message": message }, 200)
+    response = make_response({ "message": message }, CODE_2_OK)
     return response
 
 
@@ -57,12 +64,12 @@ def pass_reset():
         new_pass = request.json["newPassword"]
     except KeyError:
         error = "Did not receive your charges. Please, try again."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
 
@@ -74,9 +81,9 @@ def pass_reset():
             Users.set({"id": user.id}, {"password": hashed_pass})
 
             message = "You've successfully reset your password!"
-            response = make_response({ "message": message }, 200)
+            response = make_response({ "message": message }, CODE_2_OK)
             return response
 
     error = "Reset attempt failed. Try again."
-    response = make_response({ "message": error }, 403)
+    response = make_response({ "message": error }, CODE_4_UNAUTHORIZED)
     return response

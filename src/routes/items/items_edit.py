@@ -5,6 +5,13 @@ from src.models import Items
 from src.utils import create_address
 from src.utils import login_required
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_UNAUTHORIZED,
+    CODE_4_NOT_FOUND,
+    CODE_5_SERVER_ERROR
+)
 
 bp = Blueprint("edit", __name__)
 
@@ -18,12 +25,12 @@ def edit_item():
 
     if item is None:
         error = "We can't seem to find the item that you're looking for."
-        response = make_response({"message": error}, 404)
+        response = make_response({"message": error}, CODE_4_NOT_FOUND)
         return response
 
     if item.lister_id != g.user_id:
         error = "You are not authorized to edit this item."
-        response = make_response({"message": error}, 403)
+        response = make_response({"message": error}, CODE_4_UNAUTHORIZED)
         return response
 
     try:
@@ -34,11 +41,11 @@ def edit_item():
         new_address_lng = request.json["address"]["lng"]
     except KeyError:
         error = "Missing data in your attempt to edit. Try again."
-        response = make_response({"message": error}, 401)
+        response = make_response({"message": error}, CODE_4_BAD_REQUEST)
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     # NOTE: parse for address data
@@ -51,5 +58,5 @@ def edit_item():
     })
 
     message = "Your edit requests have been received. Thanks!"
-    response = make_response({"message": message}, 200)
+    response = make_response({"message": message}, CODE_2_OK)
     return response

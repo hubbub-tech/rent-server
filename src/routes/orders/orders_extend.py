@@ -19,6 +19,14 @@ from src.utils import login_required, get_stripe_extension_session
 
 from src.utils.settings import aws_config
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_FORBIDDEN,
+    CODE_4_UNAUTHORIZED,
+    CODE_4_NOT_FOUND
+)
+
 bp = Blueprint("extend", __name__)
 
 
@@ -36,12 +44,12 @@ def validate_extend_order():
 
     if order is None:
         error = "We could not find the rental you're looking for."
-        response = make_response({"message": error}, 404)
+        response = make_response({"message": error}, CODE_4_NOT_FOUND)
         return response
 
     if order.renter_id != g.user_id:
         error = "You're not authorized to extend this rental."
-        response = make_response({"message": error}, 403)
+        response = make_response({"message": error}, CODE_4_FORBIDDEN)
         return response
 
     item = Items.get({"id": order.item_id})
@@ -59,7 +67,7 @@ def validate_extend_order():
 
     if status.is_successful == False:
         error = status.message
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
 
     if item.is_locked == False:
@@ -69,7 +77,7 @@ def validate_extend_order():
         set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": user.id})
     else:
         error = "Sorry seems like someone else is ordering this item. Try again in a few minutes."
-        response = make_response({"message": error}, 403)
+        response = make_response({"message": error}, CODE_4_UNAUTHORIZED)
         return response
 
     Reservations.set(reservation_data, {"is_extension": True})
@@ -89,7 +97,7 @@ def validate_extend_order():
         "redirect_url": checkout_session.url
     }
 
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response
 
 
@@ -105,12 +113,12 @@ def extend_order():
     order = Orders.get({"id": order_id})
     if order is None:
         error = "We could not find the rental you're looking for."
-        response = make_response({"message": error}, 404)
+        response = make_response({"message": error}, CODE_4_NOT_FOUND)
         return response
 
     if order.renter_id != g.user_id:
         error = "You're not authorized to view this receipt."
-        response = make_response({"message": error}, 403)
+        response = make_response({"message": error}, CODE_4_FORBIDDEN)
         return response
 
     reservation = Reservations.get({
@@ -127,7 +135,7 @@ def extend_order():
         if item.locker_id == g.user_id:
             item.unlock()
         error = f"Could not find the requested extension. Please contact us at {'hello@hubbub.shop'}."
-        response = make_response({"message": error}, 404)
+        response = make_response({"message": error}, CODE_4_NOT_FOUND)
         return response
 
     if item.is_locked and item.locker_id == g.user_id:
@@ -144,7 +152,7 @@ def extend_order():
         item.unlock()
     else:
         error = "Looks like someone else got to this one before you."
-        response = make_response({"message": error}, 403)
+        response = make_response({"message": error}, CODE_4_UNAUTHORIZED)
         return response
 
     email_data = get_lister_receipt_email(extension) # WARNING
@@ -154,7 +162,7 @@ def extend_order():
     send_async_email.apply_async(kwargs=email_data.to_dict())
 
     message = "Successfully extended your order!"
-    response = make_response({"message": message}, 200)
+    response = make_response({"message": message}, CODE_2_OK)
     return response
 
 
@@ -166,5 +174,5 @@ def cancel_extend_order():
     for item in items:
         item.unlock()
 
-    response = make_response({ "message": "Your extension was canceled." }, 200)
+    response = make_response({ "message": "Your extension was canceled." }, CODE_2_OK)
     return response

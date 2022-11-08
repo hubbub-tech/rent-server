@@ -12,6 +12,11 @@ from src.utils.classes import Recommender
 
 from src.utils.settings import aws_config
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_NOT_FOUND
+)
+
 bp = Blueprint("view", __name__)
 
 
@@ -22,7 +27,7 @@ def view_item(item_id):
 
     if item is None:
         error = "This item does not exist at the moment."
-        response = make_response({"message": error}, 404)
+        response = make_response({"message": error}, CODE_4_NOT_FOUND)
         return response
 
     lister = Users.get({"id": item.lister_id})
@@ -70,5 +75,5 @@ def view_item(item_id):
 
     data = { "item": item_to_dict, "recommendations": recs_to_dict }
 
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response

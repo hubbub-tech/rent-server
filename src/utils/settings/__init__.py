@@ -8,6 +8,7 @@ from .config import CaptchaConfig
 from .config import FlaskConfig, TestFlaskConfig
 
 from .const import *
+from .codes import *
 
 smtp_config = SMTPConfig.get_instance()
 aws_config = AWSConfig.get_instance()

@@ -18,6 +18,12 @@ from src.utils import get_dropoff_error_email
 from src.utils import get_pickup_request_email
 from src.utils import get_pickup_error_email
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_5_SERVER_ERROR
+)
+
 bp = Blueprint("schedule", __name__)
 
 
@@ -39,12 +45,12 @@ def schedule_dropoff():
         referral = request.json.get("referral")
     except KeyError:
         error = "Sorry, you didn't send anything in the form, try again."
-        response = make_response({ "message": error }, 406)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         errors = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     to_address = create_address(to_address_data)
@@ -97,7 +103,7 @@ def schedule_dropoff():
         "address_lng": to_address.lng
     })
 
-    response = make_response({ "message": "Thanks for scheduling!" }, 200)
+    response = make_response({ "message": "Thanks for scheduling!" }, CODE_2_OK)
     return response
 
 
@@ -118,12 +124,12 @@ def schedule_pickup():
         notes = request.json.get("notes")
     except KeyError:
         error = "Sorry, you didn't send anything in the form, try again."
-        response = make_response({ "message": error }, 406)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     from_address = create_address(from_address_data)
@@ -175,5 +181,5 @@ def schedule_pickup():
         if order.id not in attached_order_ids:
             logistics.add_order(order.id)
 
-    response = make_response({ "message": "Thanks for scheduling!" }, 200)
+    response = make_response({ "message": "Thanks for scheduling!" }, CODE_2_OK)
     return response

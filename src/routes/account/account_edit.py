@@ -6,6 +6,13 @@ from src.utils import validate_login
 from src.utils import login_required
 from src.utils import create_address
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_UNAUTHORIZED,
+    CODE_5_SERVER_ERROR
+)
+
 bp = Blueprint("edit", __name__)
 
 
@@ -19,12 +26,12 @@ def edit_password():
         curr_password = request.json["currPassword"]
     except KeyError:
         errors = ["Sorry, did not receive your password updates. Please, try again."]
-        response = make_response({"messages": errors}, 401)
+        response = make_response({"messages": errors}, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         errors = ["Something went wrong. Please, try again."]
         # NOTE: Log error here.
-        response = make_response({ "messages": errors }, 500)
+        response = make_response({ "messages": errors }, CODE_5_SERVER_ERROR)
         return response
 
     user = Users.get({"id": g.user_id})
@@ -34,14 +41,14 @@ def edit_password():
 
     if status.is_successful == False:
         errors = status.messages
-        response = make_response({"messages": errors}, 401)
+        response = make_response({"messages": errors}, CODE_4_UNAUTHORIZED)
         return response
 
     hashed_pass = generate_password_hash(new_password)
     Users.set({"id": g.user_id}, {"password": hashed_pass})
 
     messages = ["Successfully changed password!"]
-    response = make_response({"messages": messages}, 200)
+    response = make_response({"messages": messages}, CODE_2_OK)
     return response
 
 
@@ -59,12 +66,12 @@ def edit_address():
         }
     except KeyError:
         errors = ["Sorry, did not receive your new address updates. Please, try again."]
-        response = make_response({"messages": errors}, 401)
+        response = make_response({"messages": errors}, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         errors = ["Something went wrong. Please, try again."]
         # NOTE: Log error here.
-        response = make_response({ "messages": errors }, 500)
+        response = make_response({ "messages": errors }, CODE_5_SERVER_ERROR)
         return response
 
     # NOTE: parse address before creation...
@@ -76,5 +83,5 @@ def edit_address():
     })
 
     messages = ["Successfully changed your address!"]
-    response = make_response({"messages": messages}, 200)
+    response = make_response({"messages": messages}, CODE_2_OK)
     return response

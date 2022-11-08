@@ -12,6 +12,15 @@ from src.utils import create_reservation
 
 from src.utils import JSON_DT_FORMAT
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_FORBIDDEN,
+    CODE_4_UNAUTHORIZED,
+    CODE_4_NOT_FOUND,
+    CODE_5_SERVER_ERROR
+)
+
 bp = Blueprint("edit", __name__)
 
 
@@ -25,12 +34,12 @@ def edit():
         new_dt_ended_json = request.json["dtEnded"]
     except KeyError:
         error = "No item added to cart. Please, try again."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     item = Items.get({"id": item_id})
@@ -38,7 +47,7 @@ def edit():
 
     if item is None:
         error = "Sorry, this item does not exist."
-        response = make_response({ "message": error }, 404)
+        response = make_response({ "message": error }, CODE_4_NOT_FOUND)
         return response
 
     curr_reservation = Reservations.unique({
@@ -70,10 +79,10 @@ def edit():
         user_cart.add_without_reservation(item)
 
         error = status.message
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
 
     user_cart.add(new_reservation)
     message = "The item has been added to your cart!"
-    response = make_response({ "message": message }, 200)
+    response = make_response({ "message": message }, CODE_2_OK)
     return response
