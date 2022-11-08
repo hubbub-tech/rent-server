@@ -17,6 +17,8 @@ from .factories import create_reservation
 
 
 def unlock_cart(cart: Carts, specified_items=None):
+    assert cart.table_name == 'carts', "must be of type Carts."
+    
     if specified_items:
         for item in specified_items:
             item.unlock()
@@ -29,6 +31,7 @@ def unlock_cart(cart: Carts, specified_items=None):
 
 def lock_cart(cart: Carts):
     """check that reservations don't overlap and that item is unlocked."""
+    assert cart.table_name == 'carts', "must be of type Carts."
 
     locked_items = []
 
@@ -52,7 +55,7 @@ def lock_cart(cart: Carts):
             return status
 
         item_calendar = Calendars.get({"id": item.id})
-        if item_calendar.check_reservation(res.dt_started, res.dt_ended) and item.is_locked == False:
+        if item_calendar.check_reservation(res.dt_started, res.dt_ended) and (item.is_locked == False or item.locker_id == cart.id):
             user = Users.get({"id": cart.id})
 
             item.lock(user)
@@ -71,7 +74,10 @@ def lock_cart(cart: Carts):
     return status
 
 
-def check_lock_access(accessor_id, item_ids):
+def check_lock_access(accessor_id: int, item_ids: list):
+    assert isinstance(accessor_id, int), "Accessor_id must be an int."
+    assert isinstance(item_ids, list), "Must receive a list of item ids."
+
     for item_id in item_ids:
         item = Items.get({ "id": item_id })
         if item.locker_id != accessor_id:

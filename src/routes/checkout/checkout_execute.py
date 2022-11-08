@@ -89,8 +89,8 @@ def checkout():
         response = make_response({ "message": error }, 403)
         return response
 
-
     if len(item_ids) == 0:
+        print(item_ids)
         error = "You don't have any items that are ready for checkout."
         response = make_response({ "message": error }, 403)
         return response
