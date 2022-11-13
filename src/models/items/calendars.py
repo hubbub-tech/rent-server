@@ -169,7 +169,12 @@ class Calendars(Models):
         td_buffer = timedelta(days=days_buffer, hours=hours_buffer)
 
         reservations = self.get_reservations()
-        if reservations == []: return [(self.dt_started + td_buffer, self.dt_ended)]
+        if reservations == []:
+            days_available = (self.dt_ended - self.dt_started).days
+            if days_available > days_buffer:
+                return [(self.dt_started + td_buffer, self.dt_ended)]
+            else:
+                return []
 
         reservations.sort(key = lambda res: res[dt_ended_index])
 
