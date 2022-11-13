@@ -42,6 +42,7 @@ def edit_item():
     except KeyError:
         error = "Missing data in your attempt to edit. Try again."
         response = make_response({"message": error}, CODE_4_BAD_REQUEST)
+        return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.

@@ -1,9 +1,6 @@
 from blubber_orm import Models
 
-
-
 class Reservations(Models):
-
 
     table_name = "reservations"
     table_primaries = ["item_id", "renter_id", "dt_started", "dt_ended"]
@@ -76,6 +73,34 @@ class Reservations(Models):
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             return cursor.fetchone() is not None
+
+
+    @classmethod
+    def get_item_id_by_bounds(cls, bounds: dict) -> list:
+        if bounds.get("lower"): assert isinstance(bounds["lower"], datetime)
+        else: bounds["lower"] = datetime.min
+
+        if bounds.get("upper"): assert isinstance(bounds["upper"], datetime)
+        else: bounds["upper"] = datetime.max
+
+        SQL = """
+            SELECT item_id
+            FROM reservations
+            WHERE is_calendared = %s AND dt_started >= %s AND dt_ended <= %s;
+            """
+
+        data = (True, bounds["lower"], bounds["upper"])
+
+        item_ids = []
+        with Models.db.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            result = cursor.fetchall()
+
+            for (item_id,) in result:
+                if item_id not in item_ids:
+                    item_ids.append(item_id)
+
+        return item_ids
 
 
     def total(self):

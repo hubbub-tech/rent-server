@@ -1,15 +1,21 @@
 import random
+from blubber_orm import get_blubber
+from datetime import datetime
 
-from src.models import Items
-from src.models import Tags
+from src.models.reservations import Reservations
+from src.models.items import Items
+from src.models.items import Tags
 
 class Recommender:
+
+    MATCH_THRESHOLD = 70
 
     def __init__(self):
         pass
 
 
     def on(self, item):
+        assert isinstance (item, Items), "Entry must be of model type: Items."
         # Split the item name by spaces
         search_tokens = item.name.split(" ")
 
@@ -66,3 +72,69 @@ class Recommender:
                 if item.is_transactable and item.is_visible:
                     filtered_items.append(item)
         return filtered_items
+
+
+    def search_by_dates(self, dt_started: datetime=None, dt_ended: datetime=None, search_key: str=None):
+        if dt_started is None: datetime.min
+        if dt_ended is None: datetime.max
+
+        assert isinstance(dt_started, datetime), "Must be of type datetime."
+        assert isinstance(dt_ended, datetime), "Must be of type datetime."
+
+        SQL = """
+            WITH reserved_items (id) AS
+            (
+                SELECT r.item_id
+                FROM reservations r
+                INNER JOIN items i
+                ON i.id = r.item_id
+                WHERE r.is_calendared = %s AND r.dt_started >= %s AND r.dt_ended <= %s
+            ),
+            all_items (id) AS
+            (
+                SELECT id
+                FROM items
+            )
+            SELECT id
+            FROM all_items
+            EXCEPT ALL
+            SELECT id
+            FROM reserved_items;
+            """
+
+        data = (True, dt_started, dt_ended)
+
+        blubber = get_blubber()
+        with blubber.conn.cursor() as cursor:
+            cursor.execute(SQL, data)
+            item_ids = cursor.fetchall()
+            item_ids = [item_id for item_t in item_ids for item_id in item_t]
+
+        # if item_ids and search_key:
+        #     conds = ",".join([f"({id})" for id in item_ids])
+        #
+        #     SQL = f"""
+        #         WITH unreserved_items (id) AS
+        #         (
+        #             VALUES ({conds})
+        #         )
+        #         SELECT i.id
+        #         FROM items i
+        #         WHERE i.name ILIKE %s OR i.description ILIKE %s
+        #         EXCEPT ALL
+        #         SELECT id
+        #         FROM unreserved_items;
+        #         """
+        #
+        #     data = (f"%{search_key}%", f"%{search_key}%")
+        #
+        #     with blubber.conn.cursor() as cursor:
+        #         cursor.execute(SQL, data)
+        #         item_ids = cursor.fetchall()
+        #         item_ids = [item_id for item_t in item_ids for item_id in item_t]
+        print("check here")
+        items = []
+        for item_id in item_ids:
+            item = Items.get({ "id": item_id })
+            items.append(item)
+        return items
