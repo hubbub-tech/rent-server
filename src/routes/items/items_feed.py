@@ -80,6 +80,10 @@ def item_feed():
     live_items = Items.filter({ "is_transactable": True, "is_visible": True })
     item_ids = Reservations.get_item_id_by_bounds({ "lower": dt_started, "upper": dt_ended })
 
+    for item in live_items:
+        if item.id not in item_ids:
+            pass
+
     recommender = Recommender()
     if search_term:
         items = recommender.search_for(search_term)
