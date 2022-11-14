@@ -53,7 +53,7 @@ def item_feed():
             send_async_email.apply_async(kwargs=email_data.to_dict())
 
     items_to_dict_sorted = json_sorted(items_to_dict, "next_available_start")
-    items_to_dict_sorted = json_sorted(items_to_dict_sorted, "is_featured")
+    items_to_dict_sorted = json_sorted(items_to_dict_sorted, "is_featured", reverse=True)
 
     if g.user_id:
         user = Users.get({ "id": g.user_id })
