@@ -29,10 +29,10 @@ def get_dropoff_request_email(logistics):
 
     timeslots_str = ", ".join(timeslots_printables)
 
-    dt_range_start_index = 0
-    dt_range_end_index = 1
+    order_ids = logistics.get_order_ids()
+    sample_order = Orders.get({ "id": order_ids[0] })
 
-    date_dropoff_str = timeslots[0][dt_range_start_index].strftime("%B %-d, %Y")
+    date_dropoff_str = sample_order.res_dt_start.strftime("%B %-d, %Y")
     email_body_formatter.preview = f"Coordinating drop-off for your recent order(s) for {date_dropoff_str} - "
 
     renter = Users.get({"id": logistics.receiver_id})
