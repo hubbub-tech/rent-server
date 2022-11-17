@@ -31,21 +31,19 @@ def item_stream():
     count = request.args.get("count", None)
     streaming_still = True
 
-    def stream_messages_to_client():
+    def stream_messages_to_client(count):
         i = 0
         while i < int(count):
-            try:
-                message = f"data: {prefix}-the bird is the word, num: {i}\n\n"
-                i += 1
-            except:
-                message = "data: something is going wrong...\n\n"
-                i += 1
+            data = { "message": "This is just a test..."}
+            message = """data: "{message:'this is a test.',is_successful:'true'}" \n\n """
+            # message = "data: this is a test.\n\n "
 
             streaming_still = True
+            i += 1
             yield message
 
     response = Response(stream_with_context(
-        stream_messages_to_client()
+        stream_messages_to_client(count)
     ), content_type='text/event-stream')
 
     # print(response.data)
@@ -123,75 +121,5 @@ def item_feed():
         lng = None
 
     data = { "items": items_to_dict_sorted, "user_address_lat": lat, "user_address_lng": lng }
-    response = make_response(data, CODE_2_OK)
-    return response
-
-
-
-@bp.post("/items/feed/dates")
-@login_optional
-def item_feed_date_search():
-
-
-    search_term = request.json.get("search", None)
-
-    if not ts_started and not ts_ended:
-        redirect_url = f"{CLIENT_DOMAIN}/items/feed"
-        if search_term:
-            redirect_url += f"?search={search_term}"
-        return redirect(redirect_url, code=CODE_3_REDIRECT)
-
-    try:
-        if ts_started:
-            dt_started = datetime.fromtimestamp(ts_started)
-        else:
-            dt_started = None
-        if ts_ended:
-            dt_ended = datetime.fromtimestamp(ts_ended)
-        else:
-            dt_ended = None
-    except KeyError:
-        error = "Your dates couldn't be processed. Try again."
-        response = make_response({"message": error}, CODE_4_BAD_REQUEST)
-        return response
-    except Exception as e:
-        error = "Something went wrong. Please, try again."
-        # NOTE: Log error here.
-        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
-        return response
-
-    recommender = Recommender()
-    items = recommender.search_by_dates(dt_started, dt_ended, search_term)
-
-    items_to_dict = []
-    for item in items:
-        tags = item.get_tags()
-        item_calendar = Calendars.get({"id": item.id})
-        next_start, next_end = item_calendar.next_availability()
-
-        if next_start and next_end:
-            item_to_dict = item.to_dict()
-            item_to_dict["next_available_start"] = datetime.timestamp(next_start)
-            item_to_dict["next_available_end"] = datetime.timestamp(next_end)
-            item_to_dict["tags"] = tags
-
-            item_to_dict["image_url"] = aws_config.get_base_url() + f"/items/{item.id}.jpg"
-
-            items_to_dict.append(item_to_dict)
-        elif item.is_transactable or item.is_visible:
-            Items.set({ "id": item.id }, { "is_transactable": False, "is_visible": False })
-
-            email_data = get_item_expiration_email(item) # WARNING
-            send_async_email.apply_async(kwargs=email_data.to_dict())
-
-    if g.user_id:
-        user = Users.get({ "id": g.user_id })
-        lat = user.address_lat
-        lng = user.address_lng
-    else:
-        lat = None
-        lng = None
-
-    data = { "items": items_to_dict, "user_address_lat": lat, "user_address_lng": lng }
     response = make_response(data, CODE_2_OK)
     return response
