@@ -14,6 +14,14 @@ from src.utils import get_item_expiration_email
 
 from src.utils.settings import aws_config
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_UNAUTHORIZED,
+    CODE_4_NOT_FOUND,
+    CODE_5_SERVER_ERROR
+)
+
 bp = Blueprint('feed', __name__)
 
 
@@ -81,5 +89,5 @@ def item_feed():
         lng = None
 
     data = { "items": items_to_dict_sorted, "user_address_lat": lat, "user_address_lng": lng }
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response

@@ -19,6 +19,15 @@ from src.utils import get_stripe_checkout_session
 from src.utils import send_async_email, set_async_timeout
 from src.utils import get_lister_receipt_email, get_renter_receipt_email
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_FORBIDDEN,
+    CODE_4_UNAUTHORIZED,
+    CODE_4_NOT_FOUND,
+    CODE_5_SERVER_ERROR
+)
+
 
 bp = Blueprint("execute", __name__)
 
@@ -41,13 +50,13 @@ def validate_checkout():
 
     if user_cart.checkout_session_key != checkout_session_key:
         error = "Your cart is not prepared for checkout."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
 
     reserved_items = user_cart.get_item_ids(reserved_only=True)
     if len(reserved_items) != len(user_cart):
         error = "Your cart is not prepared for checkout."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_FORBIDDEN)
         return response
 
     status = lock_cart(user_cart)
@@ -61,11 +70,11 @@ def validate_checkout():
 
     if txn_method == "in-person":
         message = "Thank you! Now waiting on next steps to complete your order..."
-        response = make_response({ "message": message }, 200)
+        response = make_response({ "message": message }, CODE_2_OK)
         return response
     else:
         checkout_session = get_stripe_checkout_session(user_cart, g.user_email)
-        response = make_response({ "redirect_url": checkout_session.url }, 200)
+        response = make_response({ "redirect_url": checkout_session.url }, CODE_2_OK)
         return response
 
 
@@ -86,13 +95,13 @@ def checkout():
 
     if has_checkout_authorization == False:
         error = "You don't have permission to checkout your cart."
-        response = make_response({ "message": error }, 403)
+        response = make_response({ "message": error }, CODE_4_UNAUTHORIZED)
         return response
 
     if len(item_ids) == 0:
         print(item_ids)
         error = "You don't have any items that are ready for checkout."
-        response = make_response({ "message": error }, 403)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
 
     dt_placed = datetime.now()
@@ -135,7 +144,7 @@ def checkout():
     email_data = get_renter_receipt_email(orders)
     send_async_email.apply_async(kwargs=email_data.to_dict())
 
-    response = make_response({ "message": "Success!" }, 200)
+    response = make_response({ "message": "Success!" }, CODE_2_OK)
     return response
 
 
@@ -149,5 +158,5 @@ def cancel_checkout():
 
     unlock_cart(user_cart)
 
-    response = make_response({ "message": "Your order was cancelled." }, 200)
+    response = make_response({ "message": "Your order was cancelled." }, CODE_2_OK)
     return response

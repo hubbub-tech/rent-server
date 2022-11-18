@@ -5,6 +5,12 @@ from src.models import Logistics
 
 from src.utils import login_required
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_FORBIDDEN,
+    CODE_4_NOT_FOUND
+)
+
 bp = Blueprint("cancel", __name__)
 
 
@@ -18,17 +24,17 @@ def cancel_delivery():
 
     if logsitics is None:
         error = "Sorry, we could not find this delivery. Please, try again."
-        response = make_response({ "message": error }, 404)
+        response = make_response({ "message": error }, CODE_4_NOT_FOUND)
         return response
 
     if logsitics.receiver_id != g.user_id and logsitics.sender_id != g.user_id:
         error = "Sorry, you are not authorized to delete this delivery. Contact us if this seems wrong."
-        response = make_response({ "message": error }, 403)
+        response = make_response({ "message": error }, CODE_4_FORBIDDEN)
         return response
 
     if logsitics.is_canceled:
-        error = "Your delivery has been cancelled!"
-        response = make_response({ "message": error }, 403)
+        error = "Your delivery has been canceled!"
+        response = make_response({ "message": error }, CODE_2_OK)
         return response
 
     courier_ids = logsitics.get_courier_ids()
@@ -38,7 +44,7 @@ def cancel_delivery():
 
     logistics_to_dict = logistics.to_dict()
 
-    # START CANCELLATION SEQUENCE
+    # START CANCELATION SEQUENCE
     for courier_id in courier_ids:
         logsitics.remove_courier(courier_id)
 
@@ -46,14 +52,14 @@ def cancel_delivery():
         logsitics.remove_order(order_id)
 
     Logsitics.set({"id": logsitics.id}, {"is_canceled": True})
-    # END CANCELLATION SEQUENCE
+    # END CANCELATION SEQUENCE
 
-    # NOTE: email all couriers that the delivery has been cancelled
-    # NOTE: email the user that their delivery has been cancelled
+    # NOTE: email all couriers that the delivery has been canceled
+    # NOTE: email the user that their delivery has been canceled
 
     to_addr = Addresses.get(to_addr_pkeys)
     from_addr = Addresses.get(from_addr_pkeys)
 
-    message = f"Your delivery from {from_addr.to_str()} to {to_addr.to_str()} has been cancelled."
-    response = make_response({"message": message}, 200)
+    message = f"Your delivery from {from_addr.to_str()} to {to_addr.to_str()} has been canceled."
+    response = make_response({"message": message}, CODE_2_OK)
     return response

@@ -14,6 +14,8 @@ from src.utils.classes import Recommender
 
 from src.utils.settings import aws_config
 
+from src.utils.settings import CODE_2_OK, CODE_4_FORBIDDEN
+
 bp = Blueprint("view", __name__)
 
 @bp.get("/order/<int:order_id>")
@@ -24,12 +26,12 @@ def view_order(order_id):
 
     if order is None:
         error = "This order does not exist."
-        response = make_response({"message": error}, 200)
+        response = make_response({"message": error}, CODE_2_OK)
         return response
 
     if order.renter_id != g.user_id:
         error = "You're not authorized to view this order."
-        response = make_response({"message": error}, 403)
+        response = make_response({"message": error}, CODE_4_FORBIDDEN)
         return response
 
     order_to_dict = order.to_dict()
@@ -60,5 +62,5 @@ def view_order(order_id):
     order_to_dict["reservation"] = res.to_dict()
 
     data = { "order": order_to_dict }
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response

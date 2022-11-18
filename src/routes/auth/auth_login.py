@@ -6,6 +6,13 @@ from src.utils import validate_login
 from src.utils import gen_token
 from src.utils import login_user
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_UNAUTHORIZED,
+    CODE_5_SERVER_ERROR
+)
+
 bp = Blueprint('login', __name__)
 
 @bp.post('/login')
@@ -16,12 +23,12 @@ def login():
         password = request.json["password"]
     except KeyError:
         error = "Please submit a username and password to log in."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     form_data = { "email": email, "password": password }
@@ -29,7 +36,7 @@ def login():
 
     if status.is_successful == False:
         error = status.message
-        response = make_response({ "message": error }, 403)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
 
     user = Users.unique({"email": email})
@@ -44,11 +51,11 @@ def login():
             "message": "Welcome back!",
             "session_token": session_key["hashed"]
         }
-        response = make_response(data, 200)
+        response = make_response(data, CODE_2_OK)
         return response
     else:
         error = status.message
-        response = make_response({ "message": error }, 403)
+        response = make_response({ "message": error }, CODE_4_UNAUTHORIZED)
         return response
 
 

@@ -4,6 +4,8 @@ from src.models import Users
 
 from src.utils import login_required
 
+from src.utils.settings import CODE_2_OK
+
 bp = Blueprint("users", __name__)
 
 
@@ -22,5 +24,5 @@ def get_users():
         users_to_dict.append(user_to_dict)
 
     data = { "users": users_to_dict }
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response
