@@ -30,8 +30,8 @@ def item_feed():
 
     if ts_start_json and ts_end_json:
         try:
-            dt_start = datetime.fromtimestamp(int(ts_start_json))
-            dt_end = datetime.fromtimestamp(int(ts_end_json))
+            dt_start = datetime.fromtimestamp(float(ts_start_json))
+            dt_end = datetime.fromtimestamp(float(ts_end_json))
 
             availability = { "dt_lbound": dt_start, "dt_ubound": dt_end }
             items = Items.get_by(availability)
