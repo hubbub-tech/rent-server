@@ -3,7 +3,7 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 from .files import base64_to_file
-from .files import upload_to_gcloud
+from .files import upload_to_gcloud, upload_to_awss3
 from src.utils.settings import celery, smtp_config
 
 from .safe_txns import unlock_cart
@@ -50,19 +50,15 @@ def set_async_timeout(user_id):
 
 
 @celery.task
-def upload_file_async(uid, file_base64):
+def upload_file_async(filename, file_base64):
 
     from src import create_app
     app = create_app()
 
-    try:
-        with app.app_context():
+    with app.app_context():
 
+        try:
             file, file_format = base64_to_file(file_base64)
-
-            filename = f"/tests/item-{uid}.jpg"
-            # upload_to_gcloud(file, filename, file_format)
             upload_to_awss3(file, filename, file_format)
-
-    except Exception as e:
-        print(e)
+        except:
+            print("There was an error.")

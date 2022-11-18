@@ -3,12 +3,14 @@ from flask_cors import CORS
 
 from src.utils.settings import FlaskConfig
 
+from .tags import bp as tags
 from .items import bp as items
 from .users import bp as users
 from .orders import bp as orders
 
 bp = Blueprint("v0", __name__, url_prefix="/v0")
 
+bp.register_blueprint(tags)
 bp.register_blueprint(items)
 bp.register_blueprint(users)
 bp.register_blueprint(orders)
