@@ -55,10 +55,12 @@ def upload_file_async(filename, file_base64):
     from src import create_app
     app = create_app()
 
-    with app.app_context():
-
-        try:
+    try:
+        with app.app_context():
             file, file_format = base64_to_file(file_base64)
             upload_to_awss3(file, filename, file_format)
-        except:
-            print("There was an error.")
+
+        return True
+    except:
+        print("There was an error.")
+        return False
