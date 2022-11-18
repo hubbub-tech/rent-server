@@ -21,11 +21,28 @@ bp = Blueprint('feed', __name__)
 @login_optional
 def item_feed():
 
+    ts_start_json = request.args.get("ts_start", None)
+    ts_end_json = request.args.get("ts_end", None)
+
     search_term = request.args.get("search", None)
     page_limit = request.args.get("limit", 50) # Not in use right now
     page_number = request.args.get("page", 1) # Not in use right now
 
-    if search_term:
+    if ts_start_json and ts_end_json:
+        try:
+            dt_start = datetime.fromtimestamp(int(ts_start_json))
+            dt_end = datetime.fromtimestamp(int(ts_end_json))
+
+            availability = { "dt_lbound": dt_start, "dt_ubound": dt_end }
+            items = Items.get_by(availability)
+
+            if search_term:
+                recommender = Recommender()
+                items = recommender.match(search_term, items)
+        except:
+            # log an error here
+            items = Items.filter({"is_visible": True, "is_transactable": True})
+    elif search_term:
         recommender = Recommender()
         items = recommender.search_for(search_term)
     else:
