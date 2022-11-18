@@ -1,3 +1,4 @@
+from datetime import datetime
 from blubber_orm import Models
 
 class Items(Models):
@@ -126,6 +127,67 @@ class Items(Models):
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
             Models.db.conn.commit()
+
+
+    @classmethod
+    def get_by(cls, availability: dict=None):
+        if availability:
+            assert isinstance(availability, dict), "Availability must be a dictionary."
+            if availability.get("dt_lbound") is None:
+                availability["dt_lbound"] = datetime.min
+            if availability.get("dt_ubound") is None:
+                availability["dt_ubound"] = datetime.max
+
+            if availability["dt_lbound"] == None or \
+                availability["dt_ubound"] == None:
+
+                return cls.filter({"is_visible": True, "is_transactable": True})
+
+            if availability["dt_lbound"] == datetime.min and \
+                availability["dt_ubound"] == datetime.max:
+
+                return cls.filter({"is_visible": True, "is_transactable": True})
+
+            assert availability["dt_lbound"] < availability["dt_ubound"], "Start date comes before end date."
+            print("search by dates")
+            SQL = """
+                WITH unavail_items (id) AS (
+                    SELECT r.item_id
+                    FROM reservations r
+                    INNER JOIN items i
+                    ON i.id = r.item_id
+                    WHERE r.is_calendared = TRUE AND NOT (r.dt_started > %s OR r.dt_ended < %s)
+                ),
+                all_items (id, is_transactable, is_visible) AS (
+                    SELECT id, is_transactable, is_visible
+                    FROM items
+                )
+                SELECT id FROM all_items
+                WHERE is_transactable = TRUE AND is_visible = TRUE
+                EXCEPT ALL
+                SELECT id FROM unavail_items;
+                """
+
+            # IMPORTANT: Upper bound first, Lower bound second
+            data = (availability["dt_ubound"], availability["dt_lbound"])
+
+            with Models.db.conn.cursor() as cursor:
+                cursor.execute(SQL, data)
+
+                item_ids = cursor.fetchall()
+                item_ids = [item_id for item_t in item_ids for item_id in item_t]
+
+                items = []
+                for item_id in item_ids:
+                    item = cls.get({ "id": item_id })
+                    items.append(item)
+                return items
+        else:
+            return cls.filter({"is_visible": True, "is_transactable": True})
+
+
+
+
 
 
     def to_query_address(self):

@@ -9,7 +9,8 @@ class Recommender:
         pass
 
 
-    def on(self, item):
+    def on(self, item: Items):
+        assert isinstance(item, Items)
         # Split the item name by spaces
         search_tokens = item.name.split(" ")
 
@@ -37,7 +38,7 @@ class Recommender:
         return recommendations
 
 
-    def search_for(self, search_key):
+    def search_for(self, search_key: str):
         if search_key == 'all':
             searched_items = Items.filter({"is_transactable": True, "is_visible": True})
             return searched_items
@@ -61,8 +62,18 @@ class Recommender:
         for item_id in unfiltered_item_ids:
             if item_id not in memo:
                 memo.append(item_id)
-                item = Items.get({"id": item_id})
+                item = Items.get({ "id": item_id })
 
                 if item.is_transactable and item.is_visible:
                     filtered_items.append(item)
         return filtered_items
+
+
+    def match(self, search_key: str, items: list):
+        searched_items = self.search_for(search_key)
+
+        matched_items = []
+        for item in searched_items:
+            if item in items:
+                matched_items.append(item)
+        return matched_items
