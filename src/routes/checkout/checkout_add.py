@@ -10,6 +10,15 @@ from src.utils import validate_rental
 from src.utils import login_required
 from src.utils import create_reservation
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_FORBIDDEN,
+    CODE_4_UNAUTHORIZED,
+    CODE_4_NOT_FOUND,
+    CODE_5_SERVER_ERROR
+)
+
 bp = Blueprint("add", __name__)
 
 
@@ -21,12 +30,12 @@ def add_without_reservation():
         item_id = request.json["itemId"]
     except KeyError:
         error = "No item added to cart. Please, try again."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     item = Items.get({"id": item_id})
@@ -34,22 +43,22 @@ def add_without_reservation():
 
     if item is None:
         error = "Sorry, this item does not exist."
-        response = make_response({ "message": error }, 404)
+        response = make_response({ "message": error }, CODE_4_NOT_FOUND)
         return response
 
     if user_cart.id == item.lister_id:
         error = "Sorry, you cannot order your own item."
-        response = make_response({ "message": error }, 403)
+        response = make_response({ "message": error }, CODE_4_FORBIDDEN)
         return response
 
     if user_cart.contains(item):
         message = "Your cart already contains this item."
-        response = make_response({ "message": message }, 200)
+        response = make_response({ "message": message }, CODE_2_OK)
         return response
 
     user_cart.add_without_reservation(item)
     message = "The item has been added to your cart!"
-    response = make_response({ "message": message }, 200)
+    response = make_response({ "message": message }, CODE_2_OK)
     return response
 
 
@@ -63,12 +72,12 @@ def add():
         dt_ended_json = request.json["dtEnded"]
     except KeyError:
         error = "No item added to cart. Please, try again."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     dt_started = datetime.fromtimestamp(float(dt_started_json))
@@ -79,17 +88,17 @@ def add():
 
     if item is None:
         error = "Sorry, this item does not exist."
-        response = make_response({ "message": error }, 404)
+        response = make_response({ "message": error }, CODE_4_NOT_FOUND)
         return response
 
     if dt_started < datetime.now():
         error = "Reservations can't start in the past."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
 
     if user_cart.id == item.lister_id:
         error = "Sorry, you cannot order your own item."
-        response = make_response({ "message": error }, 403)
+        response = make_response({ "message": error }, CODE_4_FORBIDDEN)
         return response
 
     if user_cart.contains(item):
@@ -119,10 +128,10 @@ def add():
         user_cart.add_without_reservation(item)
 
         error = status.message
-        response = make_response({ "message": error }, 402)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
 
     user_cart.add(reservation)
     message = "The item has been added to your cart!"
-    response = make_response({ "message": message, "est_charge": reservation.est_charge }, 200)
+    response = make_response({ "message": message, "est_charge": reservation.est_charge }, CODE_2_OK)
     return response

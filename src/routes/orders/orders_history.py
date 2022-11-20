@@ -6,8 +6,9 @@ from src.models import Items
 from src.models import Reservations
 
 from src.utils import login_required
-
 from src.utils.settings import aws_config
+
+from src.utils.settings import CODE_2_OK
 
 bp = Blueprint("history", __name__)
 
@@ -34,7 +35,7 @@ def orders_history():
 
     if orders == []:
         error = "No orders yet. Check out our shop and rent!"
-        response = make_response({"message": error}, 200)
+        response = make_response({"message": error}, CODE_2_OK)
         return response
 
     orders_to_dict = []
@@ -61,7 +62,7 @@ def orders_history():
 
         orders_to_dict.append(order_to_dict)
 
-    response = make_response({ "orders": orders_to_dict }, 200)
+    response = make_response({ "orders": orders_to_dict }, CODE_2_OK)
     return response
 
 
@@ -92,5 +93,5 @@ def orders_unscheduled():
     response = make_response({
         "unscheduled_dropoff_orders": unscheduled_dropoff_orders,
         "unscheduled_pickup_orders": unscheduled_pickup_orders
-    }, 200)
+    }, CODE_2_OK)
     return response

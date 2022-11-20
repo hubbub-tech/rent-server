@@ -4,6 +4,8 @@ from src.models import Users
 from src.models import Items
 from src.models import Addresses
 
+from src.utils.settings import CODE_2_OK, CODE_4_NOT_FOUND
+
 bp = Blueprint("view", __name__)
 
 
@@ -13,7 +15,7 @@ def view_account(user_id):
 
     if user is None:
         errors = ["Sorry, we cannot find this user!"]
-        response = make_response({"messages": errors}, 403)
+        response = make_response({"messages": errors}, CODE_4_NOT_FOUND)
         return response
 
     address_pkeys = user.to_query_address()
@@ -30,5 +32,5 @@ def view_account(user_id):
         listed_items_to_dict.append(item_to_dict)
 
     data = {"user": user_to_dict, "photo_url": None, "listed_items": listed_items_to_dict}
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response

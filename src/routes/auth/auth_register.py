@@ -1,3 +1,5 @@
+
+
 import requests
 from flask import Blueprint, make_response, request
 from werkzeug.security import generate_password_hash
@@ -5,18 +7,20 @@ from werkzeug.security import generate_password_hash
 from src.models import Users
 
 from src.utils import create_user
-
 from src.utils import get_welcome_email
 from src.utils import send_async_email
-
 from src.utils import validate_registration
-
 from src.utils import strip_non_numericals
-
 from src.utils import CaptchaConfig
-
 from src.utils import gen_token
 from src.utils import login_user
+
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_UNAUTHORIZED,
+    CODE_5_SERVER_ERROR
+)
 
 bp = Blueprint('register', __name__)
 
@@ -46,12 +50,12 @@ def register():
 
     except KeyError:
         error = "Missing data to complete your sign up! Please, try again."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     recaptcha_data = {
@@ -65,7 +69,7 @@ def register():
 
     if not captcha["success"]:
         error = "Sorry, registration failed! Try again."
-        response = make_response({ "message": error }, 406) # pass code from captcha
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
 
     user_data["password"] = generate_password_hash(user_data["password"])
@@ -92,9 +96,9 @@ def register():
             "message": "Welcome to the Hubbub community!",
             "session_token": session_key["hashed"]
         }
-        response = make_response(data, 200)
+        response = make_response(data, CODE_2_OK)
         return response
     else:
         errors = status.message
-        response = make_response({ "message": error }, 403)
+        response = make_response({ "message": error }, CODE_4_UNAUTHORIZED)
         return response

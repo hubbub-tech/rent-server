@@ -4,6 +4,14 @@ from flask import Blueprint, make_response, request, g
 from src.utils import get_edit_dropoff_request_email
 from src.utils import get_edit_pickup_request_email
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_FORBIDDEN,
+    CODE_4_NOT_FOUND,
+    CODE_5_SERVER_ERROR
+)
+
 bp = Blueprint("edit", __name__)
 
 
@@ -24,12 +32,12 @@ def edit_dropoff_request():
         notes = request.json.get("notes")
     except KeyError:
         error = "Sorry, you didn't send anything in the form, try again."
-        response = make_response({ "message": error }, 406)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     order = Orders.get({ "id": order_id })
@@ -40,7 +48,7 @@ def edit_dropoff_request():
     send_async_email.apply_async(kwargs=email_data.to_dict())
 
     message = "Your edit request has been noted! We'll reach out to you shortly with more details."
-    response = make_response({ "message": message }, 200)
+    response = make_response({ "message": message }, CODE_2_OK)
     return response
 
 
@@ -62,12 +70,12 @@ def edit_pickup_request():
         notes = request.json.get("notes")
     except KeyError:
         error = "Sorry, you didn't send anything in the form, try again."
-        response = make_response({ "message": error }, 406)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     order = Orders.get({ "id": order_id })
@@ -78,5 +86,5 @@ def edit_pickup_request():
     send_async_email.apply_async(kwargs=email_data.to_dict())
 
     message = "Your edit request has been noted! We'll reach out to you shortly with more details."
-    response = make_response({ "message": message }, 200)
+    response = make_response({ "message": message }, CODE_2_OK)
     return response

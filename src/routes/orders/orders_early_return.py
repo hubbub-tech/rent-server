@@ -14,6 +14,13 @@ from src.utils import send_async_email
 
 from src.utils.settings import aws_config
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_FORBIDDEN,
+    CODE_4_NOT_FOUND
+)
+
 bp = Blueprint("early_return", __name__)
 
 
@@ -26,12 +33,12 @@ def orders_early_return():
         early_dt_end_json = request.json["dtEnded"]
     except KeyError:
         error = "Please submit an early return date for your order."
-        response = make_response({"message": error}, 401)
+        response = make_response({"message": error}, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     order = Orders.get({"id": order_id})
@@ -59,8 +66,8 @@ def orders_early_return():
             "early_dt_end": early_dt_end_json,
             "item": item_to_dict
         }
-        response = make_response(data, 200)
+        response = make_response(data, CODE_2_OK)
         return response
     else:
-        response = make_response({ "message": status.message }, 401)
+        response = make_response({ "message": status.message }, CODE_4_BAD_REQUEST)
         return response

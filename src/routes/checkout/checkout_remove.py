@@ -18,12 +18,12 @@ def remove():
         item_id = request.json["itemId"]
     except KeyError:
         error = "No item added to cart. Please, try again."
-        response = make_response({ "message": error }, 401)
+        response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
     except Exception as e:
         error = "Something went wrong. Please, try again."
         # NOTE: Log error here.
-        response = make_response({ "message": error }, 500)
+        response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
     item = Items.get({"id": item_id})
@@ -31,7 +31,7 @@ def remove():
 
     if item is None:
         error = "Sorry, this item does not exist."
-        response = make_response({ "message": error }, 404)
+        response = make_response({ "message": error }, CODE_4_NOT_FOUND)
         return response
 
     reservation = Reservations.unique({
@@ -46,5 +46,5 @@ def remove():
         user_cart.remove_without_reservation(item)
 
     message = "This item has successfully been removed from your cart!"
-    response = make_response({"message": message}, 200)
+    response = make_response({"message": message}, CODE_2_OK)
     return response

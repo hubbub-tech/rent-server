@@ -5,6 +5,8 @@ from src.models import Calendars
 
 from src.utils import login_required
 
+from src.utils.settings import CODE_2_OK
+
 bp = Blueprint("items", __name__)
 
 
@@ -31,5 +33,5 @@ def get_items():
         items_to_dict.append(item_to_dict)
 
     data = { "items": items_to_dict }
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response

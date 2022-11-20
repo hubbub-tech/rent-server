@@ -9,6 +9,12 @@ from src.models import Items
 from src.utils import login_required
 from src.utils.settings import aws_config
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_5_SERVER_ERROR
+)
+
 bp = Blueprint("view", __name__)
 
 
@@ -49,7 +55,7 @@ def view_dropoffs():
         dropoffs_to_dict.append(dropoff_to_dict)
 
     data = { "dropoffs": dropoffs_to_dict }
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response
 
 
@@ -90,5 +96,5 @@ def view_pickups():
         pickups_to_dict.append(pickup_to_dict)
 
     data = { "pickups": pickups_to_dict }
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response

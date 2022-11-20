@@ -8,6 +8,8 @@ from src.models import Reservations
 
 from src.utils import login_required
 
+from src.utils.settings import CODE_2_OK
+
 bp = Blueprint("orders", __name__)
 
 
@@ -26,7 +28,7 @@ def get_orders():
         orders_to_dict.append(order_to_dict)
 
     data = { "orders": orders_to_dict }
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response
 
 
@@ -39,7 +41,7 @@ def get_order():
 
     if order is None:
         errors = ["This order does not exist."]
-        response = make_response({"messages": errors}, 200)
+        response = make_response({"messages": errors}, CODE_2_OK)
         return response
 
     order_to_dict = order.to_dict()
@@ -57,5 +59,5 @@ def get_order():
     order_to_dict["reservation"] = res.to_dict()
 
     data = { "order": order_to_dict }
-    response = make_response(data, 200)
+    response = make_response(data, CODE_2_OK)
     return response

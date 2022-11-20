@@ -7,6 +7,8 @@ from src.models import Orders, Extensions
 from src.utils import create_charge
 from src.utils.settings import STRIPE_ENDPOINT_SECRET, PAYEE_ID, SERVER_DOMAIN
 
+from src.utils.settings import CODE_2_OK, CODE_4_UNAUTHORIZED, CODE_4_BAD_REQUEST, CODE_5_SERVER_ERROR
+
 bp = Blueprint("webhook", __name__)
 
 @bp.post('/checkout/stripe/payment-wh')
@@ -22,11 +24,11 @@ def checkout_webhook():
         )
     except ValueError as e:
         # Invalid payload
-        return 500
+        return CODE_5_SERVER_ERROR
         # raise e
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
-        return 401
+        return CODE_4_UNAUTHORIZED
         # raise e
 
     # Handle the event
@@ -38,12 +40,12 @@ def checkout_webhook():
       if client_reference_id:
           attr_key, attr_value = client_reference_id.split(":")
       else:
-          return 400
+          return CODE_4_BAD_REQUEST
 
       if attr_key == "orders_checkout_session_key":
           checkout_session_key = attr_value
       else:
-          return redirect(f"{SERVER_DOMAIN}/extensions/stripe/payment-wh", code=302)
+          return redirect(f"{SERVER_DOMAIN}/extensions/stripe/payment-wh", code=CODE_3_REDIRECT)
 
       line_items = checkout_session['line_items']
 
@@ -80,7 +82,7 @@ def checkout_webhook():
 
           Charges.insert(delivery_charge_data)
 
-    response = make_response({ 'message': "Created a charge." }, 200)
+    response = make_response({ 'message': "Created a charge." }, CODE_2_OK)
     return response
 
 
@@ -97,11 +99,11 @@ def extension_webhook():
         )
     except ValueError as e:
         # Invalid payload
-        return 500
+        return CODE_5_SERVER_ERROR
         # raise e
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
-        return 401
+        return CODE_4_UNAUTHORIZED
         # raise e
 
     # Handle the event
@@ -114,7 +116,7 @@ def extension_webhook():
       if attr_key == "orders_id":
           order_id = attr_value
       else:
-          return 401
+          return CODE_4_BAD_REQUEST
 
       order = Orders.get({ "id": order_id })
 
@@ -135,5 +137,5 @@ def extension_webhook():
 
       Charges.insert(charge_data)
 
-    response = make_response({ 'message': "Created a charge." }, 200)
+    response = make_response({ 'message': "Created a charge." }, CODE_2_OK)
     return response
