@@ -21,9 +21,9 @@ class UtilsList:
                 "description": "They go straight to your hips."
             },
             "address": {
-                "lat": None,
-                "lng": None,
-                "formatted": None
+                "lat": 40.7274061,
+                "lng": -74.00605,
+                "formatted": "175 Varick St, New York, NY 10014, USA"
             },
             "calendar": {
                 "dtStarted": None,
