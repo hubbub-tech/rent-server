@@ -1,7 +1,7 @@
 import requests
 from flask import Blueprint, make_response, request
 
-from src.utils.settings import FlaskConfig
+from src.utils.settings import CaptchaConfig
 
 from src.utils.settings import (
     CODE_2_OK,
@@ -30,7 +30,7 @@ def newsletter_sign_up():
         return response
 
     recaptcha_data = {
-        "secret": FlaskConfig.ReCAPTCHA_SERVER_APIKEY,
+        "secret": CaptchaConfig.ReCAPTCHA_SERVER_APIKEY,
         "response": token
     }
     captcha_response = requests.post(ReCAPTCHA_VERIFY_URL, data=recaptcha_data)
