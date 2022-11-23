@@ -6,13 +6,12 @@ from src.models import Items
 from src.models import Users
 from src.models import Orders
 
-from ._email_data import EmailData
-from ._email_body_formatter import EmailBodyFormatter
+from ._email_body import EmailBodyMessenger, EmailBodyFormatter
 
 
 def get_item_expiration_email(item):
 
-    email_data = EmailData()
+    email_body_messenger = EmailBodyMessenger()
     email_body_formatter = EmailBodyFormatter()
 
     lister = Users.get({ "id": item.lister_id })
@@ -38,7 +37,7 @@ def get_item_expiration_email(item):
 
     body = email_body_formatter.build()
 
-    email_data.subject = f"[Hubbub] Expired Listing: {item.name}"
-    email_data.to = (lister.email, smtp_config.DEFAULT_RECEIVER)
-    email_data.body = body
-    return email_data
+    email_body_messenger.subject = f"[Hubbub] Expired Listing: {item.name}"
+    email_body_messenger.to = (lister.email, smtp_config.DEFAULT_RECEIVER)
+    email_body_messenger.body = body
+    return email_body_messenger

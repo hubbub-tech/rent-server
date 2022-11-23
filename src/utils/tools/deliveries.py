@@ -28,7 +28,15 @@ def attach_timeslots(order_ids: list, logistics: Logistics, timeslots: list, dat
             "is_sched": False,
             "dt_sched_eta": None,
         }
-        timeslot = Timeslots.insert(timeslot_data)
+
+        timeslot = Timeslots.get({
+            "logistics_id": logistics.id,
+            "dt_range_start": dt_start,
+            "dt_range_end": dt_end
+        })
+
+        if timeslot is None:
+            timeslot = Timeslots.insert(timeslot_data)
 
     status = Status()
     status.is_successful = True

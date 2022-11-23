@@ -89,7 +89,10 @@ def schedule_dropoff():
             status = attach_timeslots(order_ids, logistics, timeslots, date_event)
 
             if status.is_successful:
-                email_data = get_dropoff_request_email(logistics)
+                try:
+                    email_data = get_dropoff_request_email(logistics)
+                except:
+                    email_data = get_dropoff_error_email(logistics)
             else:
                 email_data = get_dropoff_error_email(logistics)
             send_async_email.apply_async(kwargs=email_data.to_dict())
@@ -172,7 +175,10 @@ def schedule_pickup():
             status = attach_timeslots(order_ids, logistics, timeslots, date_event)
 
             if status.is_successful:
-                email_data = get_pickup_request_email(logistics)
+                try:
+                    email_data = get_pickup_request_email(logistics)
+                except:
+                    email_data = get_pickup_error_email(logistics)
             else:
                 email_data = get_pickup_error_email(logistics)
             send_async_email.apply_async(kwargs=email_data.to_dict())

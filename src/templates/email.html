@@ -1,67 +1,45 @@
 <!doctype html>
-    <html lang="en">
-      <head>
-        <style>
-          .preheader {{
-            color: transparent;
-            display: none;
-            height: 0;
-            max-height: 0;
-            max-width: 0;
-            opacity: 0;
-            overflow: hidden;
-            mso-hide: all;
-            visibility: hidden;
-            width: 0;
-            }}
-          td, th {{
-            border: 1px solid #ffffff;
-            text-align: left;
-            padding: 8px;
-            }}
-          div.content {{
-              width: 600px;
-              margin: 0em 5em 5em 5em;
-              padding: 2em;
-              background-color: #fdfdff;
-              border-radius: 0em 0em 0.5em 0.5em;
-              box-shadow: 0px 3px 7px 2px rgba(0,0,0,0.02);
-              }}
-        </style>
-      </head>
-      <body style="background-color: #f0f0f2; font-family: arial, sans-serif; margin: 0; padding: 0;">
-        <span class="preheader">{PREVIEW}</span>
-        <div class="content">
-
-          <!-- START CENTERED WHITE CONTAINER -->
-          <table role="presentation" class="main">
-
-            <!-- START MAIN CONTENT AREA -->
-            <tr>
-              <p>Hi {USER},</p>
-              <p style='margin:1'>{INTRODUCTION}</p>
-            </tr>
-            <tr>
-              {CONTENT}
-            </tr>
-            <tr>
-                <br />
-              <p style='margin:1'>{CONCLUSION}</p>
-              <p style='margin:1'>Sincerely,</p>
-              <p style='margin:1'>  Team Hubbub</p>
-            </tr>
-          </table>
-          <!-- END CENTERED WHITE CONTAINER -->
-
-          <!-- START FOOTER-->
-          <div class="footer">
-            <small>
-              <span>Hubbub HQ, 14 W. 103rd St., Apt 3D, New York, NY 10025</span>
-              <br> Continue shopping at <a href="https://www.hubbub.shop/inventory">Hubbub Shop</a>.
-            <small>
-          </div>
-          <!--END FOOTER -->
-
-        </div>
-      </body>
-    </html>
+<html lang="en">
+  <head>
+    <style>
+      body {
+        background-color: #ffffff;
+        font-family: arial, sans-serif;
+        margin: 2rem;
+        padding: 2rem;
+      }
+      table {
+        border-collapse: separate;
+        border-spacing: 20px 0;
+      }
+      td {
+        padding: 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span>{PREVIEW}</span>
+    </header>
+    <main>
+      <section>
+        <p>Hi {USER},</p>
+        <p>{INTRODUCTION}</p>
+        <p>{CONTENT}</p>
+        <p>{CONCLUSION}</p>
+      </section>
+      <section>
+        {OPTIONAL}
+      </section>
+      <section>
+        <br />
+        <p>Sincerely,</p>
+        <p>Team Hubbub</p>
+      </section>
+    </main>
+    <footer>
+      <span>69 Charlton St., c/o Hubbub, New York, NY 10014</span>
+      <br/> Continue shopping at <a href="https://www.hubbub.shop/inventory">Hubbub Shop</a>.
+    </footer>
+  </body>
+</html>

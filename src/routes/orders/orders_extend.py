@@ -128,7 +128,7 @@ def extend_order():
         "item_id": order.item_id
     })
 
-    item = Items.get({"id": order.item_id})
+    item = Items.get({ "id": order.item_id })
     item_calendar = Calendars.get({ "id": item.id })
 
     if reservation is None:
@@ -138,7 +138,18 @@ def extend_order():
         response = make_response({"message": error}, CODE_4_NOT_FOUND)
         return response
 
+    if reservation.is_calendared:
+        message = f"This extension has been placed."
+        response = make_response({"message": message}, CODE_2_OK)
+        return response
+
     if item.is_locked and item.locker_id == g.user_id:
+        status = validate_rental(item_calendar, reservation.dt_started, reservation.dt_ended)
+        if status.is_successful == False:
+            item.unlock()
+            response = make_response({"message": status.message}, CODE_4_FORBIDDEN)
+            return response
+
         item_calendar.add(reservation)
 
         extension_data = {
@@ -155,8 +166,7 @@ def extend_order():
         response = make_response({"message": error}, CODE_4_UNAUTHORIZED)
         return response
 
-    email_data = get_lister_receipt_email(extension) # WARNING
-    send_async_email.apply_async(kwargs=email_data.to_dict())
+    # NOTE: notify the lister
 
     email_data = get_extension_receipt_email(extension)
     send_async_email.apply_async(kwargs=email_data.to_dict())

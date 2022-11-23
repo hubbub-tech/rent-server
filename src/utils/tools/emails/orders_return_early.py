@@ -1,14 +1,14 @@
 from datetime import datetime
 
 from src.utils.settings import smtp_config
+from src.utils.settings import CLIENT_DOMAIN
 
 from src.models import Items
 from src.models import Users
 from src.models import Orders
 from src.models import Extensions
 
-from ._email_data import EmailData
-from ._email_body_formatter import EmailBodyFormatter
+from ._email_body import EmailBodyMessenger, EmailBodyFormatter
 
 
 def get_early_return_email(txn, early_reservation):
@@ -16,7 +16,7 @@ def get_early_return_email(txn, early_reservation):
 
     assert type(txn) in [Orders, Extensions], "Invalid transaction type."
 
-    email_data = EmailData()
+    email_body_messenger = EmailBodyMessenger()
     email_body_formatter = EmailBodyFormatter()
 
     email_body_formatter.preview = "This is to confirm that your early return request has been received - "
@@ -33,14 +33,14 @@ def get_early_return_email(txn, early_reservation):
 
     email_body_formatter.content = ""
 
-    pickup_request_link = "https://www.hubbub.shop/accounts/u/orders"
+    link_to_html = email_body_formatter.make_link(CLIENT_DOMAIN + '/rentals/schedule#pickups', 'here')
     email_body_formatter.conclusion = f"""
-        You can schedule a new end of rental pickup (<a href='{pickup_request_link}'>here</a>)!
+        You can schedule a new end of rental pickup {link_to_html}!
         If you have any questions, please contact us at {smtp_config.DEFAULT_RECEIVER}.
         """
 
     body = email_body_formatter.build()
-    email_data.subject = f"[Hubbub] Your Early Return Request on {item.name}"
-    email_data.to = (user.email, smtp_config.DEFAULT_RECEIVER)
-    email_data.body = body
-    return email_data
+    email_body_messenger.subject = f"[Hubbub] Early Return Request: {item.name}"
+    email_body_messenger.to = (user.email, smtp_config.DEFAULT_RECEIVER)
+    email_body_messenger.body = body
+    return email_body_messenger

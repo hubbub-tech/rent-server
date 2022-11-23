@@ -6,12 +6,11 @@ from src.models import Items
 from src.models import Users
 from src.models import Orders
 
-from ._email_data import EmailData
-from ._email_body_formatter import EmailBodyFormatter
+from ._email_body import EmailBodyMessenger, EmailBodyFormatter
 
 def get_edit_pickup_request_email(order, address_formatted, date_pickup, timeslots):
 
-    email_data = EmailData()
+    email_body_messenger = EmailBodyMessenger()
     email_body_formatter = EmailBodyFormatter()
 
     item = Items.get({ "id": order.item_id })
@@ -49,7 +48,7 @@ def get_edit_pickup_request_email(order, address_formatted, date_pickup, timeslo
 
     body = email_body_formatter.build()
 
-    email_data.subject = "[Hubbub] Updating your Pick-up"
-    email_data.to = (renter.email, smtp_config.DEFAULT_RECEIVER)
-    email_data.body = body
-    return email_data
+    email_body_messenger.subject = "[Hubbub] Updating your Pick-up"
+    email_body_messenger.to = (renter.email, smtp_config.DEFAULT_RECEIVER)
+    email_body_messenger.body = body
+    return email_body_messenger

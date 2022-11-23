@@ -7,12 +7,11 @@ from src.models import Users
 from src.models import Orders
 from src.models import Addresses
 
-from ._email_data import EmailData
-from ._email_body_formatter import EmailBodyFormatter
+from ._email_body import EmailBodyMessenger, EmailBodyFormatter
 
 def get_pickup_request_email(logistics):
 
-    email_data = EmailData()
+    email_body_messenger = EmailBodyMessenger()
     email_body_formatter = EmailBodyFormatter()
 
     timeslots = logistics.get_timeslots()
@@ -22,7 +21,7 @@ def get_pickup_request_email(logistics):
     dt_range_end_index = 1
 
     date_pickup_str = timeslots[0][dt_range_start_index].strftime("%B %-d, %Y")
-    email_body_formatter.preview = f"Coordinating pick-up for your recent order(s) for {date_pickup_str} - "
+    email_body_formatter.preview = f"Coordinating pick-up for your recent order(s) for {date_pickup_str}"
 
     renter = Users.get({"id": logistics.sender_id})
     email_body_formatter.user = renter.name
@@ -59,30 +58,30 @@ def get_pickup_request_email(logistics):
 
     body = email_body_formatter.build()
 
-    email_data.subject = "[Hubbub] Scheduling your Pick-up"
-    email_data.to = (renter.email, smtp_config.DEFAULT_RECEIVER)
-    email_data.body = body
-    return email_data
+    email_body_messenger.subject = "[Hubbub] Scheduling your Pick-up"
+    email_body_messenger.to = (renter.email, smtp_config.DEFAULT_RECEIVER)
+    email_body_messenger.body = body
+    return email_body_messenger
 
 
 def get_pickup_error_email(logistics):
 
-    email_data = EmailData()
+    email_body_messenger = EmailBodyMessenger()
     email_body_formatter = EmailBodyFormatter()
 
     renter = Users.get({"id": logistics.sender_id})
 
-    email_body_formatter.preview = f"There was a problem scheduling timeslots for user_id:{renter.id} - "
+    email_body_formatter.preview = f"There was a problem scheduling timeslots for user_id:{renter.id}"
 
     email_body_formatter.user = "Team Hubbub"
 
     email_body_formatter.introduction = f"Please, manually confirm pickup timeslots with user, {renter.name} ({renter.id})."
-    email_body_formatter.content = "<p>Timeslot attachment failed, likely do to input error.</p>"
+    email_body_formatter.content = "Timeslot attachment failed, likely do to input error."
     email_body_formatter.conclusion = ""
 
     body = email_body_formatter.build()
 
-    email_data.subject = "[Internal Error] Failed Silently while Recording Pickup Timeslots"
-    email_data.to = (smtp_config.DEFAULT_RECEIVER,)
-    email_data.body = body
-    return email_data
+    email_body_messenger.subject = "[Internal Error] Failed Silently while Recording Pickup Timeslots"
+    email_body_messenger.to = (smtp_config.DEFAULT_RECEIVER,)
+    email_body_messenger.body = body
+    return email_body_messenger
