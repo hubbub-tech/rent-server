@@ -17,7 +17,7 @@ class TestOrders(unittest.TestCase):
         order = random.choice(orders)
 
         extensions = order.get_extensions()
-        is_list_type = extensions == []
+        is_list_type = isinstance(extensions, list)
 
         self.assertTrue(is_list_type)
 

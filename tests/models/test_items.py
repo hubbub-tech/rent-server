@@ -134,7 +134,7 @@ class TestItems(unittest.TestCase):
             item.remove_tag(tag_to_remove)
 
             tag_titles = item.get_tags()
-            is_removed = tag_to_remove.titles not in tag_titles
+            is_removed = tag_to_remove.title not in tag_titles
             self.assertTrue(is_removed)
 
             item.add_tag(tag_to_remove)

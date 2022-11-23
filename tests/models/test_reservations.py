@@ -24,4 +24,6 @@ class TestReservations(unittest.TestCase):
         })
 
         self.assertFalse(res_archived is None)
-        self.assertEqual(res_archived, reservation)
+
+        is_archived_type = isinstance(res_archived, ReservationsArchived)
+        self.assertEqual(is_archived_type)

@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, make_response
+from flask import Blueprint, make_response, redirect
 
 from src.models import Users
 from src.models import Addresses
@@ -14,6 +14,7 @@ from src.utils.settings import aws_config
 
 from src.utils.settings import (
     CODE_2_OK,
+    CODE_4_FORBIDDEN,
     CODE_4_NOT_FOUND
 )
 
@@ -28,6 +29,11 @@ def view_item(item_id):
     if item is None:
         error = "This item does not exist at the moment."
         response = make_response({"message": error}, CODE_4_NOT_FOUND)
+        return response
+
+    if item.is_visible == False:
+        error = "This item is no longer available."
+        response = make_response({"message": error}, CODE_4_FORBIDDEN)
         return response
 
     lister = Users.get({"id": item.lister_id})
