@@ -7,7 +7,13 @@ from src.models import Orders, Extensions
 from src.utils import create_charge
 from src.utils.settings import STRIPE_ENDPOINT_SECRET, PAYEE_ID, SERVER_DOMAIN
 
-from src.utils.settings import CODE_2_OK, CODE_4_UNAUTHORIZED, CODE_4_BAD_REQUEST, CODE_5_SERVER_ERROR
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_3_REDIRECT,
+    CODE_4_UNAUTHORIZED,
+    CODE_4_BAD_REQUEST,
+    CODE_5_SERVER_ERROR
+)
 
 bp = Blueprint("webhook", __name__)
 

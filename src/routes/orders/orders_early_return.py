@@ -18,7 +18,8 @@ from src.utils.settings import (
     CODE_2_OK,
     CODE_4_BAD_REQUEST,
     CODE_4_FORBIDDEN,
-    CODE_4_NOT_FOUND
+    CODE_4_NOT_FOUND,
+    CODE_5_SERVER_ERROR
 )
 
 bp = Blueprint("early_return", __name__)

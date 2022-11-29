@@ -53,9 +53,9 @@ def get_orders_by_date():
     dt_ended = None
 
     if dt_started_json:
-        dt_started = datetime.fromtimestamp(int(dt_started_json))
+        dt_started = datetime.fromtimestamp(float(dt_started_json))
     elif dt_ended_json:
-        dt_ended = datetime.fromtimestamp(int(dt_ended_json))
+        dt_ended = datetime.fromtimestamp(float(dt_ended_json))
     else:
         raise Exception("Invalid date entry.")
 

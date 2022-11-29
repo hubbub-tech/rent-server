@@ -7,6 +7,13 @@ from src.models import Reservations
 
 from src.utils import login_required
 
+from src.utils.settings import (
+    CODE_2_OK,
+    CODE_4_BAD_REQUEST,
+    CODE_4_NOT_FOUND,
+    CODE_5_SERVER_ERROR
+)
+
 bp = Blueprint("remove", __name__)
 
 
