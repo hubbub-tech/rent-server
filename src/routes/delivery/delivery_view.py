@@ -22,7 +22,7 @@ bp = Blueprint("view", __name__)
 @login_required
 def view_dropoffs():
 
-    dropoffs = Logistics.filter({ "receiver_id": g.user_id })
+    dropoffs = Logistics.filter({ "receiver_id": g.user_id, "is_canceled": False })
 
     dropoffs_to_dict = []
     for dropoff in dropoffs:
@@ -63,7 +63,7 @@ def view_dropoffs():
 @login_required
 def view_pickups():
 
-    pickups = Logistics.filter({ "sender_id": g.user_id })
+    pickups = Logistics.filter({ "sender_id": g.user_id, "is_canceled": False })
 
     pickups_to_dict = []
     for pickup in pickups:

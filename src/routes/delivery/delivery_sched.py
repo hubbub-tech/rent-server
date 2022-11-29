@@ -69,6 +69,7 @@ def schedule_dropoff():
             "to_addr_lng": to_address.lng,
             "from_addr_lat": from_address.lat,
             "from_addr_lng": from_address.lng,
+            "is_canceled": False,
             "dt_sent": None
         })
 
@@ -155,6 +156,7 @@ def schedule_pickup():
             "to_addr_lng": to_storage_address.lng,
             "from_addr_lat": from_address.lat,
             "from_addr_lng": from_address.lng,
+            "is_canceled": False,
             "dt_sent": None
         })
 

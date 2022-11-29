@@ -19,25 +19,25 @@ bp = Blueprint("cancel", __name__)
 @login_required
 def cancel_delivery():
 
-    logistics_id = request.args.get("logsitics_id")
-    logsitics = Logistics.get({"id": logistics_id})
+    logistics_id = request.args.get("logistics_id")
+    logistics = Logistics.get({ "id": logistics_id })
 
-    if logsitics is None:
+    if logistics is None:
         error = "Sorry, we could not find this delivery. Please, try again."
         response = make_response({ "message": error }, CODE_4_NOT_FOUND)
         return response
 
-    if logsitics.receiver_id != g.user_id and logsitics.sender_id != g.user_id:
+    if logistics.receiver_id != g.user_id and logistics.sender_id != g.user_id:
         error = "Sorry, you are not authorized to delete this delivery. Contact us if this seems wrong."
         response = make_response({ "message": error }, CODE_4_FORBIDDEN)
         return response
 
-    if logsitics.is_canceled:
+    if logistics.is_canceled:
         error = "Your delivery has been canceled!"
         response = make_response({ "message": error }, CODE_2_OK)
         return response
 
-    courier_ids = logsitics.get_courier_ids()
+    courier_ids = logistics.get_courier_ids()
     order_ids = logistics.get_order_ids()
     to_addr_pkeys = logistics.to_query_address("to")
     from_addr_pkeys = logistics.to_query_address("from")
@@ -46,12 +46,12 @@ def cancel_delivery():
 
     # START CANCELATION SEQUENCE
     for courier_id in courier_ids:
-        logsitics.remove_courier(courier_id)
+        logistics.remove_courier(courier_id)
 
     for order_id in order_ids:
-        logsitics.remove_order(order_id)
+        logistics.remove_order(order_id)
 
-    Logsitics.set({"id": logsitics.id}, {"is_canceled": True})
+    Logistics.set({"id": logistics.id}, {"is_canceled": True})
     # END CANCELATION SEQUENCE
 
     # NOTE: email all couriers that the delivery has been canceled
@@ -61,5 +61,5 @@ def cancel_delivery():
     from_addr = Addresses.get(from_addr_pkeys)
 
     message = f"Your delivery from {from_addr.to_str()} to {to_addr.to_str()} has been canceled."
-    response = make_response({"message": message}, CODE_2_OK)
+    response = make_response({ "message": message }, CODE_2_OK)
     return response
