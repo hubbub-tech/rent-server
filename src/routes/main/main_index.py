@@ -1,9 +1,9 @@
-from flask import Blueprint
-
+from flask import Blueprint, make_response
 
 bp = Blueprint("index", __name__)
 
-
 @bp.get("/index")
 def index():
-    return {"messages": "Hello!"}, 200
+    data = { "message": "Hello, World!" }
+    response = make_response(data, 200)
+    return response

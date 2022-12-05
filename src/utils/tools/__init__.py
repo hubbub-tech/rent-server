@@ -7,6 +7,7 @@ from .factories import create_extension
 from .factories import create_order
 from .factories import create_address
 from .factories import create_charge
+from .factories import create_issue
 
 from .validators import validate_rental
 from .validators import validate_date_range

@@ -9,6 +9,7 @@ from src.models import Orders
 from src.models import Extensions
 from src.models import Reviews
 from src.models import Tags
+from src.models import Issues
 
 from src.utils.classes import PriceCalculator
 from src.utils.settings import DEPOSIT, TAX, DISCOUNT
@@ -47,14 +48,14 @@ def create_item(insert_data, calendar_data, tags):
     return new_item
 
 
-def create_review(review_data):
-    new_review = Reviews.insert(review_data)
+def create_review(insert_data):
+    new_review = Reviews.insert(insert_data)
     return new_review
 
 
 def create_reservation(insert_data):
     if insert_data["dt_started"] >= insert_data["dt_ended"]: return
-    
+
     item = Items.get({"id": insert_data["item_id"]})
     reservation = Reservations.unique(insert_data)
 
@@ -107,5 +108,9 @@ def create_logistics(insert_data):
     return logistics
 
 
-def create_charge(charge_data):
+def create_issue(insert_data):
+    new_issue = Issues.insert(insert_data)
+    return new_issue
+
+def create_charge(insert_data):
     return None

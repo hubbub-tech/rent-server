@@ -36,6 +36,7 @@ def newsletter_sign_up():
     captcha_response = requests.post(ReCAPTCHA_VERIFY_URL, data=recaptcha_data)
     captcha_response.raise_for_status()
     captcha = captcha_response.json()
+    
     if data and captcha["success"]:
         email_data = get_newsletter_welcome({"name": name, "email": email})
         send_async_email.apply_async(kwargs=email_data.to_dict())

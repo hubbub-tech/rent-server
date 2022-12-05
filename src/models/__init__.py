@@ -6,3 +6,4 @@ from .addresses import Addresses
 from .logistics import Logistics, Timeslots
 from .reservations import Reservations
 from .reservations import ReservationsArchived
+from .issues import Issues
