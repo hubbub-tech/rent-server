@@ -172,7 +172,7 @@ def schedule_pickup():
             }
 
             logistics = create_logistics(logistics_data)
-            date_event = order.res_dt_start.date()
+            date_event = order.ext_dt_end.date()
 
             status = attach_timeslots(order_ids, logistics, timeslots, date_event)
 
