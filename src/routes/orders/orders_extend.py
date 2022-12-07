@@ -70,7 +70,7 @@ def validate_extend_order():
         response = make_response({ "message": error }, CODE_4_BAD_REQUEST)
         return response
 
-    if item.is_locked == False:
+    if item.is_locked == False or item.locker_id == g.user_id:
         item.lock(user)
 
         timeout_clock = datetime.now(tz=pytz.UTC) + timedelta(minutes=30)
