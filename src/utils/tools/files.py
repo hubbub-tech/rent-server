@@ -21,7 +21,7 @@ def base64_to_file(file_base64):
     return file, file_format
 
 
-
+# Broken
 def upload_to_gcloud(file, filename, file_format):
     credentials = service_account.Credentials.from_service_account_file(
         gcloud_config.ACCESS_CREDENTIALS_PRIVATE_JSON)

@@ -3,7 +3,7 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 from .files import base64_to_file
-from .files import upload_to_gcloud, upload_to_awss3
+from .files import upload_to_awss3
 from src.utils.settings import celery, smtp_config
 
 from .safe_txns import unlock_cart
