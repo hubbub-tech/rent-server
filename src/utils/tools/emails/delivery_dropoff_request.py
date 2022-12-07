@@ -62,9 +62,11 @@ def get_dropoff_request_email(logistics):
         """
 
     email_body_formatter.conclusion = f"""
-        We’ll respond confirming a precise drop off time that fits the dates/times
-        you indicated within 48 hours. If you have any questions, please contact
-        us at {smtp_config.DEFAULT_RECEIVER}.
+        We will send you a calendar event at most 48 hours before your dropoff date
+        to confirm the 30-minute time frame in which a Hubbub courier will arrive
+        at the address you specified with your rental(s). You will also be
+        sent a tracking link when the Hubbub courier is on their way. If you have
+        any questions, please contact us at {smtp_config.DEFAULT_RECEIVER}.
         """
 
     body = email_body_formatter.build()
