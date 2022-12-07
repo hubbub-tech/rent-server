@@ -78,13 +78,16 @@ class GCloudConfig:
 
 
     def inject_private_key_into_json(self):
-        with open(self.ACCESS_CREDENTIALS_PRIVATE_JSON, "r") as gcloud_auth_file:
-            gcloud_auth_data = json.load(gcloud_auth_file)
-            gcloud_auth_data["private_key_id"] = self.ACCESS_CREDENTIALS_PRIVATE_KEY_ID
-            gcloud_auth_data["private_key"] = self.ACCESS_CREDENTIALS_PRIVATE_KEY
+        if self.ACCESS_CREDENTIALS_PRIVATE_KEY:
+            with open(self.ACCESS_CREDENTIALS_PRIVATE_JSON, "r") as gcloud_auth_file:
+                gcloud_auth_data = json.load(gcloud_auth_file)
+                gcloud_auth_data["private_key_id"] = self.ACCESS_CREDENTIALS_PRIVATE_KEY_ID
+                gcloud_auth_data["private_key"] = self.ACCESS_CREDENTIALS_PRIVATE_KEY
 
-        with open(self.ACCESS_CREDENTIALS_PRIVATE_JSON, "w") as gcloud_auth_file:
-            json.dump(gcloud_auth_data, gcloud_auth_file)
+            with open(self.ACCESS_CREDENTIALS_PRIVATE_JSON, "w") as gcloud_auth_file:
+                json.dump(gcloud_auth_data, gcloud_auth_file)
+        else:
+            return
 
 
     @staticmethod

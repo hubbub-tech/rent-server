@@ -20,6 +20,15 @@ def get_pickup_request_email(logistics):
     dt_range_start_index = 0
     dt_range_end_index = 1
 
+    timeslots_printables = []
+    for timeslot in timeslots:
+        time_start_str = timeslot[dt_range_start_index].strftime("%H:%M")
+        time_end_str = timeslot[dt_range_end_index].strftime("%H:%M")
+
+        timeslots_printables.append(f"{time_start_str} - {time_end_str}")
+
+    timeslots_str = ", ".join(timeslots_printables)
+
     date_pickup_str = timeslots[0][dt_range_start_index].strftime("%B %-d, %Y")
     email_body_formatter.preview = f"Coordinating pick-up for your recent order(s) for {date_pickup_str}"
 
@@ -47,7 +56,7 @@ def get_pickup_request_email(logistics):
         <p>You ordered: {", ".join(item_names)}</p>
         <p>For pick-up on: {date_pickup_str}</p>
         <p>Meeting here: {from_addr.to_str()}</p>
-        <p>Available at: {timeslots}</p>
+        <p>Available at: {timeslots_str}</p>
         """
 
     email_body_formatter.conclusion = f"""
