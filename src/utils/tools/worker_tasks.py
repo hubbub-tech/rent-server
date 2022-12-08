@@ -4,12 +4,18 @@ from sendgrid.helpers.mail import Mail
 
 from .files import base64_to_file
 from .files import upload_to_awss3
+
+from src.models import Carts
 from src.utils.settings import celery, smtp_config
 
 from .safe_txns import unlock_cart
 
 @celery.task
 def send_async_email(subject, to, body, error=None):
+
+    if os.getenv("FLASK_ENV", "development") == "development":
+        subject = f"[Test] {subject}"
+            
     msg = Mail(
         from_email=smtp_config.DEFAULT_SENDER,
         to_emails=to,
