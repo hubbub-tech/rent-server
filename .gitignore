@@ -18,6 +18,8 @@ todo.txt
 server.crt
 server.key
 
+Dockerfile
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
