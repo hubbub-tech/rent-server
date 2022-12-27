@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, make_response, request
 
 from src.models import Users
@@ -44,7 +45,7 @@ def login():
 
     if status.is_successful:
         session_key = gen_token()
-        Users.set({"id": user.id}, {"session_key": session_key["unhashed"]})
+        Users.set({"id": user.id}, {"dt_last_active": datetime.now(), "session_key": session_key["unhashed"]})
 
         data = {
             "user_id": user.id,
