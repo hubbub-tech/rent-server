@@ -12,7 +12,7 @@ from ._email_body import EmailBodyMessenger, EmailBodyFormatter
 
 def get_renter_receipt_email(orders):
 
-    email_bod_messenger = EmailBodyMessenger()
+    email_body_messenger = EmailBodyMessenger()
     email_body_formatter = EmailBodyFormatter()
 
     renter = Users.get({"id": orders[0].renter_id})
@@ -82,7 +82,7 @@ def get_renter_receipt_email(orders):
 
     body = email_body_formatter.build()
 
-    email_bod_messenger.subject = "[Hubbub] Order Receipt"
-    email_bod_messenger.to = (renter.email, smtp_config.DEFAULT_RECEIVER)
-    email_bod_messenger.body = body
-    return email_bod_messenger
+    email_body_messenger.subject = "[Hubbub] Order Receipt"
+    email_body_messenger.to = (renter.email, smtp_config.DEFAULT_RECEIVER)
+    email_body_messenger.body = body
+    return email_body_messenger

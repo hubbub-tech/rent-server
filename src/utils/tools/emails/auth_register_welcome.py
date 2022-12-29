@@ -8,7 +8,7 @@ from ._email_body import EmailBodyMessenger, EmailBodyFormatter
 
 def get_welcome_email(user):
 
-    email_bod_messenger = EmailBodyMessenger()
+    email_body_messenger = EmailBodyMessenger()
     email_body_formatter = EmailBodyFormatter()
 
     dt_now = datetime.now()
@@ -39,7 +39,7 @@ def get_welcome_email(user):
 
     body = email_body_formatter.build()
 
-    email_bod_messenger.subject = f"[Hubbub] Welcome, {user.name}!"
-    email_bod_messenger.to = (user.email, smtp_config.DEFAULT_RECEIVER)
-    email_bod_messenger.body = body
-    return email_bod_messenger
+    email_body_messenger.subject = f"[Hubbub] Welcome, {user.name}!"
+    email_body_messenger.to = (user.email, smtp_config.DEFAULT_RECEIVER)
+    email_body_messenger.body = body
+    return email_body_messenger
