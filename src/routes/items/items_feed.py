@@ -9,7 +9,7 @@ from src.utils import json_sorted
 from src.utils import login_optional
 from src.utils.classes import Recommender
 
-from src.utils import send_async_email
+from src.utils import upload_email_data
 from src.utils import get_item_expiration_email
 
 from src.utils.settings import aws_config
@@ -75,7 +75,7 @@ def item_feed():
             Items.set({ "id": item.id }, { "is_transactable": False })
 
             email_data = get_item_expiration_email(item) # WARNING
-            send_async_email.apply_async(kwargs=email_data.to_dict())
+            upload_email_data(email_data, email_type="item_expiration")
 
     items_to_dict_sorted = json_sorted(items_to_dict, "next_available_start")
     items_to_dict_sorted = json_sorted(items_to_dict_sorted, "is_featured", reverse=True)

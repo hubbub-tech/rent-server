@@ -1,36 +1,13 @@
 import os
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+import datetime
 
 from .files import base64_to_file
 from .files import upload_to_awss3
 
 from src.models import Carts
-from src.utils.settings import celery, smtp_config
+from src.utils.settings import celery
 
 from .safe_txns import unlock_cart
-
-@celery.task
-def send_async_email(subject, to, body, error=None):
-
-    if os.getenv("FLASK_ENV", "development") == "development":
-        subject = f"[Test] {subject}"
-            
-    msg = Mail(
-        from_email=smtp_config.DEFAULT_SENDER,
-        to_emails=to,
-        subject=subject,
-        html_content=body
-    )
-    try:
-        sg = SendGridAPIClient(smtp_config.SENDGRID_APIKEY)
-        response = sg.send(msg)
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
-
-    except Exception as e:
-        print(e.message)
 
 
 @celery.task
