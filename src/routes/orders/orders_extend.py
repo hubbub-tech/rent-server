@@ -14,7 +14,7 @@ from src.utils import create_reservation
 from src.utils import create_extension
 
 from src.utils import get_lister_receipt_email, get_extension_receipt_email
-from src.utils import send_async_email, set_async_timeout
+from src.utils import upload_email_data, set_async_timeout
 from src.utils import login_required, get_stripe_extension_session
 
 from src.utils.settings import aws_config
@@ -169,7 +169,7 @@ def extend_order():
     # NOTE: notify the lister
 
     email_data = get_extension_receipt_email(extension)
-    send_async_email.apply_async(kwargs=email_data.to_dict())
+    upload_email_data(email_data, email_type="order_extension")
 
     message = "Successfully extended your order!"
     response = make_response({"message": message}, CODE_2_OK)

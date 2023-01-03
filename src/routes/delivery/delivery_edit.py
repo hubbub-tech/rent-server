@@ -1,8 +1,13 @@
 from datetime import datetime
 from flask import Blueprint, make_response, request, g
 
+from src.models import Orders
+
 from src.utils import get_edit_dropoff_request_email
 from src.utils import get_edit_pickup_request_email
+from src.utils import upload_email_data
+
+from src.utils import create_address
 
 from src.utils.settings import (
     CODE_2_OK,
@@ -45,7 +50,7 @@ def edit_dropoff_request():
     to_address = create_address(to_address_data)
 
     email_data = get_edit_dropoff_request_email(order, to_address.formatted, date_dropoff, timeslots)
-    send_async_email.apply_async(kwargs=email_data.to_dict())
+    upload_email_data(email_data, email_type="dropoff_request_edit")
 
     message = "Your edit request has been noted! We'll reach out to you shortly with more details."
     response = make_response({ "message": message }, CODE_2_OK)
@@ -83,7 +88,7 @@ def edit_pickup_request():
     from_address = create_address(from_address_data)
 
     email_data = get_edit_pickup_request_email(order, from_address.formatted, date_pickup, timeslots)
-    send_async_email.apply_async(kwargs=email_data.to_dict())
+    upload_email_data(email_data, email_type="pickup_request_edit")
 
     message = "Your edit request has been noted! We'll reach out to you shortly with more details."
     response = make_response({ "message": message }, CODE_2_OK)

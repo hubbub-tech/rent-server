@@ -3,6 +3,9 @@ from flask import Blueprint, make_response, request
 
 from src.utils.settings import CaptchaConfig
 
+from src.utils import get_newsletter_welcome
+from src.utils import upload_email_data
+
 from src.utils.settings import (
     CODE_2_OK,
     CODE_4_BAD_REQUEST,
@@ -33,13 +36,14 @@ def newsletter_sign_up():
         "secret": CaptchaConfig.ReCAPTCHA_SERVER_APIKEY,
         "response": token
     }
-    captcha_response = requests.post(ReCAPTCHA_VERIFY_URL, data=recaptcha_data)
+    captcha_response = requests.post(CaptchaConfig.ReCAPTCHA_VERIFY_URL, data=recaptcha_data)
     captcha_response.raise_for_status()
     captcha = captcha_response.json()
     
     if data and captcha["success"]:
         email_data = get_newsletter_welcome({"name": name, "email": email})
-        send_async_email.apply_async(kwargs=email_data.to_dict())
+        upload_email_data(email_data, email_type="newsletter_notice")
+
         data = {"message": "Thanks for joining our newsletter!" }
         response = make_response(data, CODE_2_OK)
         return response

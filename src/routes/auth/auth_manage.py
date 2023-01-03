@@ -6,7 +6,7 @@ from src.models import Users
 from src.utils import gen_token, verify_token
 
 from src.utils import get_password_reset_email
-from src.utils import send_async_email
+from src.utils import upload_email_data
 
 from src.utils.settings import FlaskConfig
 
@@ -45,9 +45,9 @@ def pass_recover():
             Users.set({"id": user.id}, {"session_key": recovery_token['unhashed']})
 
         # NOTE: async timer which invalidates token after X hours
-        pass_reset_link = f"{Config.CORS_ALLOW_ORIGIN}/pass/reset?token={recovery_token['hashed']}"
-        email_data = get_password_reset_email(user, reset_link)
-        send_async_email.apply_async(kwargs=email_data.to_dict())
+        pass_reset_link = f"{FlaskConfig.CORS_ALLOW_ORIGIN}/pass/reset?token={recovery_token['hashed']}"
+        email_data = get_password_reset_email(user, pass_reset_link)
+        upload_email_data(email_data, email_type="auth_reset")
 
     message = "If this email has an account, we have sent the recovery link there."
     response = make_response({ "message": message }, CODE_2_OK)

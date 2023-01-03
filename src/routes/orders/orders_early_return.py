@@ -10,7 +10,7 @@ from src.utils import login_required
 from src.utils import return_order_early
 
 from src.utils import get_early_return_email
-from src.utils import send_async_email
+from src.utils import upload_email_data
 
 from src.utils.settings import aws_config
 
@@ -56,7 +56,7 @@ def orders_early_return():
         })
 
         email_data = get_early_return_email(order, early_reservation)
-        send_async_email.apply_async(kwargs=email_data.to_dict())
+        upload_email_data(email_data, email_type="order_early_return")
 
         item = Items.get({ "id": order.item_id })
         item_to_dict = item.to_dict()

@@ -13,3 +13,5 @@ __pycache__
 Procfile
 runtime.txt
 start.sh
+
+.vscode

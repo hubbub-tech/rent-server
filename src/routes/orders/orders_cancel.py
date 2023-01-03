@@ -7,7 +7,7 @@ from src.models import Reservations
 
 
 from src.utils import get_cancellation_email
-from src.utils import send_async_email
+from src.utils import upload_email_data
 
 from src.utils import login_required
 
@@ -85,7 +85,7 @@ def cancel_order():
     # END ORDER CANCELLATION SEQUENCE
 
     email_data = get_cancellation_email(order)
-    send_async_email.apply_async(kwargs=email_data.to_dict())
+    upload_email_data(email_data, email_type="order_cancel")
 
     message = "Your order was successfully cancelled!"
     response = make_response({"message": message}, 200)
@@ -145,7 +145,7 @@ def cancel_extension():
     # END ORDER CANCELLATION SEQUENCE
 
     email_data = get_cancellation_email(extension)
-    send_async_email.apply_async(kwargs=email_data.to_dict())
+    upload_email_data(email_data, email_type="extension_cancel")
 
     message = "Your extension was successfully canceled!"
     response = make_response({"message": message}, CODE_2_OK)

@@ -12,7 +12,7 @@ from src.utils import get_nearest_storage
 from src.utils import attach_timeslots
 
 from src.utils import login_required
-from src.utils import send_async_email
+from src.utils import upload_email_data
 from src.utils import get_dropoff_request_email
 from src.utils import get_dropoff_error_email
 from src.utils import get_pickup_request_email
@@ -96,7 +96,7 @@ def schedule_dropoff():
                     email_data = get_dropoff_error_email(logistics)
             else:
                 email_data = get_dropoff_error_email(logistics)
-            send_async_email.apply_async(kwargs=email_data.to_dict())
+            upload_email_data(email_data, email_type="dropoff_request_new")
 
         attached_order_ids = logistics.get_order_ids()
         if order.id not in attached_order_ids:
@@ -183,7 +183,7 @@ def schedule_pickup():
                     email_data = get_pickup_error_email(logistics)
             else:
                 email_data = get_pickup_error_email(logistics)
-            send_async_email.apply_async(kwargs=email_data.to_dict())
+            upload_email_data(email_data, email_type="pickup_request_new")
 
         attached_order_ids = logistics.get_order_ids()
         if order.id not in attached_order_ids:

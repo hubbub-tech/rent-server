@@ -1,12 +1,10 @@
 from datetime import datetime
-from flask import Blueprint, make_response, redirect
+from flask import Blueprint, make_response
 
 from src.models import Users
 from src.models import Addresses
 from src.models import Items
 from src.models import Calendars
-
-from src.utils import login_required
 
 from src.utils.classes import Recommender
 

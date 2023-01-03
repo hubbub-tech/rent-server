@@ -11,12 +11,11 @@ from src.models import Reservations
 from src.utils import lock_cart
 from src.utils import unlock_cart
 from src.utils import check_lock_access
-from src.utils import verify_token
 from src.utils import create_order
 from src.utils import login_required
 
 from src.utils import get_stripe_checkout_session
-from src.utils import send_async_email, set_async_timeout
+from src.utils import upload_email_data, set_async_timeout
 from src.utils import get_lister_receipt_email, get_renter_receipt_email
 
 from src.utils.settings import (
@@ -133,8 +132,8 @@ def checkout():
         item.unlock()
         user_cart.remove(reservation)
 
-        email_data = get_lister_receipt_email(order) # WARNING
-        send_async_email.apply_async(kwargs=email_data.to_dict())
+        email_data = get_lister_receipt_email(order)
+        upload_email_data(email_data, email_type="checkout_lister_receipt")
 
     orders = Orders.filter({
         "renter_id": user_cart.id,
@@ -142,7 +141,7 @@ def checkout():
     })
 
     email_data = get_renter_receipt_email(orders)
-    send_async_email.apply_async(kwargs=email_data.to_dict())
+    upload_email_data(email_data, email_type="checkout_renter_receipt")
 
     response = make_response({ "message": "Success!" }, CODE_2_OK)
     return response

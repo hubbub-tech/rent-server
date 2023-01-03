@@ -19,6 +19,7 @@ server.crt
 server.key
 
 Dockerfile
+.vscode
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

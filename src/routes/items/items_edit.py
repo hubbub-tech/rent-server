@@ -48,14 +48,15 @@ def edit_item():
         response = make_response({ "message": error }, CODE_5_SERVER_ERROR)
         return response
 
-    # NOTE: parse for address data
-    address = create_address(new_address)
-
-    Items.set({"id": item.id}, {
+    address_data = {
         "name": new_name,
-        "address_lat": address.lat,
-        "address_lng": address.lng
-    })
+        "address_lat": new_address_lat,
+        "address_lng": new_address_lng
+    }
+
+    address = create_address(address_data)
+
+    Items.set({"id": item.id}, address_data)
 
     message = "Your edit requests have been received. Thanks!"
     response = make_response({"message": message}, CODE_2_OK)

@@ -1,3 +1,5 @@
+import os
+import json
 import base64
 from datetime import datetime, date
 
@@ -46,7 +48,7 @@ def upload_to_gcloud(file, filename, file_format):
 
 
 
-def upload_to_awss3(file, filename, file_format):
+def upload_to_awss3(file, filename, file_format=None):
 
     s3_resource = aws_config.get_s3_resource()
 
@@ -61,6 +63,32 @@ def upload_to_awss3(file, filename, file_format):
     except NoCredentialsError as nce_e:
         print(nce_e)
 
+
+def upload_email_data(email_data: dict, email_type: str=None):
+    if email_type is None: email_type = "unspecified"
+
+    cwd = os.getcwd()
+    tmp_folder = "src/tmp/"
+    upload_folder = "emails/queued/"
+
+    email_to_dict = email_data.to_dict()
+
+    dt_now = datetime.now()
+    dt_now_str = dt_now.strftime("%Y%m%d_%H%M%S")
+    
+    filename = f"{email_type}#{dt_now_str}.json"
+    path_to_save_local = os.path.join(cwd, tmp_folder, filename)
+    path_to_save_s3 = upload_folder + filename
+
+    email_json = open(path_to_save_local, "w")
+    json.dump(email_to_dict, email_json)
+    email_json.close()
+
+    client = aws_config.get_s3()
+    client.upload_file(
+        path_to_save_local, aws_config.S3_BUCKET, path_to_save_s3, 
+        ExtraArgs={'ACL': 'public-read-write'}
+    )
 
 
 def get_receipt(order):

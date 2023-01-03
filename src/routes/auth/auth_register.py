@@ -8,7 +8,7 @@ from src.models import Users
 
 from src.utils import create_user
 from src.utils import get_welcome_email
-from src.utils import send_async_email
+from src.utils import upload_email_data
 from src.utils import validate_registration
 from src.utils import strip_non_numericals
 from src.utils import CaptchaConfig
@@ -18,6 +18,7 @@ from src.utils import login_user
 from src.utils.settings import (
     CODE_2_OK,
     CODE_4_BAD_REQUEST,
+    CODE_4_FORBIDDEN,
     CODE_4_UNAUTHORIZED,
     CODE_5_SERVER_ERROR
 )
@@ -77,13 +78,14 @@ def register():
 
     if status.is_successful == False:
         error = status.message
-        response = make_response({ "message": error }, 403)
+        response = make_response({ "message": error }, CODE_4_FORBIDDEN)
         return response
 
     new_user = create_user(user_data)
 
     email_data = get_welcome_email(new_user)
-    send_async_email.apply_async(kwargs=email_data.to_dict())
+
+    upload_email_data(email_data, email_type="auth_register")
 
     status = login_user(new_user)
 

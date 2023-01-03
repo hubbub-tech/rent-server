@@ -10,7 +10,7 @@ from src.utils import validate_date_range
 from src.utils import login_required
 
 from src.utils import get_new_listing_email
-from src.utils import send_async_email
+from src.utils import upload_email_data
 from src.utils import upload_file_async
 
 from src.utils.settings import (
@@ -90,7 +90,7 @@ def list_item():
     new_item = create_item(item_data, calendar_data, tags)
 
     email_data = get_new_listing_email(new_item)
-    send_async_email.apply_async(kwargs=email_data.to_dict())
+    upload_email_data(email_data, email_type="list_item")
 
     i = 0
     for image_base64 in image_base64s:

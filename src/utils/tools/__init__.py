@@ -22,6 +22,7 @@ from .safe_txns import get_stripe_extension_session
 from .safe_txns import return_order_early
 
 from .files import get_receipt
+from .files import upload_email_data
 
 from .worker_tasks import send_async_email
 from .worker_tasks import set_async_timeout
