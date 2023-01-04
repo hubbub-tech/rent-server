@@ -1,35 +1,41 @@
+import ssl
+import smtplib
 import logging
 from logging.handlers import SMTPHandler
 
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from src.utils.settings import smtp_config
 
 class SGSMTPHandler(SMTPHandler):
 
     def emit(self, record):
-        """Custom email logging through SendGrid API."""
-        msg = Mail(
-            from_email=self.fromaddr,
-            to_emails=self.toaddrs,
-            subject=self.subject,
-            html_content=self.format(record)
-        )
-        try:
-            sg = SendGridAPIClient(smtp_config.SENDGRID_APIKEY)
-            response = sg.send(msg)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            self.handleError(record)
+
+        mime_multipart_msg = MIMEMultipart("alternative")
+        mime_multipart_msg["Subject"] = self.subject
+        mime_multipart_msg["From"] = self.fromaddr
+        mime_multipart_msg["To"] = ",".join(self.toaddrs)
+
+        message_processed = MIMEText(record, "html")
+        mime_multipart_msg.attach(message_processed)
+
+        context = ssl.create_default_context()
+        with smtplib.SMTP(smtp_config.SMTP_SERVER, smtp_config.SMTP_PORT) as server:
+            server.ehlo()
+            server.starttls(context=context)
+            server.ehlo()
+
+            server.login(smtp_config.DEFAULT_SENDER, smtp_config.DEFAULT_SENDER_PASSWORD)
+            server.sendmail(smtp_config.DEFAULT_SENDER, self.toaddrs, mime_multipart_msg.as_string())
+
 
 def build_mail_handler():
     mail_handler = SGSMTPHandler(
-        mailhost='smtp.sendgrid.net',
+        mailhost=smtp_config.SMTP_SERVER,
         fromaddr=smtp_config.DEFAULT_SENDER,
         toaddrs=[smtp_config.DEFAULT_RECEIVER, smtp_config.DEFAULT_ADMIN],
-        subject='Hubbub Server Error'
+        subject="[Hubbub] Internal Server Error"
     )
     mail_handler.setLevel(logging.WARNING)
     mail_handler.setFormatter(logging.Formatter(
@@ -51,5 +57,4 @@ def build_mail_handler():
         </html>
         '''
     ))
-    print("built the damn thing...")
     return mail_handler

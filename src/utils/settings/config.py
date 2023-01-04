@@ -107,17 +107,21 @@ class CaptchaConfig:
 class SMTPConfig:
     _instance = None
     DEFAULT_SENDER = None
-    SENDGRID_APIKEY = None
+    DEFAULT_SENDER_PASSWORD = None
+    SMTP_SERVER = ''
+    SMTP_PORT = None
 
     def __init__(self):
         if SMTPConfig._instance:
             #TODO: log that this problem happened
             raise Exception("MAIL CLIENT Connection should only be created once in the app.")
         else:
+            SMTPConfig.DEFAULT_ADMIN = os.environ["MAIL_DEFAULT_ADMIN"]
             SMTPConfig.DEFAULT_RECEIVER = os.environ["MAIL_DEFAULT_RECEIVER"]
             SMTPConfig.DEFAULT_SENDER = os.environ["MAIL_DEFAULT_SENDER"]
-            SMTPConfig.DEFAULT_ADMIN = os.environ["MAIL_DEFAULT_ADMIN"]
-            SMTPConfig.SENDGRID_APIKEY = os.environ["SENDGRID_APIKEY"]
+            SMTPConfig.DEFAULT_SENDER_PASSWORD = os.environ["MAIL_DEFAULT_SENDER_PASSWORD"]
+            SMTPConfig.SMTP_SERVER = os.environ["SMTP_SERVER"]
+            SMTPConfig.SMTP_PORT = int(os.environ["SMTP_PORT"])
             SMTPConfig._instance = self
 
     @staticmethod
