@@ -1,14 +1,7 @@
-import os
-import datetime
-
 from .files import base64_to_file
 from .files import upload_to_awss3
 
-from src.models import Carts
 from src.utils.settings import celery
-
-from .safe_txns import unlock_cart
-
 
 @celery.task
 def upload_file_async(filename, file_base64):
