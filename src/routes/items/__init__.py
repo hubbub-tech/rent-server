@@ -6,6 +6,7 @@ from src.utils.settings import FlaskConfig
 from .items_edit import bp as items_edit
 from .items_feed import bp as items_feed
 from .items_view import bp as items_view
+from .items_manage import bp as items_manage
 from .items_review import bp as items_review
 
 bp = Blueprint('items', __name__)
@@ -13,6 +14,7 @@ bp = Blueprint('items', __name__)
 bp.register_blueprint(items_edit)
 bp.register_blueprint(items_feed)
 bp.register_blueprint(items_view)
+bp.register_blueprint(items_manage)
 bp.register_blueprint(items_review)
 
 CORS(
