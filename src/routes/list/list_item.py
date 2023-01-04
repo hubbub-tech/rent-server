@@ -11,7 +11,7 @@ from src.utils import login_required
 
 from src.utils import get_new_listing_email
 from src.utils import upload_email_data
-from src.utils import upload_file_async
+from src.utils import upload_file_from_base64
 
 from src.utils.settings import (
     CODE_2_OK,
@@ -99,10 +99,7 @@ def list_item():
         else:
             filename = f"items/item-{new_item.id}/{i}.jpg"
 
-        upload_file_async.apply_async(kwargs={
-            "filename": filename,
-            "file_base64": image_base64
-        })
+        upload_file_from_base64(filename, image_base64)
         i += 1
 
     message = "Thanks for listing on Hubbub!"

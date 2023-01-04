@@ -64,6 +64,16 @@ def upload_to_awss3(file, filename, file_format=None):
         print(nce_e)
 
 
+def upload_file_from_base64(filename, file_base64):
+
+    try:
+        file, file_format = base64_to_file(file_base64)
+        upload_to_awss3(file, filename, file_format)
+    except:
+        print("There was an error.")
+        return False
+
+
 def upload_email_data(email_data: dict, email_type: str=None):
     if email_type is None: email_type = "unspecified"
 

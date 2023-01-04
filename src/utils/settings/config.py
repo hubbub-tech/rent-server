@@ -133,15 +133,8 @@ class FlaskConfig:
     SECRET_KEY = os.environ['SECRET_KEY']
     TESTING = False
 
-    #Celery
     CORS_SUPPORTS_CREDENTIALS = True
     CORS_ALLOW_ORIGIN = os.environ['CORS_ALLOW_ORIGIN']
-
-    CELERY_BROKER_URL = os.environ['CLOUDAMQP_URL']
-    CELERY_BROKER_APIKEY = os.environ['CLOUDAMQP_APIKEY']
-    CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
-    BROKER_POOL_LIMIT = 1
-
 
 
 class DevelopmentFlaskConfig:
@@ -149,14 +142,8 @@ class DevelopmentFlaskConfig:
     SECRET_KEY = os.environ['SECRET_KEY']
     TESTING = False
 
-    #Celery
     CORS_SUPPORTS_CREDENTIALS = True
     CORS_ALLOW_ORIGIN = os.environ['CORS_ALLOW_ORIGIN']
-
-    CELERY_BROKER_URL = os.environ['CLOUDAMQP_URL']
-    CELERY_RESULT_BACKEND = os.environ['CELERY_RESULT_BACKEND']
-    BROKER_POOL_LIMIT = 1
-
 
 
 class TestFlaskConfig:
@@ -166,9 +153,5 @@ class TestFlaskConfig:
 
     CORS_SUPPORTS_CREDENTIALS = True
     CORS_ALLOW_ORIGIN = 'http://localhost:3000'
-
-    CELERY_BROKER_URL = 'amqp://localhost'
-    CELERY_RESULT_BACKEND = 'rpc://localhost'
-    BROKER_POOL_LIMIT = 1
 
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

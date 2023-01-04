@@ -23,8 +23,7 @@ from .safe_txns import return_order_early
 
 from .files import get_receipt
 from .files import upload_email_data
-
-from .worker_tasks import upload_file_async
+from .files import upload_file_from_base64
 
 from .auth import handle_preflight_only
 from .auth import login_required, login_optional, login_user

@@ -26,10 +26,6 @@ def create_app(config_object=FlaskConfig()):
     ):
         logger.addHandler(mail_handler)
 
-    # Celery Worker Config
-    from .utils.settings import celery
-    celery.conf.update(app.config)
-
     from .routes import account
     from .routes import api
     from .routes import auth
