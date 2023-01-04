@@ -15,7 +15,7 @@ from src.utils import create_order
 from src.utils import login_required
 
 from src.utils import get_stripe_checkout_session
-from src.utils import upload_email_data, set_async_timeout
+from src.utils import upload_email_data
 from src.utils import get_lister_receipt_email, get_renter_receipt_email
 
 from src.utils.settings import (
@@ -64,8 +64,7 @@ def validate_checkout():
         response = make_response({ "message": error }, 401)
         return response
 
-    timeout_clock = datetime.now(tz=pytz.UTC) + timedelta(minutes=30)
-    set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": user_cart.id})
+    # TIMEOUT JOB UNLOCKS EVERY 30 MINUTES
 
     if txn_method == "in-person":
         message = "Thank you! Now waiting on next steps to complete your order..."

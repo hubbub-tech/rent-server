@@ -13,8 +13,8 @@ from src.utils import validate_rental
 from src.utils import create_reservation
 from src.utils import create_extension
 
-from src.utils import get_lister_receipt_email, get_extension_receipt_email
-from src.utils import upload_email_data, set_async_timeout
+from src.utils import get_extension_receipt_email
+from src.utils import upload_email_data
 from src.utils import login_required, get_stripe_extension_session
 
 from src.utils.settings import aws_config
@@ -73,8 +73,8 @@ def validate_extend_order():
     if item.is_locked == False or item.locker_id == g.user_id:
         item.lock(user)
 
-        timeout_clock = datetime.now(tz=pytz.UTC) + timedelta(minutes=30)
-        set_async_timeout.apply_async(eta=timeout_clock, kwargs={"user_id": user.id})
+         # TIMEOUT JOB UNLOCKS EVERY 30 MINUTES
+
     else:
         error = "Sorry seems like someone else is ordering this item. Try again in a few minutes."
         response = make_response({"message": error}, CODE_4_UNAUTHORIZED)

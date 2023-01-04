@@ -22,6 +22,7 @@ class Items(Models):
         self.dt_created = attrs["dt_created"]
         self.is_locked = attrs["is_locked"]
         self.locker_id = attrs["locker_id"]
+        self.dt_last_locked = attrs["dt_last_locked"]
         self.description = attrs["description"]
         self.weight = attrs["weight"]
         self.weight_unit = attrs["weight_unit"]
@@ -41,11 +42,12 @@ class Items(Models):
 
         SQL = """
             UPDATE items
-            SET is_locked = %s, locker_id = %s
+            SET is_locked = %s, locker_id = %s, dt_last_locked = %s
             WHERE id = %s;
             """
 
-        data = (True, user.id, self.id)
+        dt_last_locked = datetime.now()
+        data = (True, user.id, dt_last_locked, self.id)
 
         with Models.db.conn.cursor() as cursor:
             cursor.execute(SQL, data)
@@ -53,6 +55,7 @@ class Items(Models):
 
         self.is_locked = True
         self.locker_id = user.id
+        self.dt_last_locked = dt_last_locked
 
 
     def unlock(self):
@@ -184,10 +187,6 @@ class Items(Models):
                 return items
         else:
             return cls.filter({"is_visible": True, "is_transactable": True})
-
-
-
-
 
 
     def to_query_address(self):

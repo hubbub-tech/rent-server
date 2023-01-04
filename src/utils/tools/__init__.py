@@ -24,7 +24,6 @@ from .safe_txns import return_order_early
 from .files import get_receipt
 from .files import upload_email_data
 
-from .worker_tasks import set_async_timeout
 from .worker_tasks import upload_file_async
 
 from .auth import handle_preflight_only
