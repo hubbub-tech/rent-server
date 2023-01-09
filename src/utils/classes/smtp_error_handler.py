@@ -8,7 +8,7 @@ from email.mime.multipart import MIMEMultipart
 
 from src.utils.settings import smtp_config
 
-class SGSMTPHandler(SMTPHandler):
+class HubbubSMTPHandler(SMTPHandler):
 
     def emit(self, record):
 
@@ -17,7 +17,8 @@ class SGSMTPHandler(SMTPHandler):
         mime_multipart_msg["From"] = self.fromaddr
         mime_multipart_msg["To"] = ",".join(self.toaddrs)
 
-        message_processed = MIMEText(record, "html")
+        message = record.getMessage()
+        message_processed = MIMEText(message, "html")
         mime_multipart_msg.attach(message_processed)
 
         context = ssl.create_default_context()
@@ -31,7 +32,7 @@ class SGSMTPHandler(SMTPHandler):
 
 
 def build_mail_handler():
-    mail_handler = SGSMTPHandler(
+    mail_handler = HubbubSMTPHandler(
         mailhost=smtp_config.SMTP_SERVER,
         fromaddr=smtp_config.DEFAULT_SENDER,
         toaddrs=[smtp_config.DEFAULT_RECEIVER, smtp_config.DEFAULT_ADMIN],
