@@ -90,8 +90,7 @@ def list_item():
     new_item = create_item(item_data, calendar_data, tags)
 
     email_data = get_new_listing_email(new_item)
-    upload_email_data(email_data, email_type="list_item")
-
+    
     i = 0
     for image_base64 in image_base64s:
         if i == 0:
@@ -101,6 +100,8 @@ def list_item():
 
         upload_file_from_base64(filename, image_base64)
         i += 1
+
+    upload_email_data(email_data, email_type="list_item")
 
     message = "Thanks for listing on Hubbub!"
 
