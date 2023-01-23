@@ -15,7 +15,7 @@ from src.utils.classes import PriceCalculator
 from src.utils.settings import DEPOSIT, TAX, DISCOUNT
 
 
-def create_address(insert_data):
+def create_address(insert_data: dict):
     address = Addresses.get({
         "lat": insert_data["lat"],
         "lng": insert_data["lng"]
@@ -25,7 +25,7 @@ def create_address(insert_data):
 
     return address
 
-def create_user(insert_data):
+def create_user(insert_data: dict):
     new_user = Users.insert(insert_data)
     Carts.insert({ "id": new_user.id })
 
@@ -33,7 +33,7 @@ def create_user(insert_data):
     return new_user
 
 
-def create_item(insert_data, calendar_data, tags):
+def create_item(insert_data: dict, calendar_data: dict, tags: list):
     new_item = Items.insert(insert_data)
 
     calendar_data["id"] = new_item.id
@@ -48,16 +48,20 @@ def create_item(insert_data, calendar_data, tags):
     return new_item
 
 
-def create_review(insert_data):
+def create_review(insert_data: dict):
     new_review = Reviews.insert(insert_data)
     return new_review
 
 
-def create_reservation(insert_data):
+def create_reservation(insert_data: dict, strict_mode: bool=False):
     if insert_data["dt_started"] >= insert_data["dt_ended"]: return
 
     item = Items.get({"id": insert_data["item_id"]})
     reservation = Reservations.unique(insert_data)
+
+    if strict_mode:
+        reservation = Reservations.insert(insert_data)
+        return reservation
 
     if reservation is None:
         dt_ended = insert_data["dt_ended"]
@@ -73,7 +77,7 @@ def create_reservation(insert_data):
 
     return reservation
 
-def create_extension(insert_data):
+def create_extension(insert_data: dict):
     reservation_keys = {
         "dt_started": insert_data["res_dt_start"],
         "dt_ended": insert_data["res_dt_end"],
@@ -87,14 +91,14 @@ def create_extension(insert_data):
     return new_extension
 
 
-def create_order(insert_data):
+def create_order(insert_data: dict):
     new_order = Orders.insert(insert_data)
 
     renter = Users.get({ "id": new_order.renter_id })
     return new_order
 
 
-def create_logistics(insert_data):
+def create_logistics(insert_data: dict):
     logistics = Logistics.unique(insert_data)
     if logistics is None:
         receiver = Users.get({ "id": insert_data["receiver_id"] })
@@ -108,9 +112,9 @@ def create_logistics(insert_data):
     return logistics
 
 
-def create_issue(insert_data):
+def create_issue(insert_data: dict):
     new_issue = Issues.insert(insert_data)
     return new_issue
 
-def create_charge(insert_data):
+def create_charge(insert_data: dict):
     return None

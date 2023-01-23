@@ -58,6 +58,7 @@ def validate_rental(calendar: Calendars, dt_started: datetime, dt_ended: datetim
 
     DAYS_BUFFER = 2
     MAX_RENTAL_DURATION = 365
+    WEEKS_VERY_LONG_RESERVATION = 104
 
     status = validate_date_range(dt_lbound=dt_started, dt_ubound=dt_ended)
 
@@ -75,9 +76,11 @@ def validate_rental(calendar: Calendars, dt_started: datetime, dt_ended: datetim
 
         avail_date_start_str = res_dt_start.strftime("%B %-d, %Y")
 
-        if res_dt_end > datetime.now() + timedelta(weeks=104):
+        if res_dt_end > datetime.now() + timedelta(weeks=WEEKS_VERY_LONG_RESERVATION):
+            # Make an unbounded rental recommendation
             avail_date_range = avail_date_start_str
         else:
+            # Make a bounded rental recommendation
             avail_date_end_str = res_dt_end.strftime("%B %-d, %Y")
             avail_date_range = f"{avail_date_start_str} until {avail_date_end_str}"
 
@@ -99,6 +102,12 @@ def validate_rental(calendar: Calendars, dt_started: datetime, dt_ended: datetim
             you within 48hrs!
             """
 
+        status.is_successful = False
+        return status
+
+    dt_min_start = datetime.now() + timedelta(days=DAYS_BUFFER)
+    if dt_started < dt_min_start:
+        status.message = f"The soonest your rental can start is {DAYS_BUFFER} days from today."
         status.is_successful = False
         return status
 
