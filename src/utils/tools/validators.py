@@ -4,6 +4,8 @@ from werkzeug.security import check_password_hash
 from src.models import Users, Items, Calendars
 
 from src.utils.classes import Status
+from src.utils.settings import DAYS_SERVICE_BUFFER
+from src.utils.settings import MAX_RENTAL_DURATION
 
 
 def validate_login(form_data):
@@ -56,8 +58,6 @@ def validate_date_range(dt_lbound: datetime, dt_ubound: datetime):
 
 def validate_rental(calendar: Calendars, dt_started: datetime, dt_ended: datetime):
 
-    DAYS_BUFFER = 2
-    MAX_RENTAL_DURATION = 365
     WEEKS_VERY_LONG_RESERVATION = 104
 
     status = validate_date_range(dt_lbound=dt_started, dt_ubound=dt_ended)
@@ -105,9 +105,9 @@ def validate_rental(calendar: Calendars, dt_started: datetime, dt_ended: datetim
         status.is_successful = False
         return status
 
-    dt_min_start = datetime.now() + timedelta(days=DAYS_BUFFER)
+    dt_min_start = datetime.now() + timedelta(days=DAYS_SERVICE_BUFFER)
     if dt_started < dt_min_start:
-        status.message = f"The soonest your rental can start is {DAYS_BUFFER} days from today."
+        status.message = f"The soonest your rental can start is {DAYS_SERVICE_BUFFER} days from today."
         status.is_successful = False
         return status
 
